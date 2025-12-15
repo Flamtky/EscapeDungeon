@@ -27,10 +27,9 @@ import contrib.item.Item;
 import core.Game;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
-import mushRoom.Sounds;
-
 import java.util.Arrays;
 import java.util.stream.IntStream;
+import mushRoom.Sounds;
 
 /**
  * UI component representing a crafting book with recipe entries.
@@ -227,7 +226,8 @@ public class CraftingBookUI extends Group {
     float btnMargin = 20f;
     if (btnLeft.getWidth() == 0) btnLeft.pack();
     if (btnRight.getWidth() == 0) btnRight.pack();
-    btnLeft.setPosition(bookX - btnLeft.getWidth() - btnMargin, screenH / 2f - btnLeft.getHeight() / 2f);
+    btnLeft.setPosition(
+        bookX - btnLeft.getWidth() - btnMargin, screenH / 2f - btnLeft.getHeight() / 2f);
     btnRight.setPosition(bookX + BOOK_WIDTH + btnMargin, screenH / 2f - btnRight.getHeight() / 2f);
   }
 
@@ -321,13 +321,14 @@ public class CraftingBookUI extends Group {
         .filter(Item.class::isInstance)
         .map(Item.class::cast)
         .findFirst()
-        .ifPresent(resultItem -> {
-          Stack resultStack = createItemBox(resultItem, RESULT_BOX_SIZE, resultBoxTexture);
-          recipeRow.add(resultStack).size(RESULT_BOX_SIZE).padRight(20f);
+        .ifPresent(
+            resultItem -> {
+              Stack resultStack = createItemBox(resultItem, RESULT_BOX_SIZE, resultBoxTexture);
+              recipeRow.add(resultStack).size(RESULT_BOX_SIZE).padRight(20f);
 
-          Table ingredientsSection = createIngredientsSection(resultItem, recipe);
-          recipeRow.add(ingredientsSection).left();
-        });
+              Table ingredientsSection = createIngredientsSection(resultItem, recipe);
+              recipeRow.add(ingredientsSection).left();
+            });
 
     pageContent.add(recipeRow).left().padBottom(20f).padTop(10f);
     pageContent.row();
@@ -480,4 +481,3 @@ public class CraftingBookUI extends Group {
     }
   }
 }
-

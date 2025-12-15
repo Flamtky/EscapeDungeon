@@ -65,4 +65,3 @@ public class CraftingBookItem extends Item {
     Sounds.OPEN_INVENTORY_SOUND.play();
   }
 }
-
