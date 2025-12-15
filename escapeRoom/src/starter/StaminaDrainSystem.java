@@ -19,9 +19,8 @@ import core.utils.Point;
  * <p>This system processes entities that have both a {@link StaminaComponent} and a {@link
  * VelocityComponent}. The velocity is used to determine if the entity is currently moving.
  *
- * <p>Hook methods {@link #onStaminaLow(Entity, StaminaComponent)} and {@link
- * #onStaminaDepleted(Entity, StaminaComponent)} are provided for subclasses to implement audio or
- * visual feedback when stamina reaches critical levels.
+ * <p>The hook method {@link #onStaminaDepleted(Entity, StaminaComponent)} is provided for
+ * subclasses to implement audio or visual feedback when stamina is fully depleted.
  *
  * <p>When {@link #SHOW_ETA_DEBUG} is enabled, the system displays the estimated time until stamina
  * depletion in the top-left corner of the screen.
@@ -165,21 +164,6 @@ public class StaminaDrainSystem extends System {
     if (previousStamina > 0 && newStamina <= 0) {
       onStaminaDepleted(entity, stamina);
     }
-  }
-
-  /**
-   * Hook method called when an entity's stamina drops below the low stamina threshold.
-   *
-   * <p>Override this method in subclasses to implement audio or visual feedback (e.g., warning
-   * sound, flashing UI element) when stamina is running low.
-   *
-   * <p>This method is called exactly once when the threshold is crossed from above.
-   *
-   * @param entity the entity whose stamina is low
-   * @param stamina the entity's stamina component
-   */
-  protected void onStaminaLow(Entity entity, StaminaComponent stamina) {
-    // Hook for subclasses to implement audio/visual feedback
   }
 
   /**
