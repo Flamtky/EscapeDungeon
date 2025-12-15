@@ -1,6 +1,5 @@
 package contrib.utils.systems.levelEditor;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import contrib.hud.dialogs.FreeInputDialog;
@@ -33,13 +32,13 @@ public class PointMode extends LevelEditorMode {
   @Override
   public void execute() {
 
-    if (Gdx.input.isKeyJustPressed(SECONDARY_UP)) {
+    if (LevelEditorSystem.isButtonJustPressed(SECONDARY_UP)) {
       snapMode = snapMode.nextMode();
     }
 
     Point cursorPos = getCursorPosition();
     Point snapPos = snapMode.getPosition(cursorPos);
-    if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+    if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.LEFT)) {
       if (heldPointName != null) {
         // Place held deco
         getLevel().addNamedPoint(heldPointName, snapPos);
@@ -54,7 +53,7 @@ public class PointMode extends LevelEditorMode {
               getLevel().addNamedPoint(string, snapPos);
             });
       }
-    } else if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
+    } else if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.RIGHT)) {
       Optional<String> clickedPoint = getOnPosition(cursorPos);
       clickedPoint.ifPresent(point -> heldPointName = point);
 
@@ -66,7 +65,7 @@ public class PointMode extends LevelEditorMode {
         String newPointName = baseName + (getLevel().getHighestPointNumber(baseName) + 1);
         getLevel().addNamedPoint(newPointName, snapPos);
       }
-    } else if (Gdx.input.isKeyPressed(TERTIARY)) {
+    } else if (LevelEditorSystem.isButtonPressed(TERTIARY)) {
       // Delete deco on cursor
       getOnPosition(cursorPos).ifPresent(getLevel()::removeNamedPoint);
     }

@@ -1,12 +1,12 @@
 package contrib.utils.systems.levelEditor;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import contrib.components.CollideComponent;
 import contrib.components.DecoComponent;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
+import contrib.systems.LevelEditorSystem;
 import contrib.systems.PositionSync;
 import contrib.utils.EntityUtils;
 import core.Entity;
@@ -41,16 +41,16 @@ public class DecoMode extends LevelEditorMode {
   @Override
   public void execute() {
     // Change selected deco
-    if (Gdx.input.isKeyJustPressed(PRIMARY_UP)) {
+    if (LevelEditorSystem.isButtonJustPressed(PRIMARY_UP)) {
       selectedDecoIndex = Math.floorMod(selectedDecoIndex + 1, Deco.values().length);
       previewEntityChanged();
-    } else if (Gdx.input.isKeyJustPressed(PRIMARY_DOWN)) {
+    } else if (LevelEditorSystem.isButtonJustPressed(PRIMARY_DOWN)) {
       selectedDecoIndex = Math.floorMod(selectedDecoIndex - 1, Deco.values().length);
       previewEntityChanged();
     }
 
     // Change snap mode
-    if (Gdx.input.isKeyJustPressed(SECONDARY_UP)) {
+    if (LevelEditorSystem.isButtonJustPressed(SECONDARY_UP)) {
       decoSnapMode = decoSnapMode.nextMode();
     }
 
@@ -62,7 +62,7 @@ public class DecoMode extends LevelEditorMode {
     // - Mouse move [holding a deco]: show preview of deco at cursor position
     Point cursorPos = getCursorPosition();
     Point snapPos = decoSnapMode.getPosition(cursorPos);
-    if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+    if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.LEFT)) {
       rapidFireActive = true;
 
       if (decoHeldEntity != null) {
@@ -72,7 +72,8 @@ public class DecoMode extends LevelEditorMode {
         setupPreviewEntity(snapPos);
         rapidFireActive = false;
       }
-    } else if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT) && decoHeldEntity == null) {
+    } else if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.RIGHT)
+        && decoHeldEntity == null) {
       rapidFireActive = false;
       // Pickup deco on cursor
       Optional<DecoEntityData> clickedDeco = getDecoOnPosition(cursorPos);
@@ -80,12 +81,12 @@ public class DecoMode extends LevelEditorMode {
         decoHeldEntity = clickedDeco.get();
         removePreviewEntity();
       }
-    } else if (Gdx.input.isKeyPressed(TERTIARY)) {
+    } else if (LevelEditorSystem.isButtonJustPressed(TERTIARY)) {
       rapidFireActive = false;
       // Delete deco on cursor
       getDecoOnPosition(cursorPos).map(DecoEntityData::entity).ifPresent(Game::remove);
       syncPlacedDecos();
-    } else if (Gdx.input.isKeyJustPressed(QUARTERNARY)) {
+    } else if (LevelEditorSystem.isButtonJustPressed(QUARTERNARY)) {
       rapidFireActive = false;
       // Pipette tool to pick deco type on cursor
       Optional<DecoEntityData> clickedDeco = getDecoOnPosition(cursorPos);
@@ -101,7 +102,7 @@ public class DecoMode extends LevelEditorMode {
       }
     }
 
-    if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && rapidFireActive) {
+    if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.LEFT) && rapidFireActive) {
       boolean checkBlocked = decoSnapMode.checkBlocked();
       placeDeco(snapPos, checkBlocked);
       if (!checkBlocked) {

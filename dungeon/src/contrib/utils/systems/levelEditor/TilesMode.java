@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import contrib.systems.DebugDrawSystem;
+import contrib.systems.LevelEditorSystem;
 import contrib.utils.CheckPatternPainter;
 import core.level.utils.Coordinate;
 import core.level.utils.LevelElement;
@@ -46,26 +47,26 @@ public class TilesMode extends LevelEditorMode {
 
   @Override
   public void execute() {
-    if (Gdx.input.isKeyJustPressed(PRIMARY_DOWN)) {
+    if (LevelEditorSystem.isButtonJustPressed(PRIMARY_DOWN)) {
       if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
         selectedTileIndexR -= 1;
       } else {
         selectedTileIndexL -= 1;
       }
-    } else if (Gdx.input.isKeyJustPressed(PRIMARY_UP)) {
+    } else if (LevelEditorSystem.isButtonJustPressed(PRIMARY_UP)) {
       if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
         selectedTileIndexR += 1;
       } else {
         selectedTileIndexL += 1;
       }
     }
-    if (Gdx.input.isKeyJustPressed(SECONDARY_UP)) {
+    if (LevelEditorSystem.isButtonJustPressed(SECONDARY_UP)) {
       brushSize = Math.min(MAX_BRUSH_SIZE, brushSize + 1);
-    } else if (Gdx.input.isKeyJustPressed(SECONDARY_DOWN)) {
+    } else if (LevelEditorSystem.isButtonJustPressed(SECONDARY_DOWN)) {
       brushSize = Math.max(1, brushSize - 1);
     }
 
-    if (Gdx.input.isKeyJustPressed(QUARTERNARY)) {
+    if (LevelEditorSystem.isButtonJustPressed(QUARTERNARY)) {
       // Pick tile under cursor to LMB
       Point cursorPos = getCursorPosition();
       getLevel()
