@@ -12,7 +12,9 @@ public enum EscapeRoomDialogTypes implements DialogType {
   /** A simple {@link hint.HintLogDialog} dialog type. */
   SIMPLE_HINT("simple_hint"),
   /** The {@link mushRoom.modules.journal.JournalUI} dialog type. */
-  JOURNAL("journal");
+  JOURNAL("journal"),
+  /** The {@link mushRoom.modules.journal.CraftingBookUI} dialog type. */
+  CRAFTING_BOOK("crafting_book");
 
   private final String typeName;
 

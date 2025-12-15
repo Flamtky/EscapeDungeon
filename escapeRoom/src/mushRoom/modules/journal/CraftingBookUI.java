@@ -109,7 +109,6 @@ public class CraftingBookUI extends Group {
   // Tooltip state
   private Item hoveredItem = null;
 
-  // TODO: Implement proper dispose for boxTexture/resultBoxTexture when dialog system is reworked
   private final Texture boxTexture;
   private final Texture resultBoxTexture;
 
@@ -455,6 +454,16 @@ public class CraftingBookUI extends Group {
       tooltipY = mouseY - height - 15;
     }
     return tooltipY;
+  }
+
+  /** Disposes of textures created by this UI component. */
+  public void dispose() {
+    if (boxTexture != null) {
+      boxTexture.dispose();
+    }
+    if (resultBoxTexture != null) {
+      resultBoxTexture.dispose();
+    }
   }
 
   /**
