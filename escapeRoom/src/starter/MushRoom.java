@@ -4,13 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
+import contrib.crafting.Crafting;
 import contrib.entities.CharacterClass;
 import contrib.entities.EntityFactory;
+import contrib.item.Item;
 import contrib.modules.levelHide.LevelHideSystem;
 import contrib.systems.*;
 import contrib.utils.components.Debugger;
 import core.Entity;
 import core.Game;
+import core.System;
 import core.components.InputComponent;
 import core.game.PreRunConfiguration;
 import core.level.loader.DungeonLoader;
@@ -24,6 +27,7 @@ import core.utils.components.path.SimpleIPath;
 import java.io.IOException;
 import mushRoom.MainLevel;
 import mushRoom.modules.items.MagicLensItem;
+import mushRoom.modules.journal.CraftingBookItem;
 import mushRoom.modules.journal.JournalItem;
 import mushRoom.modules.mushrooms.Mushrooms;
 
@@ -60,6 +64,7 @@ public class MushRoom {
           DungeonLoader.addLevel(Tuple.of("mushroom", MainLevel.class));
           createTextures();
           createSystems();
+          Crafting.loadRecipes();
           createHero();
           DungeonLoader.loadLevel(START_LEVEL);
         });
@@ -116,6 +121,15 @@ public class MushRoom {
     Game.add(new PressurePlateSystem());
     Game.add(new IdleSoundSystem());
     if (DEBUG_MODE) Game.add(new Debugger());
+    Game.add(new System() {
+      @Override
+      public void execute() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.L)) {
+          Item newItem = new CraftingBookItem();
+          Game.player().flatMap(player -> player
+            .fetch(contrib.components.InventoryComponent.class)).ifPresent(inventory -> inventory.add(newItem));
+      }
+    }});
   }
 
   private static void setupMusic() {

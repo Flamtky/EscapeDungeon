@@ -76,6 +76,15 @@ public final class Crafting {
   }
 
   /**
+   * Get all registered recipes.
+   *
+   * @return An unmodifiable set of all registered recipes.
+   */
+  public static Set<Recipe> recipes() {
+    return Collections.unmodifiableSet(RECIPES);
+  }
+
+  /**
    * Load recipes from the recipes' folder.
    *
    * <p>If the program is compiled to a jar file, recipes will be loaded from within the jar file.
