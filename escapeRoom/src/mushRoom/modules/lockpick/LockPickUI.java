@@ -281,7 +281,7 @@ public class LockPickUI extends Group {
       float outerRadius = innerRadius + ringThickness;
 
       // Get color for this ring
-      Color ringColor = getRingColor(i, ringCount);
+      Color ringColor = getRingColor(i);
 
       // Create high-resolution ring texture
       Texture ringTexture = createRingTexture(outerRadius, innerRadius, ringColor, notchWidth);
@@ -317,10 +317,9 @@ public class LockPickUI extends Group {
    * Gets the color for a ring at the given index.
    *
    * @param index The ring index
-   * @param totalRings Total number of rings
    * @return The color for this ring
    */
-  private Color getRingColor(int index, int totalRings) {
+  private Color getRingColor(int index) {
     if (index < RING_COLORS.length) {
       return RING_COLORS[index];
     }
@@ -364,7 +363,6 @@ public class LockPickUI extends Group {
     return color;
   }
 
-  /** Creates a high-resolution ring texture with anti-aliasing. */
   private Texture createRingTexture(
       float outerRadius, float innerRadius, Color color, float notchAngle) {
     // Create texture at higher resolution

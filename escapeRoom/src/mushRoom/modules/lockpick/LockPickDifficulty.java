@@ -56,14 +56,29 @@ public final class LockPickDifficulty {
     return new LockPickDifficulty(ringCount, minNotchWidthDegrees, maxNotchWidthDegrees);
   }
 
+  /**
+   * Gets the number of rings in this difficulty.
+   *
+   * @return number of rings
+   */
   public int ringCount() {
     return ringCount;
   }
 
+  /**
+   * Gets the minimum notch width in degrees.
+   *
+   * @return minimum notch width
+   */
   public float minNotchWidthDegrees() {
     return minNotchWidthDegrees;
   }
 
+  /**
+   * Gets the maximum notch width in degrees.
+   *
+   * @return maximum notch width
+   */
   public float maxNotchWidthDegrees() {
     return maxNotchWidthDegrees;
   }
