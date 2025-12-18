@@ -8,12 +8,15 @@ import contrib.systems.*;
 import contrib.utils.components.Debugger;
 import core.Entity;
 import core.Game;
+import core.System;
 import core.level.loader.DungeonLoader;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.Level01;
 import hint.HintLogComponent;
 import java.io.IOException;
+import mushRoom.modules.qte.FollowingIndicatorDialog;
+import mushRoom.modules.qte.FollowingIndicatorDifficulty;
 
 /**
  * Starter for the Demo Escaperoom Dungeon.
@@ -84,6 +87,23 @@ public class DemoRoom {
     Game.add(new PressurePlateSystem());
     Game.add(new IdleSoundSystem());
     if (DEBUG_MODE) Game.add(new Debugger());
+    Game.add(
+        new System() {
+          @Override
+          public void execute() {
+            if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.F5)) {
+              FollowingIndicatorDialog.openFollowingIndicator(
+                  Game.player().get(),
+                  FollowingIndicatorDifficulty.HARD,
+                  () ->
+                      core.utils.logging.DungeonLogger.getLogger(DemoRoom.class)
+                          .info("QTE Success: Player escaped!"),
+                  () ->
+                      core.utils.logging.DungeonLogger.getLogger(DemoRoom.class)
+                          .info("QTE Failed: Player was caught!"));
+            }
+          }
+        });
   }
 
   private static void setupMusic() {
