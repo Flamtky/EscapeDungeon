@@ -638,6 +638,2767 @@ public enum Deco {
       "objects/nature/big_log.png",
       new AnimationConfig().scaleX(2),
       new Rectangle(1.65f, 1.20f, 0.20f, 0.20f)),
+
+  /** A decoration. */
+  WallBackOrnamentBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 0, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerTopLeftOutsideBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 0, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallTopOutsideBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(32, 0, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() + 1),
+  /** A decoration. */
+  WallCornerTopRightOutsideBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 0, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerTopLeftInsideBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 0, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  WallFrontBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(96, 0, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerTopRightInsideBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 0, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  WallLeftBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 16, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallRightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 16, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallFrontOrnamentBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 32, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerFrontLeftOutsideBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 32, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerFrontRightOutsideBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 32, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerFrontLeftInsideBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 48, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerFrontRightInsideBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 48, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallFrontAngledUpBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 64, 1, 1, 16, 48)),
+      new Rectangle(1f, 2f, 0f, 1f)),
+  /** A decoration. */
+  WallFrontAngledDownBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 64, 1, 1, 16, 48)),
+      new Rectangle(1f, 2f, 0f, 1f)),
+  /** A decoration. */
+  WallCornerFrontRightAngledBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(64, 64, 1, 1, 16, 48)),
+      new Rectangle(1f, 3f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerFrontLeftAngledBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 64, 1, 1, 16, 48)),
+      new Rectangle(1f, 3f, 0f, 0f)),
+  /** A decoration. */
+  WallTopAngledDown1Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(32, 80, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallTopAngledUp1Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 80, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallTopAngledDown2Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(32, 96, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallTopAngledUp2Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 96, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallLeftArchBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(96, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ArchMiddleBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 64, 1, 1, 16, 16))),
+  /** A decoration. */
+  WallRightArchBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(128, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  FloorTileArrowDownBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 0, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowLeftBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 0, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowRightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 0, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowUpBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 0, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 16, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerBottomLeftBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 16, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerTopLeftBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 16, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerTopRightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 16, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerBottomRightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 16, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerCenterBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(240, 16, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowDownDarkBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 32, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowLeftDarkBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 32, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowRightDarkBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 32, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowUpDarkBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 32, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDarkBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 48, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerBottomLeftDarkBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 48, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerTopLeftDarkBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 48, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerTopRightDarkBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 48, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerBottomRightDarkBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 48, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerCenterDarkBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(240, 48, 1, 1, 16, 16))),
+  /** A decoration. */
+  HoleTileDryGrassBeige1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  HoleTileDryGrassBeige2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  HoleTileDryGrassBeige3(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  HoleTileDryGrassBeige4(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  HoleTileDryGrassBeige5(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  HoleTileDryGrassBeige6(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(240, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ArchShadow(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(96, 80, 1, 1, 48, 16))),
+  /** A decoration. */
+  WallBackOrnamentGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerTopLeftOutsideGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallTopOutsideGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(32, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerTopRightOutsideGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerTopLeftInsideGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 112, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  WallFrontGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(96, 112, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerTopRightInsideGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 112, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  WallLeftGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallRightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallFrontOrnamentGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 144, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerFrontLeftOutsideGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 144, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerFrontRightOutsideGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 144, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerFrontLeftInsideGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 160, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerFrontRightInsideGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 160, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallFrontAngledUpGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 176, 1, 1, 16, 48)),
+      new Rectangle(1f, 2f, 0f, 1f)),
+  /** A decoration. */
+  WallFrontAngledDownGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 176, 1, 1, 16, 48)),
+      new Rectangle(1f, 2f, 0f, 1f)),
+  /** A decoration. */
+  WallCornerFrontRightAngledGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(32, 176, 1, 1, 16, 48)),
+      new Rectangle(1f, 3f, 0f, 0f)),
+  /** A decoration. */
+  WallCornerFrontLeftAngledGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 176, 1, 1, 16, 48)),
+      new Rectangle(1f, 3f, 0f, 0f)),
+  /** A decoration. */
+  WallTopAngledDown1Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 224, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallTopAngledUp1Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 224, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallTopAngledDown2Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 240, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallTopAngledUp2Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 240, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallLeftArchGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(64, 192, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ArchMiddleGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 192, 1, 1, 16, 16))),
+  /** A decoration. */
+  WallRightArchGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(96, 192, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  FloorTileArrowDownGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 128, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowLeftGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 128, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowRightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 128, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowUpGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 128, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 144, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerBottomLeftGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 144, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerTopLeftGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 144, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerTopRightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 144, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerBottomRightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 144, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerCenterGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(240, 144, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowDownDarkGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 160, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowLeftDarkGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 160, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowRightDarkGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 160, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileArrowUpDarkGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 160, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDarkGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 176, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerBottomLeftDarkGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 176, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerTopLeftDarkGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 176, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerTopRightDarkGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 176, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerBottomRightDarkGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 176, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileCornerCenterDarkGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(240, 176, 1, 1, 16, 16))),
+  /** A decoration. */
+  HoleTileDryGrassGray1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 192, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  HoleTileDryGrassGray2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 192, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  HoleTileDryGrassGray3(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 192, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  HoleTileDryGrassGray4(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 192, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  HoleTileDryGrassGray5(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 192, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  HoleTileDryGrassGray6(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(240, 192, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  FloorTileDropBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 208, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDropCrossBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 208, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDropCornerTopLeftBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 208, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDropCornerBottomLeftBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 208, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDropCornerBottomRightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 208, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDropCornerTopRightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(240, 208, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDropGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 224, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDropCrossGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 224, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDropCornerTopLeftGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 224, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDropCornerBottomLeftGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 224, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDropCornerBottomRightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 224, 1, 1, 16, 16))),
+  /** A decoration. */
+  FloorTileDropCornerTopRightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(240, 224, 1, 1, 16, 16))),
+  /** A decoration. */
+  Pillar1GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Pillar2GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Pillar3GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(32, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform1GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform2Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(64, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform3GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament1GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(64, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament2GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament3GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(96, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform4GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform5GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(32, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform6GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament1GlowingGrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(64, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament2GlowingGrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament3GlowingGrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(96, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Pillar1BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 304, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Pillar2BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 304, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Pillar3BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(32, 304, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform1BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform2Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(64, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform3BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 320, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament1BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(64, 320, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament2BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 320, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament3BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(96, 320, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform4BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform5BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(32, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform6BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament1GlowingBeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(64, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament2GlowingBeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament3GlowingBeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(96, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform7GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform8GrayWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(16, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform7BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(32, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform8BeigeWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(48, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Vase1Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Vase2Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(128, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Vase3Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(144, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Vase4Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Chest1ClosedWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Chest1OpenWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Chest2ClosedWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Chest2OpenWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairLeftDamaged1Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairRightDamaged1Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(128, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairTopDamaged1Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(144, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairBottomDamaged1Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk1Damaged1Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk2Damaged1Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 272, 1, 1, 32, 16)),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk3Damaged1Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairLeftWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairRightWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(128, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairTopWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(144, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairBottomWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk1Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk2Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 288, 1, 1, 32, 16)),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk3Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairLeftDamaged2Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairRightDamaged2Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(128, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairTopDamaged2Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(144, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairBottomDamaged2Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk1Damaged2Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk2Damaged2Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 304, 1, 1, 32, 16)),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk3Damaged2Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box1Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(128, 320, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box2Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(144, 320, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box5StackWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 320, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box4StackWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 320, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box3StackWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(192, 320, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box1Broken1Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 320, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box1Broken2Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(240, 320, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box3Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box4Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(128, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box5Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(144, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box1Broken3Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box1Broken4Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Vase1SetWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 352, 1, 1, 32, 16)),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box3PyramidWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 352, 1, 1, 32, 32)).scaleX(2f).scaleY(2f),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box4PyramidWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(144, 352, 1, 1, 32, 32)).scaleX(2f).scaleY(2f),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box5PyramidWater(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(176, 352, 1, 1, 32, 32)).scaleX(2f).scaleY(2f),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box2Broken1Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box2Broken2Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box2Broken3Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(208, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box2Broken4Water(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(224, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  TorchGrayAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 416, 1, 4, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  TorchBeigeAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 416, 1, 4, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  FireboxGrayAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 432, 1, 4, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  FireboxBeigeAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 432, 1, 4, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  SpikeSingleGrayAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 448, 1, 4, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  SpikeTriple1GrayAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 464, 1, 4, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  SpikeTriple2GrayAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 480, 1, 4, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  SpikeSingleBeigeAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 448, 1, 4, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  SpikeTriple1BeigeAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 464, 1, 4, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  SpikeTriple2BeigeAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(80, 480, 1, 4, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  PressurePlate1GrayAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 416, 1, 3, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  PressurePlate1BeigeAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 432, 1, 3, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  PressurePlate2GrayAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 448, 1, 3, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  PressurePlate2BeigeAnimated(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(160, 464, 1, 3, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  BannerRed1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 0, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BannerRed2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 0, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BannerRed1Damaged(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 0, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BannerRed2Damaged(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(304, 0, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BannerRedLarge(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 0, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BannerRedLargeDamaged(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 0, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BannerBlackLarge(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(480, 0, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BannerBlackLargeDamaged(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(496, 0, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BannerBlack1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 16, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BannerBlack2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 16, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BannerBlack1Damaged(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 16, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BannerBlack2Damaged(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(304, 16, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window1Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 32, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window2Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 32, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window3Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 32, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window4TopGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(304, 32, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window4MiddleGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 32, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window5Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 48, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window4BottomGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(304, 48, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Drain1Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Drain2Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 64, 1, 1, 16, 64)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Drain3Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 64, 1, 1, 16, 64)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Drain4Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(304, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Drain5Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 64, 1, 1, 16, 64)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window1Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 80, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window2Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 80, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window3Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 80, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window4TopBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(304, 80, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window4MiddleBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 80, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window5Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 96, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Window4BottomBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(304, 96, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Drain1Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Drain2Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 112, 1, 1, 16, 64)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Drain3Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 112, 1, 1, 16, 64)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Drain4Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(304, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Drain5Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 112, 1, 1, 16, 64)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Pillar4Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(336, 32, 1, 1, 16, 48)),
+      new Rectangle(1f, 1f, 0f, 0.5f)),
+  /** A decoration. */
+  Pillar1Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 32, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Pillar5Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(368, 32, 1, 1, 16, 48)),
+      new Rectangle(1f, 1f, 0f, 0.5f)),
+  /** A decoration. */
+  Pillar2Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 32, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Pillar3Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 32, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform1Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 32, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform3Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 48, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament1Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 48, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament2Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 48, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament3Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 48, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform4Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform5Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform6Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament1GlowingGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament2GlowingGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament3GlowingGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Pillar4Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(336, 80, 1, 1, 16, 48)),
+      new Rectangle(1f, 1f, 0f, 0.5f)),
+  /** A decoration. */
+  Pillar1Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 80, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Pillar5Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(368, 80, 1, 1, 16, 48)),
+      new Rectangle(1f, 1f, 0f, 0.5f)),
+  /** A decoration. */
+  Pillar2Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 80, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Pillar3Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 80, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform1Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 80, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform3Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 96, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament1Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 96, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament2Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 96, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament3Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 96, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform4Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform5Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform6Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament1GlowingBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament2GlowingBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Ornament3GlowingBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform7Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform8Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform7Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Plattform8Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  TorchOff1Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 32, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  TorchOff2Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 32, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  FireboxOff1Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 48, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  FireboxOff2Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 48, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SpikeSingle1EmptyGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SpikeTripple1EmptyGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 64, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  TorchOff1Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 80, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  TorchOff2Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 80, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  FireboxOff1Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 96, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  FireboxOff2Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 96, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SpikeSingle1EmptyBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SpikeTripple1EmptyBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 112, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SpikeSingle2EmptyGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 144, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SpikeTripple2EmptyGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(368, 144, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SpikeTripple3EmptyGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 160, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SpikeTripple2EmptyBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(368, 160, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SpikeSingle2EmptyBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 176, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SpikeTripple3EmptyBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(368, 176, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Vase1Set(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 128, 1, 1, 32, 16)),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Vase1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Vase2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Vase3(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Vase4(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Chest1Closed(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Chest1Open(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Chest2Closed(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(480, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Chest2Open(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(496, 128, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairLeftDamaged1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 144, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairRightDamaged1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 144, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairTopDamaged1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 144, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairBottomDamaged1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 144, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk1Damaged1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 144, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk2Damaged1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 144, 1, 1, 32, 16)),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk3Damaged1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(496, 144, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairLeft(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 160, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairRight(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 160, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairTop(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 160, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairBottom(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 160, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk1Flat(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 160, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk2Flat(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 160, 1, 1, 32, 16)),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk3Flat(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(496, 160, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairLeftDamaged2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 176, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairRightDamaged2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 176, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairTopDamaged2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 176, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  ChairBottomDamaged2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 176, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk1Damaged2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 176, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk2Damaged2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 176, 1, 1, 32, 16)),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk3Damaged2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(496, 176, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 192, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 192, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box5Stack(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 192, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box4Stack(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 192, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box3Stack(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 192, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box1Broken1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(496, 192, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box1Broken2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(240, 192, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box3(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 208, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box4(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 208, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box5(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 208, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box1Broken3(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(496, 208, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box1Broken4(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 208, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box3Pyramid(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 224, 1, 1, 32, 32)).scaleX(2f).scaleY(2f),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box4Pyramid(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 224, 1, 1, 32, 32)).scaleX(2f).scaleY(2f),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box5Pyramid(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 224, 1, 1, 32, 32)).scaleX(2f).scaleY(2f),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box2Broken1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(480, 224, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box2Broken2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(496, 224, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box2Broken3(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(480, 240, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box2Broken4(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(496, 240, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallDecor1Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 128, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallDecor2Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 128, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallDecor3Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 128, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallDecor1Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(304, 128, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallDecor2Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 128, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WallDecor3Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(336, 128, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Doorway1Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 160, 1, 1, 48, 32)).scaleX(2f).scaleY(2f),
+      new Rectangle(3f, 2f, 0f, 0f)),
+  /** A decoration. */
+  Doorway1Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(304, 160, 1, 1, 48, 32)).scaleX(2f).scaleY(2f),
+      new Rectangle(3f, 2f, 0f, 0f)),
+  /** A decoration. */
+  Doorway2Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 192, 1, 1, 48, 32)).scaleX(2f).scaleY(2f),
+      new Rectangle(3f, 2f, 0f, 0f)),
+  /** A decoration. */
+  Doorway2Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(304, 192, 1, 1, 48, 32)).scaleX(2f).scaleY(2f),
+      new Rectangle(3f, 2f, 0f, 0f)),
+  /** A decoration. */
+  DoorGreen1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 192, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  DoorGreen2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(368, 192, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  Doorway3Gray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 224, 1, 1, 48, 32)).scaleX(2f).scaleY(2f),
+      new Rectangle(3f, 2f, 0f, 0f)),
+  /** A decoration. */
+  Doorway3Beige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(304, 224, 1, 1, 48, 32)).scaleX(2f).scaleY(2f),
+      new Rectangle(3f, 2f, 0f, 0f)),
+  /** A decoration. */
+  DoorBrown1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 224, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+  /** A decoration. */
+  DoorBrown2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(368, 224, 1, 1, 16, 32)),
+      new Rectangle(1f, 2f, 0f, 0f)),
+
+  /** A decoration. */
+  WaterDeep(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 320, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopLeftInnerRoundGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBackRoundGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopRightInnerRoundGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepSide1RoundGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepSide2RoundGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomLeftInnerRoundGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepFrontRoundGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomRightInnerRoundGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopLeftOuterRoundGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopRightOuterRoundGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomLeftOuterRoundGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomRightOuterRoundGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopLeftInnerStraightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBackStraightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(336, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopRightInnerStraightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepSide1StraightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepSide2StraightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomLeftInnerStraightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepFrontStraightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(336, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomRightInnerStraightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopLeftOuterStraightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopRightOuterStraightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomLeftOuterStraightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomRightOuterStraightGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopLeftInnerRoundBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBackRoundBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopRightInnerRoundBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepSide1RoundBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 384, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepSide2RoundBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 384, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomLeftInnerRoundBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 400, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepFrontRoundBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 400, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomRightInnerRoundBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 400, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopLeftOuterRoundBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 416, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopRightOuterRoundBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 416, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomLeftOuterRoundBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 448, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomRightOuterRoundBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(288, 448, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopLeftInnerStraightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBackStraightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(336, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopRightInnerStraightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepSide1StraightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 384, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepSide2StraightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 384, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomLeftInnerStraightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 400, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepFrontStraightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(336, 400, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomRightInnerStraightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 400, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopLeftOuterStraightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 416, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepTopRightOuterStraightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 416, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomLeftOuterStraightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 448, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterDeepBottomRightOuterStraightBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(352, 448, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHigh(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 320, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighTopLeftInnerRound(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighBackRound(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighTopRightInnerRound(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighSide1Round(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighSide2Round(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighBottomLeftInnerRound(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighFrontRound(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighBottomRightInnerRound(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighTopLeftOuterRound(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighTopRightOuterRound(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighBottomLeftOuterRound(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighBottomRightOuterRound(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 336, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighAngledUpFront1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighAngledUpFront2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighAngledDownFront1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(480, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighAngledDownFront2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(480, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighAngledUpBack1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 320, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighAngledUpBack2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighAngledDownBack1(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(480, 320, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  WaterHighAngledDownBack2(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(480, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 464, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(336, 464, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeSmallTopBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 464, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalTopLeftBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 464, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalTopBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 464, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalTopRightBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 464, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeSmallTopGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 464, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalTopLeftGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 464, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalTopGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(480, 464, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalTopRightGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(496, 464, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(256, 480, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeMiddleGray(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(272, 480, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(320, 480, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeMiddleBeige(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(336, 480, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeSmallMiddleBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 480, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalLeftBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 480, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalMiddleBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 480, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalRightBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 480, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeSmallMiddleGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 480, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalLeftGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 480, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalMiddleGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(480, 480, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalRightGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(496, 480, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeSmallBottomBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(384, 496, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalLeftBottomBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(400, 496, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalBottomBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(416, 496, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalRightBottomBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 496, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeSmallBottomGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 496, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalLeftBottomGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 496, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalBottomGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(480, 496, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeHorizontalRightBottomGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(496, 496, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalTopLeftGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalTopGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalTopRightGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalLeftGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 384, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalMiddleGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 384, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalRightGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 384, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalBottomLeftGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 400, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalBottomGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 400, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalBottomRightGreen(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 400, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalTopLeftBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 416, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalTopBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 416, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalTopRightBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 416, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalLeftBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 432, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalMiddleBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 432, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalRightBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 432, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalBottomLeftBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(432, 448, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalBottomBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(448, 448, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BridgeVerticalBottomRightBrown(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(464, 448, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  DoorGrayGray1Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(16, 16, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorGrayGray2Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(96, 16, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorGrayGray3Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(176, 16, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorGrayBeige1Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(16, 48, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorGrayBeige2Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(96, 48, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorGrayBeige3Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(176, 48, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorBeigeGray1Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(16, 80, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorBeigeGray2Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(96, 80, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorBeigeGray3Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(176, 80, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorBeigeBeige1Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(16, 112, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorBeigeBeige2Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(96, 112, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorBeigeBeige3Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(176, 112, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorGreen1Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(16, 144, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorGreen2Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(96, 144, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorBrown1Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(16, 176, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  DoorBrown2Animated(
+      "spritesheets/FG_Cellar_Doors.png",
+      new AnimationConfig(new SpritesheetConfig(96, 176, 1, 4, 16, 32)).framesPerSprite(3)),
+  /** A decoration. */
+  Bookshelf1(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(0, 256, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf2(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(32, 256, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf3(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(64, 256, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf4(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(96, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf5(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(112, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf6(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(128, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf7(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(144, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SwordStand1(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(160, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SwordStand2(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(176, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SwordStand3(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(192, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SwordStand2Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(224, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BallGreen(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(256, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  PillarDarkGrayBlue(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(272, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  PillarDarkGrayRed(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(288, 256, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SocketDarkGrayBlue(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(304, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BallRed(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(320, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  BallBlue(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(384, 256, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SwordStand4(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(208, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SwordStand4Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(240, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SocketDarkGrayRed(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(304, 272, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf1Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(0, 288, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf2Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(32, 288, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf3Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(64, 288, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf4Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(96, 288, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf5Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(112, 288, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf6Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(128, 288, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Bookshelf7Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(144, 288, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SwordStand5(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(160, 288, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SwordStand6(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(176, 288, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SwordStand7(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(192, 288, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SwordStand7Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(224, 288, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  PillarDarkGrayEmpty(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(272, 288, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  PillarDarkGrayGreen(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(288, 288, 1, 1, 16, 32)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SocketDarkGrayGreen(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(304, 288, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SwordStand8(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(208, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SwordStand8Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(240, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  SocketDarkGrayEmpty(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(304, 304, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box6Pyramid(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(0, 320, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box6BrokenPyramid(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(32, 320, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box7Pyramid(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(64, 320, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box7BrokenPyramid(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(96, 320, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box8OpenPyramid(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(128, 320, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box8BrokenPyramid(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(160, 320, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk2x2(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(192, 320, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 2f, 0f, 0f)),
+  /** A decoration. */
+  Desk2x2Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(224, 320, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 2f, 0f, 0f)),
+  /** A decoration. */
+  Box6OpenPyramid(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(0, 352, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box6Broken1(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(32, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box6Broken2(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(48, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box7OpenPyramid(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(64, 352, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box7Broken1(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(96, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box7Broken2(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(112, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box8Pyramid(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(128, 352, 1, 1, 32, 32)).scaleX(2).scaleY(2),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box8Broken1(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(160, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box8Broken2(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(176, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk2x1(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(192, 352, 1, 1, 32, 16)),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk1x1(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(224, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  DeskSmall(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(240, 352, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box6Open(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(32, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box6(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(48, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box7Open(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(96, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box7(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(112, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box8(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(160, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Box8Open(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(176, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk2x1Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(192, 368, 1, 1, 32, 16)),
+      new Rectangle(2f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Desk1x1Broken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(224, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  DeskSmallBroken(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(240, 368, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f)),
+  /** A decoration. */
+  Spikes5xAnimated(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(256, 336, 1, 4, 16, 16)).framesPerSprite(10)),
+  /** A decoration. */
+  Spikes5xMirroredAnimated(
+      "spritesheets/FD_Dungeon_Free.png",
+      new AnimationConfig(new SpritesheetConfig(320, 336, 1, 4, 16, 16)).framesPerSprite(10)),
   ;
 
   private IPath path;
