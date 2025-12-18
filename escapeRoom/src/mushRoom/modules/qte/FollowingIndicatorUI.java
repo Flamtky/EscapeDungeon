@@ -59,10 +59,44 @@ public class FollowingIndicatorUI extends Group {
   /** Delay after success/failure before closing. */
   private static final long DELAY_AFTER_END = 2000;
 
+  /** Delay before triggering success/failure callback. */
+  private static final long DELAY_BEFORE_CALLBACK = 500;
+
   /** Keys that can be pressed (W, A, S, D). */
   private static final int[] VALID_KEYS = {Input.Keys.W, Input.Keys.A, Input.Keys.S, Input.Keys.D};
 
   private static final String[] KEY_NAMES = {"W", "A", "S", "D"};
+
+  // Font sizes
+  private static final int KEY_FONT_SIZE = 64;
+  private static final int TITLE_FONT_SIZE = 28;
+  private static final int STATUS_FONT_SIZE = 18;
+  private static final int FEEDBACK_FONT_SIZE = 22;
+
+  // Layout constants
+  private static final float TITLE_TOP_PADDING = 30f;
+  private static final float LABEL_TOP_PADDING = 10f;
+  private static final float CENTER_Y_OFFSET = 30f;
+  private static final float CENTER_CIRCLE_RADIUS = 50f;
+  private static final int TRACK_CIRCLE_SEGMENTS = 64;
+  private static final int CENTER_CIRCLE_SEGMENTS = 32;
+  private static final int ZONE_ARC_SEGMENTS = 20;
+  private static final float ZONE_INNER_RADIUS_OFFSET = 25f;
+  private static final float ZONE_OUTER_RADIUS_OFFSET = 15f;
+
+  /** Center circle color. */
+  private static final Color CENTER_CIRCLE_COLOR = new Color(0.2f, 0.2f, 0.2f, 1f);
+
+  // UI Text constants
+  private static final String TITLE_TEXT = "EVADE THE GUARD";
+  private static final String SUCCESS_TITLE_TEXT = "ESCAPED!";
+  private static final String FAILURE_TITLE_TEXT = "CAUGHT!";
+  private static final String HIT_FEEDBACK_TEXT = "HIT!";
+  private static final String WRONG_KEY_AND_ZONE_TEXT = "WRONG KEY & ZONE!";
+  private static final String WRONG_KEY_TEXT = "WRONG KEY!";
+  private static final String WRONG_ZONE_TEXT = "WRONG ZONE!";
+  private static final String STATUS_HITS_PREFIX = "Hits: ";
+  private static final String STATUS_SEPARATOR = "  |  Misses: ";
 
   private static ShapeRenderer shapeRenderer;
 
@@ -116,7 +150,7 @@ public class FollowingIndicatorUI extends Group {
     }
 
     // Initialize fonts
-    keyFont = FontHelper.getDefaultFont(64);
+    keyFont = FontHelper.getDefaultFont(KEY_FONT_SIZE);
     glyphLayout = new GlyphLayout();
 
     // Create labels table
@@ -127,37 +161,39 @@ public class FollowingIndicatorUI extends Group {
 
     // Label styles
     Label.LabelStyle titleStyle = new Label.LabelStyle();
-    titleStyle.font = FontHelper.getDefaultFont(28);
+    titleStyle.font = FontHelper.getDefaultFont(TITLE_FONT_SIZE);
     titleStyle.fontColor = Color.WHITE;
 
     Label.LabelStyle statusStyle = new Label.LabelStyle();
-    statusStyle.font = FontHelper.getDefaultFont(18);
+    statusStyle.font = FontHelper.getDefaultFont(STATUS_FONT_SIZE);
     statusStyle.fontColor = Color.WHITE;
 
     Label.LabelStyle feedbackStyle = new Label.LabelStyle();
-    feedbackStyle.font = FontHelper.getDefaultFont(22);
+    feedbackStyle.font = FontHelper.getDefaultFont(FEEDBACK_FONT_SIZE);
     feedbackStyle.fontColor = Color.WHITE;
 
     // Title
-    titleLabel = new Label("EVADE THE GUARD", titleStyle);
+    titleLabel = new Label(TITLE_TEXT, titleStyle);
     titleLabel.setAlignment(Align.center);
-    labelsTable.add(titleLabel).padTop(30).expandX().row();
+    labelsTable.add(titleLabel).padTop(TITLE_TOP_PADDING).expandX().row();
 
     // Status (successes / attempts)
     statusLabel =
         new Label(
-            "Hits: 0/"
+            STATUS_HITS_PREFIX
+                + "0/"
                 + difficulty.requiredSuccesses()
-                + "  |  Misses: 0/"
+                + STATUS_SEPARATOR
+                + "0/"
                 + difficulty.maxAttempts(),
             statusStyle);
     statusLabel.setAlignment(Align.center);
-    labelsTable.add(statusLabel).padTop(10).expandX().row();
+    labelsTable.add(statusLabel).padTop(LABEL_TOP_PADDING).expandX().row();
 
     // Feedback (HIT/MISS)
     feedbackLabel = new Label("", feedbackStyle);
     feedbackLabel.setAlignment(Align.center);
-    labelsTable.add(feedbackLabel).padTop(10).expandX().row();
+    labelsTable.add(feedbackLabel).padTop(LABEL_TOP_PADDING).expandX().row();
 
     // Set size and initialize
     setSize(Game.windowWidth(), Game.windowHeight());
@@ -182,7 +218,7 @@ public class FollowingIndicatorUI extends Group {
 
   private void calculateLayout() {
     centerX = getWidth() / 2f;
-    centerY = getHeight() / 2f - 30f; // Offset down slightly to account for labels
+    centerY = getHeight() / 2f - CENTER_Y_OFFSET; // Offset down slightly to account for labels
   }
 
   private void generateZones() {
@@ -216,12 +252,20 @@ public class FollowingIndicatorUI extends Group {
     return angle;
   }
 
-  /** Sets the callback to execute on success. */
+  /**
+   * Sets the callback to execute on success.
+   *
+   * @param onSuccess The success callback
+   */
   public void onSuccess(Runnable onSuccess) {
     this.onSuccess = Objects.requireNonNull(onSuccess);
   }
 
-  /** Sets the callback to execute on failure. */
+  /**
+   * Sets the callback to execute on failure.
+   *
+   * @param onFailure The failure callback
+   */
   public void onFailure(Runnable onFailure) {
     this.onFailure = Objects.requireNonNull(onFailure);
   }
@@ -234,12 +278,20 @@ public class FollowingIndicatorUI extends Group {
     }
   }
 
-  /** Returns true if the game ended in failure. */
+  /**
+   * Returns true if the game ended in failure.
+   *
+   * @return true if failed
+   */
   public boolean isFailed() {
     return isFailed;
   }
 
-  /** Returns true if the game ended in success. */
+  /**
+   * Returns true if the game ended in success.
+   *
+   * @return true if succeeded
+   */
   public boolean isSuccess() {
     return isSuccess;
   }
@@ -272,14 +324,14 @@ public class FollowingIndicatorUI extends Group {
     if (correctKey && inActiveZone) {
       // Success
       successCount++;
-      feedbackLabel.setText("HIT!");
+      feedbackLabel.setText(HIT_FEEDBACK_TEXT);
       feedbackLabel.setColor(Color.GREEN);
       updateStatusLabel();
 
       if (successCount >= difficulty.requiredSuccesses()) {
         gameActive = false;
         isSuccess = true;
-        titleLabel.setText("ESCAPED!");
+        titleLabel.setText(SUCCESS_TITLE_TEXT);
         inputEnabled = false;
         EventScheduler.scheduleAction(
             () -> {
@@ -288,18 +340,18 @@ public class FollowingIndicatorUI extends Group {
                   () -> owner.fetch(UIComponent.class).ifPresent(UIUtils::closeDialog),
                   DELAY_AFTER_END);
             },
-            500);
+            DELAY_BEFORE_CALLBACK);
         return;
       }
     } else {
       // Failure
       failCount++;
       if (!correctKey && !inActiveZone) {
-        feedbackLabel.setText("WRONG KEY & ZONE!");
+        feedbackLabel.setText(WRONG_KEY_AND_ZONE_TEXT);
       } else if (!correctKey) {
-        feedbackLabel.setText("WRONG KEY!");
+        feedbackLabel.setText(WRONG_KEY_TEXT);
       } else {
-        feedbackLabel.setText("WRONG ZONE!");
+        feedbackLabel.setText(WRONG_ZONE_TEXT);
       }
       feedbackLabel.setColor(Color.RED);
       updateStatusLabel();
@@ -307,7 +359,7 @@ public class FollowingIndicatorUI extends Group {
       if (failCount >= difficulty.maxAttempts()) {
         gameActive = false;
         isFailed = true;
-        titleLabel.setText("CAUGHT!");
+        titleLabel.setText(FAILURE_TITLE_TEXT);
         inputEnabled = false;
         EventScheduler.scheduleAction(
             () -> {
@@ -316,7 +368,7 @@ public class FollowingIndicatorUI extends Group {
                   () -> owner.fetch(UIComponent.class).ifPresent(UIUtils::closeDialog),
                   DELAY_AFTER_END);
             },
-            500);
+            DELAY_BEFORE_CALLBACK);
         return;
       }
     }
@@ -328,11 +380,11 @@ public class FollowingIndicatorUI extends Group {
 
   private void updateStatusLabel() {
     statusLabel.setText(
-        "Hits: "
+        STATUS_HITS_PREFIX
             + successCount
             + "/"
             + difficulty.requiredSuccesses()
-            + "  |  Misses: "
+            + STATUS_SEPARATOR
             + failCount
             + "/"
             + difficulty.maxAttempts());
@@ -364,7 +416,7 @@ public class FollowingIndicatorUI extends Group {
 
     // Draw track background
     shapeRenderer.setColor(TRACK_BG_COLOR);
-    shapeRenderer.circle(centerX, centerY, TRACK_RADIUS, 64);
+    shapeRenderer.circle(centerX, centerY, TRACK_RADIUS, TRACK_CIRCLE_SEGMENTS);
 
     // Draw zones as filled arcs
     for (int i = 0; i < difficulty.zoneCount(); i++) {
@@ -377,8 +429,8 @@ public class FollowingIndicatorUI extends Group {
     drawIndicatorLine();
 
     // Draw center circle ON TOP of the indicator line
-    shapeRenderer.setColor(new Color(0.2f, 0.2f, 0.2f, 1f));
-    shapeRenderer.circle(centerX, centerY, 50f, 32);
+    shapeRenderer.setColor(CENTER_CIRCLE_COLOR);
+    shapeRenderer.circle(centerX, centerY, CENTER_CIRCLE_RADIUS, CENTER_CIRCLE_SEGMENTS);
 
     shapeRenderer.end();
 
@@ -403,13 +455,13 @@ public class FollowingIndicatorUI extends Group {
     }
 
     // Draw arc as triangles from center
-    int segments = 20;
+    int segments = ZONE_ARC_SEGMENTS;
     float angleSpan = endAngle - startAngle;
     if (angleSpan < 0) angleSpan += 360f;
     float angleStep = angleSpan / segments;
 
-    float innerRadius = TRACK_RADIUS - 25f;
-    float outerRadius = TRACK_RADIUS + 15f;
+    float innerRadius = TRACK_RADIUS - ZONE_INNER_RADIUS_OFFSET;
+    float outerRadius = TRACK_RADIUS + ZONE_OUTER_RADIUS_OFFSET;
 
     for (int i = 0; i < segments; i++) {
       float a1 = startAngle + angleStep * i;

@@ -62,22 +62,38 @@ public final class FollowingIndicatorDifficulty {
         indicatorSpeed, zoneCount, requiredSuccesses, maxAttempts);
   }
 
-  /** Gets the indicator rotation speed in degrees per second. */
+  /**
+   * Gets the indicator rotation speed in degrees per second.
+   *
+   * @return indicator speed in degrees per second
+   */
   public float indicatorSpeed() {
     return indicatorSpeed;
   }
 
-  /** Gets the number of zones on the circle. */
+  /**
+   * Gets the number of zones on the circle.
+   *
+   * @return number of zones
+   */
   public int zoneCount() {
     return zoneCount;
   }
 
-  /** Gets the number of successful hits required to win. */
+  /**
+   * Gets the number of successful hits required to win.
+   *
+   * @return required successes
+   */
   public int requiredSuccesses() {
     return requiredSuccesses;
   }
 
-  /** Gets the maximum number of failed attempts allowed. */
+  /**
+   * Gets the maximum number of failed attempts allowed.
+   *
+   * @return maximum attempts
+   */
   public int maxAttempts() {
     return maxAttempts;
   }
