@@ -23,7 +23,7 @@ public class EventScheduler extends System {
    * <p>If set to {@code true}, no events will be triggered while the game is in a paused state. If
    * set to {@code false}, scheduled events continue to run even during pause.
    */
-  private static boolean pausable = true;
+  private static boolean pausable = false;
 
   /**
    * Schedules a new action to be executed after a specified delay.
