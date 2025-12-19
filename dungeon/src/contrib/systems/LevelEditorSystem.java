@@ -83,6 +83,7 @@ public class LevelEditorSystem extends System {
           @Override
           public boolean keyUp(int keycode) {
             justPressedButtons.remove(keycode);
+            pressedButtons.remove(keycode);
             return old.keyUp(keycode);
           }
 
@@ -100,6 +101,7 @@ public class LevelEditorSystem extends System {
           @Override
           public boolean touchUp(int screenX, int screenY, int pointer, int button) {
             justPressedButtons.remove(button);
+            pressedButtons.remove(button);
             return old.touchUp(screenX, screenY, pointer, button);
           }
 
@@ -304,7 +306,6 @@ public class LevelEditorSystem extends System {
 
   private void updateInputs() {
     // update buttons buffers
-    pressedButtons.clear();
     pressedButtons.addAll(justPressedButtons);
     justPressedButtons.clear();
   }

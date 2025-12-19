@@ -86,7 +86,7 @@ public class DecoMode extends LevelEditorMode {
       // Delete deco on cursor
       getDecoOnPosition(cursorPos).map(DecoEntityData::entity).ifPresent(Game::remove);
       syncPlacedDecos();
-    } else if (LevelEditorSystem.isButtonPressed(QUARTERNARY)) {
+    } else if (LevelEditorSystem.isButtonJustPressed(QUARTERNARY)) {
       rapidFireActive = false;
       // Pipette tool to pick deco type on cursor
       Optional<DecoEntityData> clickedDeco = getDecoOnPosition(cursorPos);
