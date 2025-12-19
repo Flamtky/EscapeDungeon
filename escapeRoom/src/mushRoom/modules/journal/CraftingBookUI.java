@@ -25,6 +25,7 @@ import com.badlogic.gdx.utils.Array;
 import contrib.crafting.Recipe;
 import contrib.item.Item;
 import core.Game;
+import core.game.WindowEventManager;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
 import java.util.Arrays;
@@ -52,21 +53,49 @@ public class CraftingBookUI extends Group {
   // Book dimensions
   private static final float BOOK_WIDTH = 1260f;
   private static final float BOOK_HEIGHT = 900f;
-  private static final float PAGE_PAD_TOP = 80f;
+  private static final float PAGE_PAD_TOP = 110f;
   private static final float PAGE_PAD_BOTTOM = 60f;
-  private static final float PAGE_PAD_SIDE = 50f;
+  private static final float PAGE_PAD_SIDE = 75f;
+  private static final float LEFT_PAGE_OFFSET = 50f;
+  private static final float RIGHT_PAGE_OFFSET = 10f;
 
   // Box dimensions
   private static final float RESULT_BOX_SIZE = 140f;
   private static final float INGREDIENT_BOX_SIZE = 60f;
   private static final float BOX_BORDER_WIDTH = 3f;
   private static final int BOX_BORDER_COLOR = 0x000000ff;
-  private static final int BOX_BACKGROUND_COLOR = 0xffffffff;
+  private static final int BOX_BACKGROUND_COLOR = 0x0000000f;
 
   // Tooltip styling
   private static final int TOOLTIP_BACKGROUND_COLOR = 0xffffffee;
   private static final int BORDER_PADDING = 5;
   private static final int LINE_GAP = 5;
+
+  // Navigation button styling
+  private static final float NAVIGATION_BUTTON_MARGIN = 20f;
+
+  // Tooltip positioning
+  private static final float TOOLTIP_OFFSET = 15f;
+
+  // Font scaling
+  private static final float MIN_PAGE_COUNTER_SCALE = 0.4f;
+  private static final float MAX_PAGE_COUNTER_SCALE = 0.5f;
+  private static final float EMPTY_MESSAGE_FONT_SCALE = 0.6f;
+  private static final float ITEM_NAME_FONT_SCALE = 0.6f;
+  private static final float ITEMS_NEEDED_FONT_SCALE = 0.4f;
+
+  // Spacing and padding
+  private static final float RECIPE_ROW_PAD_BOTTOM = 20f;
+  private static final float RECIPE_ROW_PAD_TOP = 10f;
+  private static final float RESULT_ITEM_PAD_RIGHT = 20f;
+  private static final float ITEM_NAME_PAD_BOTTOM = 8f;
+  private static final float ITEMS_NEEDED_PAD_BOTTOM = 5f;
+  private static final float INGREDIENT_PAD = 2f;
+  private static final float ITEM_BOX_PADDING_RATIO = 0.1f;
+  private static final float EMPTY_MESSAGE_WIDTH = 450f;
+
+  // Layout ratios
+  private static final float PAGE_WIDTH_RATIO = 0.5f; // Each page is half the book width
 
   // Font paths
   private static final IPath FONT_FNT = new SimpleIPath("skin/myFont.fnt");
@@ -112,6 +141,12 @@ public class CraftingBookUI extends Group {
   private final Texture boxTexture;
   private final Texture resultBoxTexture;
 
+  // Scaling state: scale the book down to fit the window when needed (never upscale)
+  private float bookScale = 1f;
+
+  // Window refresh listener; Stored so it can be unregistered when UI is disposed
+  private final Runnable windowRefreshListener;
+
   /**
    * Constructs a new CraftingBookUI with the specified skin and book background.
    *
@@ -125,7 +160,6 @@ public class CraftingBookUI extends Group {
     resultBoxTexture = createBoxTexture((int) RESULT_BOX_SIZE);
 
     bookImage = new Image(bookBackground);
-    bookImage.setSize(BOOK_WIDTH, BOOK_HEIGHT);
     addActor(bookImage);
 
     btnLeft = createNavigationButton("<", this::prevPage);
@@ -142,6 +176,8 @@ public class CraftingBookUI extends Group {
     pageCounterLabel.setAlignment(Align.center);
 
     this.setSize(Game.windowWidth(), Game.windowHeight());
+    windowRefreshListener = () -> this.setSize(Game.windowWidth(), Game.windowHeight());
+    WindowEventManager.registerWindowRefreshListener(windowRefreshListener);
   }
 
   /**
@@ -211,29 +247,64 @@ public class CraftingBookUI extends Group {
   private void repositionElements() {
     float screenW = getWidth();
     float screenH = getHeight();
-    float bookX = (screenW - BOOK_WIDTH) / 2f;
-    float bookY = (screenH - BOOK_HEIGHT) / 2f;
+
+    // Compute a scale so the book fits the window; never upscale (max 1f)
+    float scaleX = screenW / BOOK_WIDTH;
+    float scaleY = screenH / BOOK_HEIGHT;
+    bookScale = Math.min(Math.min(scaleX, scaleY), 1f);
+
+    float scaledBookWidth = BOOK_WIDTH * bookScale;
+    float scaledBookHeight = BOOK_HEIGHT * bookScale;
+
+    float bookX = (screenW - scaledBookWidth) / 2f;
+    float bookY = (screenH - scaledBookHeight) / 2f;
 
     bookImage.setPosition(bookX, bookY);
+    bookImage.setSize(scaledBookWidth, scaledBookHeight);
 
-    positionNavigationButtons(bookX, screenH);
-    positionPageContent(leftPageContent, bookX, bookY);
-    positionPageContent(rightPageContent, bookX + (BOOK_WIDTH / 2f), bookY);
+    // scale page counter font so it's readable at smaller scales
+    pageCounterLabel.setFontScale(
+        Math.max(MIN_PAGE_COUNTER_SCALE * bookScale, MAX_PAGE_COUNTER_SCALE * bookScale));
+
+    positionNavigationButtons(bookX, bookY, scaledBookWidth, scaledBookHeight);
+
+    // Position pages with their respective offsets
+    float pageWidth = scaledBookWidth * PAGE_WIDTH_RATIO;
+    float leftPageX = bookX + (LEFT_PAGE_OFFSET * bookScale);
+    float leftPageWidth = pageWidth - (LEFT_PAGE_OFFSET * bookScale);
+
+    float rightPageX = bookX + pageWidth + (RIGHT_PAGE_OFFSET * bookScale);
+    float rightPageWidth = pageWidth - (RIGHT_PAGE_OFFSET * bookScale);
+
+    positionPageContent(leftPageContent, leftPageX, bookY, leftPageWidth, scaledBookHeight);
+    positionPageContent(rightPageContent, rightPageX, bookY, rightPageWidth, scaledBookHeight);
+
+    // Rebuild page contents so all child widgets (item boxes, fonts, paddings) use the new scale
+    refreshPage();
   }
 
-  private void positionNavigationButtons(float bookX, float screenH) {
-    float btnMargin = 20f;
+  private void positionNavigationButtons(
+      float bookX, float bookY, float scaledBookWidth, float scaledBookHeight) {
+    float btnMargin = NAVIGATION_BUTTON_MARGIN * bookScale; // margin scales with book
     if (btnLeft.getWidth() == 0) btnLeft.pack();
     if (btnRight.getWidth() == 0) btnRight.pack();
-    btnLeft.setPosition(
-        bookX - btnLeft.getWidth() - btnMargin, screenH / 2f - btnLeft.getHeight() / 2f);
-    btnRight.setPosition(bookX + BOOK_WIDTH + btnMargin, screenH / 2f - btnRight.getHeight() / 2f);
+
+    // center vertically on the book
+    float centerY = bookY + scaledBookHeight / 2f - btnLeft.getHeight() / 2f;
+    btnLeft.setPosition(bookX - btnLeft.getWidth() - btnMargin, centerY);
+    btnRight.setPosition(bookX + scaledBookWidth + btnMargin, centerY);
   }
 
-  private void positionPageContent(Table pageContent, float x, float y) {
+  private void positionPageContent(Table pageContent, float x, float y, float width, float height) {
     pageContent.setPosition(x, y);
-    pageContent.setSize(BOOK_WIDTH / 2f, BOOK_HEIGHT);
-    pageContent.pad(PAGE_PAD_TOP, PAGE_PAD_SIDE, PAGE_PAD_BOTTOM, PAGE_PAD_SIDE);
+    pageContent.setSize(width, height);
+    pageContent.clearListeners();
+    pageContent.pad(
+        PAGE_PAD_TOP * bookScale,
+        PAGE_PAD_SIDE * bookScale,
+        PAGE_PAD_BOTTOM * bookScale,
+        PAGE_PAD_SIDE * bookScale);
+    pageContent.top().left(); // align content to top-left of the page
     pageContent.invalidate();
   }
 
@@ -287,7 +358,7 @@ public class CraftingBookUI extends Group {
               }
 
               if (i < RECIPES_PER_PAGE - 1) {
-                pageContent.add().height(ENTRY_SPACING);
+                pageContent.add().height(ENTRY_SPACING * bookScale);
                 pageContent.row();
               }
             });
@@ -307,45 +378,55 @@ public class CraftingBookUI extends Group {
 
   private void addEmptyMessageToTable(Table pageContent, String message) {
     Label msgLabel = new Label(message, skin, "blank-black");
-    msgLabel.setFontScale(0.6f);
+    msgLabel.setFontScale(EMPTY_MESSAGE_FONT_SCALE * bookScale);
     msgLabel.setWrap(true);
     msgLabel.setAlignment(Align.center);
-    pageContent.add(msgLabel).width(450f).expandY().center();
+    pageContent.add(msgLabel).width(EMPTY_MESSAGE_WIDTH * bookScale).expandY().center();
   }
 
   private void addRecipeToTable(Table pageContent, Recipe recipe) {
-    Table recipeRow = new Table();
-
     Arrays.stream(recipe.results())
         .filter(Item.class::isInstance)
         .map(Item.class::cast)
         .findFirst()
         .ifPresent(
             resultItem -> {
-              Stack resultStack = createItemBox(resultItem, RESULT_BOX_SIZE, resultBoxTexture);
-              recipeRow.add(resultStack).size(RESULT_BOX_SIZE).padRight(20f);
-
-              Table ingredientsSection = createIngredientsSection(resultItem, recipe);
-              recipeRow.add(ingredientsSection).left();
+              Table recipeRow = createRecipeRow(resultItem, recipe);
+              pageContent
+                  .add(recipeRow)
+                  .left()
+                  .padBottom(RECIPE_ROW_PAD_BOTTOM * bookScale)
+                  .padTop(RECIPE_ROW_PAD_TOP * bookScale);
+              pageContent.row();
             });
+  }
 
-    pageContent.add(recipeRow).left().padBottom(20f).padTop(10f);
-    pageContent.row();
+  private Table createRecipeRow(Item resultItem, Recipe recipe) {
+    Table recipeRow = new Table();
+
+    float resultSize = RESULT_BOX_SIZE * bookScale;
+    Stack resultStack = createItemBox(resultItem, resultSize, resultBoxTexture);
+    recipeRow.add(resultStack).size(resultSize).padRight(RESULT_ITEM_PAD_RIGHT * bookScale);
+
+    Table ingredientsSection = createIngredientsSection(resultItem, recipe);
+    recipeRow.add(ingredientsSection).left();
+
+    return recipeRow;
   }
 
   private Table createIngredientsSection(Item resultItem, Recipe recipe) {
     Table ingredientsSection = new Table();
 
     Label itemNameLabel = new Label(resultItem.displayName(), skin, "blank-black");
-    itemNameLabel.setFontScale(0.6f);
+    itemNameLabel.setFontScale(ITEM_NAME_FONT_SCALE * bookScale);
     itemNameLabel.setAlignment(Align.left);
-    ingredientsSection.add(itemNameLabel).left().padBottom(8f);
+    ingredientsSection.add(itemNameLabel).left().padBottom(ITEM_NAME_PAD_BOTTOM * bookScale);
     ingredientsSection.row();
 
     Label itemsNeededLabel = new Label(ITEMS_NEEDED_TEXT, skin, "blank-black");
-    itemsNeededLabel.setFontScale(0.4f);
+    itemsNeededLabel.setFontScale(ITEMS_NEEDED_FONT_SCALE * bookScale);
     itemsNeededLabel.setAlignment(Align.left);
-    ingredientsSection.add(itemsNeededLabel).left().padBottom(5f);
+    ingredientsSection.add(itemsNeededLabel).left().padBottom(ITEMS_NEEDED_PAD_BOTTOM * bookScale);
     ingredientsSection.row();
 
     Table ingredientsGrid = createIngredientsGrid(recipe);
@@ -364,8 +445,9 @@ public class CraftingBookUI extends Group {
             .toArray(Item[]::new);
 
     for (int i = 0; i < ingredients.length; i++) {
-      Stack ingredientStack = createItemBox(ingredients[i], INGREDIENT_BOX_SIZE, boxTexture);
-      ingredientsGrid.add(ingredientStack).size(INGREDIENT_BOX_SIZE).pad(2f);
+      float ingredientSize = INGREDIENT_BOX_SIZE * bookScale;
+      Stack ingredientStack = createItemBox(ingredients[i], ingredientSize, boxTexture);
+      ingredientsGrid.add(ingredientStack).size(ingredientSize).pad(INGREDIENT_PAD * bookScale);
 
       if ((i + 1) % MAX_INGREDIENTS_PER_ROW == 0 && i < ingredients.length - 1) {
         ingredientsGrid.row();
@@ -379,13 +461,15 @@ public class CraftingBookUI extends Group {
     Stack stack = new Stack();
 
     Image boxBg = new Image(new TextureRegionDrawable(new TextureRegion(bgTexture)));
+    boxBg.setSize(size, size);
     stack.add(boxBg);
 
     Texture itemTexture = item.inventoryAnimation().getSprite().getTexture();
     Image itemImage = new Image(new TextureRegionDrawable(new TextureRegion(itemTexture)));
 
     Table container = new Table();
-    float padding = size * 0.1f;
+    float padding = size * ITEM_BOX_PADDING_RATIO;
+    itemImage.setSize(size - padding * 2, size - padding * 2);
     container.add(itemImage).size(size - padding * 2).pad(padding);
     stack.add(container);
 
@@ -441,23 +525,28 @@ public class CraftingBookUI extends Group {
   }
 
   private float calculateTooltipX(float mouseX, float width) {
-    float tooltipX = mouseX + 15;
+    float tooltipX = mouseX + TOOLTIP_OFFSET;
     if (tooltipX + width > Gdx.graphics.getWidth()) {
-      tooltipX = mouseX - width - 15;
+      tooltipX = mouseX - width - TOOLTIP_OFFSET;
     }
     return tooltipX;
   }
 
   private float calculateTooltipY(float mouseY, float height) {
-    float tooltipY = mouseY + 15;
+    float tooltipY = mouseY + TOOLTIP_OFFSET;
     if (tooltipY + height > Gdx.graphics.getHeight()) {
-      tooltipY = mouseY - height - 15;
+      tooltipY = mouseY - height - TOOLTIP_OFFSET;
     }
     return tooltipY;
   }
 
-  /** Disposes of textures created by this UI component. */
+  /** Disposes of textures and resources created by this UI component. */
   public void dispose() {
+    if (windowRefreshListener != null) {
+      WindowEventManager.unregisterWindowRefreshListener(windowRefreshListener);
+    }
+
+    // Dispose of instance-level resources
     if (boxTexture != null) {
       boxTexture.dispose();
     }
