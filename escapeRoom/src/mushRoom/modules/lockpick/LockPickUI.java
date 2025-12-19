@@ -75,6 +75,50 @@ public class LockPickUI extends Group {
   private static final Color UNSELECTED_TINT = new Color(0.7f, 0.7f, 0.7f, 1f);
   private static final Color GREYSCALE_TINT = new Color(0.5f, 0.5f, 0.5f, 1f);
   private static final long DELAY_AFTER_END = 3_000; // milliseconds
+  private static final long DELAY_BEFORE_CALLBACK = 250; // milliseconds
+
+  // Font sizes
+  private static final int TITLE_FONT_SIZE = 32;
+  private static final int NORMAL_FONT_SIZE = 20;
+  private static final int INSTRUCTION_FONT_SIZE = 18;
+
+  // Layout paddings
+  private static final float TITLE_TOP_PADDING = 20f;
+  private static final float ATTEMPTS_LABEL_PADDING = 10f;
+  private static final float INSTRUCTIONS_BOTTOM_PADDING = 30f;
+
+  // Ring layout factors
+  private static final float OUTER_RADIUS_MARGIN_FACTOR = 0.9f;
+  private static final float RING_THICKNESS_FACTOR = 0.12f;
+  private static final float RING_GAP_FACTOR = 0.015f;
+  private static final float BASE_RADIUS_FACTOR = 0.15f;
+
+  // Color generation
+  private static final float GOLDEN_ANGLE = 137.5f;
+  private static final float COLOR_SATURATION = 0.8f;
+  private static final float COLOR_VALUE = 0.85f;
+
+  // Target marker
+  private static final float MARKER_Y_OFFSET = 15f;
+  private static final float MIN_MARKER_SIZE = 12f;
+  private static final float MARKER_SIZE_FACTOR = 0.4f;
+  private static final float MARKER_HEIGHT_MULTIPLIER = 1.5f;
+
+  // Rotation control
+  private static final float SHIFT_SLOWDOWN_FACTOR = 3f;
+  private static final float DELTA_TIME_MULTIPLIER = 60f;
+
+  // UI Text constants
+  private static final String TITLE_TEXT = "PICK THE LOCK";
+  private static final String ATTEMPTS_FORMAT = "Attempts: %d/%d";
+  private static final String INSTRUCTIONS_FULL_TEXT =
+      "A/D to rotate (Hold SHIFT for slower) | SPACE to confirm ring | Click to select ";
+  private static final String INSTRUCTIONS_SHORT_TEXT =
+      "A/D to rotate | SPACE to confirm ring | Click to select";
+  private static final String UNLOCKED_TEXT = "UNLOCKED!";
+  private static final String LOCK_JAMMED_TEXT = "LOCK JAMMED!";
+  private static final String WRONG_ALIGNMENT_TEXT =
+      "Wrong alignment! Adjust the highlighted ring.";
 
   /** Static ShapeRenderer to avoid creating per frame. */
   private static ShapeRenderer shapeRenderer;
@@ -139,37 +183,35 @@ public class LockPickUI extends Group {
 
     // Create label styles with properly sized fonts (not scaled)
     Label.LabelStyle titleStyle = new Label.LabelStyle();
-    titleStyle.font = FontHelper.getDefaultFont(32);
+    titleStyle.font = FontHelper.getDefaultFont(TITLE_FONT_SIZE);
     titleStyle.fontColor = Color.WHITE;
 
     Label.LabelStyle normalStyle = new Label.LabelStyle();
-    normalStyle.font = FontHelper.getDefaultFont(20);
+    normalStyle.font = FontHelper.getDefaultFont(NORMAL_FONT_SIZE);
     normalStyle.fontColor = Color.WHITE;
 
     Label.LabelStyle instructionStyle = new Label.LabelStyle();
-    instructionStyle.font = FontHelper.getDefaultFont(18);
+    instructionStyle.font = FontHelper.getDefaultFont(INSTRUCTION_FONT_SIZE);
     instructionStyle.fontColor = Color.WHITE;
 
     // Title
-    titleLabel = new Label("PICK THE LOCK", titleStyle);
+    titleLabel = new Label(TITLE_TEXT, titleStyle);
     titleLabel.setAlignment(Align.center);
-    labelsTable.add(titleLabel).padTop(20).expandX().row();
+    labelsTable.add(titleLabel).padTop(TITLE_TOP_PADDING).expandX().row();
 
     // Attempts label
-    attemptsLabel = new Label("Attempts: " + remainingAttempts + "/3", normalStyle);
+    attemptsLabel =
+        new Label(String.format(ATTEMPTS_FORMAT, remainingAttempts, ATTEMPTS), normalStyle);
     attemptsLabel.setAlignment(Align.center);
-    labelsTable.add(attemptsLabel).padTop(10).expandX().row();
+    labelsTable.add(attemptsLabel).padTop(ATTEMPTS_LABEL_PADDING).expandX().row();
 
     // Spacer to push instructions to bottom
     labelsTable.add().expand().row();
 
     // Instructions at bottom
-    instructionsLabel =
-        new Label(
-            "A/D to rotate (Hold SHIFT for slower) | SPACE to confirm ring | Click to select ",
-            instructionStyle);
+    instructionsLabel = new Label(INSTRUCTIONS_FULL_TEXT, instructionStyle);
     instructionsLabel.setAlignment(Align.center);
-    labelsTable.add(instructionsLabel).padBottom(30).expandX();
+    labelsTable.add(instructionsLabel).padBottom(INSTRUCTIONS_BOTTOM_PADDING).expandX();
 
     // Set initial size and create rings
     this.setSize(Game.windowWidth(), Game.windowHeight());
@@ -213,15 +255,16 @@ public class LockPickUI extends Group {
 
     // Calculate dimensions to fit all rings
     // Leave some margin (10%) for the target marker
-    maxOuterRadius *= 0.9f;
+    maxOuterRadius *= OUTER_RADIUS_MARGIN_FACTOR;
 
     // ringThickness + ringGap takes up space, baseRadius is the innermost
     // outerRadius = baseRadius + (ringCount) * (thickness + gap) - gap + thickness
     // Simplified: we need to distribute maxOuterRadius among base + rings
     float totalRingSpace = maxOuterRadius;
-    ringThickness = totalRingSpace * 0.12f; // 12% of available for each ring thickness
-    ringGap = totalRingSpace * 0.015f; // 1.5% gap between rings
-    baseRadius = totalRingSpace * 0.15f; // 15% for innermost radius
+    ringThickness =
+        totalRingSpace * RING_THICKNESS_FACTOR; // 12% of available for each ring thickness
+    ringGap = totalRingSpace * RING_GAP_FACTOR; // 1.5% gap between rings
+    baseRadius = totalRingSpace * BASE_RADIUS_FACTOR; // 15% for innermost radius
 
     // Recalculate to ensure all rings fit
     float neededRadius = baseRadius + ringCount * (ringThickness + ringGap);
@@ -324,13 +367,13 @@ public class LockPickUI extends Group {
       return RING_COLORS[index];
     }
     // Generate color from HSV wheel using golden angle for good distribution
-    float hue = (index * 137.5f) % 360f;
+    float hue = (index * GOLDEN_ANGLE) % 360f;
     Color color = new Color();
     // Convert HSV to RGB
     float h = hue / 60f;
-    float c = 0.8f; // saturation * value
+    float c = COLOR_SATURATION; // saturation * value
     float x = c * (1 - Math.abs(h % 2 - 1));
-    float m = 0.85f - c; // value - c
+    float m = COLOR_VALUE - c; // value - c
 
     float r, g, b;
     if (h < 1) {
@@ -460,7 +503,7 @@ public class LockPickUI extends Group {
       if (showingFailureHighlight) {
         showingFailureHighlight = false;
         updateRingSelection();
-        instructionsLabel.setText("A/D to rotate | SPACE to confirm ring | Click to select");
+        instructionsLabel.setText(INSTRUCTIONS_SHORT_TEXT);
         instructionsLabel.setColor(Color.WHITE);
       }
 
@@ -548,7 +591,7 @@ public class LockPickUI extends Group {
       showSuccessFeedback();
     } else {
       remainingAttempts--;
-      attemptsLabel.setText("Attempts: " + remainingAttempts + "/3");
+      attemptsLabel.setText(String.format(ATTEMPTS_FORMAT, remainingAttempts, ATTEMPTS));
       showFailureFeedback(remainingAttempts <= 0, innermostMisalignedIndex);
     }
   }
@@ -557,7 +600,7 @@ public class LockPickUI extends Group {
     for (Image ring : ringImages) {
       ring.setColor(Color.GREEN);
     }
-    instructionsLabel.setText("UNLOCKED!");
+    instructionsLabel.setText(UNLOCKED_TEXT);
     instructionsLabel.setColor(Color.GREEN);
 
     isLocked = false;
@@ -568,7 +611,7 @@ public class LockPickUI extends Group {
               () -> owner.fetch(UIComponent.class).ifPresent(UIUtils::closeDialog),
               DELAY_AFTER_END);
         },
-        250);
+        DELAY_BEFORE_CALLBACK);
   }
 
   private void showFailureFeedback(boolean finalFailure, int innermostMisalignedIndex) {
@@ -584,7 +627,7 @@ public class LockPickUI extends Group {
     }
 
     if (finalFailure) {
-      instructionsLabel.setText("LOCK JAMMED!");
+      instructionsLabel.setText(LOCK_JAMMED_TEXT);
       instructionsLabel.setColor(Color.RED);
 
       isLocked = true;
@@ -595,9 +638,9 @@ public class LockPickUI extends Group {
                 () -> owner.fetch(UIComponent.class).ifPresent(UIUtils::closeDialog),
                 DELAY_AFTER_END);
           },
-          250);
+          DELAY_BEFORE_CALLBACK);
     } else {
-      instructionsLabel.setText("Wrong alignment! Adjust the highlighted ring.");
+      instructionsLabel.setText(WRONG_ALIGNMENT_TEXT);
       instructionsLabel.setColor(Color.RED);
       selectedRingIndex = innermostMisalignedIndex;
       inputEnabled = true;
@@ -660,15 +703,15 @@ public class LockPickUI extends Group {
 
     // Calculate marker position (above the outermost ring)
     float outerMostRadius = baseRadius + difficulty.ringCount() * (ringThickness + ringGap);
-    float markerY = centerY + outerMostRadius + 15;
-    float markerSize = Math.max(12, ringThickness * 0.4f);
+    float markerY = centerY + outerMostRadius + MARKER_Y_OFFSET;
+    float markerSize = Math.max(MIN_MARKER_SIZE, ringThickness * MARKER_SIZE_FACTOR);
 
     // Draw triangle pointing down
     shapeRenderer.triangle(
         centerX - markerSize,
-        markerY + markerSize * 1.5f,
+        markerY + markerSize * MARKER_HEIGHT_MULTIPLIER,
         centerX + markerSize,
-        markerY + markerSize * 1.5f,
+        markerY + markerSize * MARKER_HEIGHT_MULTIPLIER,
         centerX,
         markerY);
 
@@ -684,14 +727,14 @@ public class LockPickUI extends Group {
 
     float curSpeed = ROTATION_SPEED;
     if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-      curSpeed /= 3;
+      curSpeed /= SHIFT_SLOWDOWN_FACTOR;
     }
 
     if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-      rotateSelectedRing(curSpeed * delta * 60);
+      rotateSelectedRing(curSpeed * delta * DELTA_TIME_MULTIPLIER);
     }
     if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-      rotateSelectedRing(-curSpeed * delta * 60);
+      rotateSelectedRing(-curSpeed * delta * DELTA_TIME_MULTIPLIER);
     }
 
     if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {

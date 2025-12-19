@@ -14,7 +14,9 @@ public enum EscapeRoomDialogTypes implements DialogType {
   /** The {@link mushRoom.modules.journal.JournalUI} dialog type. */
   JOURNAL("journal"),
   /** The {@link mushRoom.modules.lockpick.LockPickUI} dialog type. */
-  LOCKPICK("lockpick");
+  LOCKPICK("lockpick"),
+  /** The {@link mushRoom.modules.qte.FollowingIndicatorUI} dialog type. */
+  FOLLOWING_INDICATOR("following_indicator");
 
   private final String typeName;
 
