@@ -69,7 +69,9 @@ public class DemoRoom {
     if (DEBUG_MODE) Game.add(new LevelEditorSystem());
     Game.add(new CollisionSystem());
     Game.add(new ManaRestoreSystem());
-    Game.add(new StaminaRestoreSystem());
+    Game.add(new StaminaDrainSystem());
+    Game.add(new StaminaExhaustionSystem());
+    Game.add(new DebugSleepSystem());
     Game.add(new AISystem());
     Game.add(new ProjectileSystem());
     Game.add(new HealthSystem());
