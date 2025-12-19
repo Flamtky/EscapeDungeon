@@ -81,12 +81,12 @@ public class DecoMode extends LevelEditorMode {
         decoHeldEntity = clickedDeco.get();
         removePreviewEntity();
       }
-    } else if (LevelEditorSystem.isButtonJustPressed(TERTIARY)) {
+    } else if (LevelEditorSystem.isButtonPressed(TERTIARY)) {
       rapidFireActive = false;
       // Delete deco on cursor
       getDecoOnPosition(cursorPos).map(DecoEntityData::entity).ifPresent(Game::remove);
       syncPlacedDecos();
-    } else if (LevelEditorSystem.isButtonJustPressed(QUARTERNARY)) {
+    } else if (LevelEditorSystem.isButtonPressed(QUARTERNARY)) {
       rapidFireActive = false;
       // Pipette tool to pick deco type on cursor
       Optional<DecoEntityData> clickedDeco = getDecoOnPosition(cursorPos);
@@ -102,7 +102,7 @@ public class DecoMode extends LevelEditorMode {
       }
     }
 
-    if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.LEFT) && rapidFireActive) {
+    if (LevelEditorSystem.isButtonPressed(Input.Buttons.LEFT) && rapidFireActive) {
       boolean checkBlocked = decoSnapMode.checkBlocked();
       placeDeco(snapPos, checkBlocked);
       if (!checkBlocked) {
