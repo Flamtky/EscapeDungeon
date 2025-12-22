@@ -37,6 +37,12 @@ public abstract class LevelEditorMode {
   /** Quaternary action button. */
   public static final int QUARTERNARY = Input.Keys.V;
 
+  /** Quaternary action button. */
+  public static final int FIFTH = Input.Keys.Y;
+
+  /** Sixth action button. Toggle block-check override. */
+  public static final int SIXTH = Input.Keys.B;
+
   private final String name;
   private final Map<Integer, String> controls = new LinkedHashMap<>();
 
