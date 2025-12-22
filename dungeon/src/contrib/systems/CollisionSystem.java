@@ -44,14 +44,26 @@ public final class CollisionSystem extends System {
 
   private final Map<CollisionKey, CollisionData> collisions = new HashMap<>();
 
+  /** Cache for collision data pairs to avoid recreating them every tick */
+  private final List<CollisionData> cachedPairs = new ArrayList<>();
+
+  /** Flag to indicate whether the cache needs to be rebuilt */
+  private boolean cacheInvalid = true;
+
   /** Create a new CollisionSystem. */
   public CollisionSystem() {
     super(CollideComponent.class);
     onEntityAdd = this::onAddEntity;
+    onEntityRemove = e -> invalidateCache();
   }
 
   private void onAddEntity(Entity e) {
     PositionSync.syncPosition(e);
+    invalidateCache();
+  }
+
+  private void invalidateCache() {
+    cacheInvalid = true;
   }
 
   /**
@@ -62,9 +74,18 @@ public final class CollisionSystem extends System {
    */
   @Override
   public void execute() {
-    filteredEntityStream(CollideComponent.class)
-        .flatMap(this::createDataPairs)
-        .forEach(this::onEnterLeaveCheck);
+    // Rebuild cache if entities were added or removed
+    if (cacheInvalid) {
+      rebuildCache();
+    }
+    cachedPairs.forEach(this::onEnterLeaveCheck);
+  }
+
+  /** Rebuild the cache of collision data pairs */
+  private void rebuildCache() {
+    cachedPairs.clear();
+    filteredEntityStream().flatMap(this::createDataPairs).forEach(cachedPairs::add);
+    cacheInvalid = false;
   }
 
   /**
