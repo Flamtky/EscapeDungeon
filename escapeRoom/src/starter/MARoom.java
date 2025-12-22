@@ -46,7 +46,7 @@ public class MARoom {
           setupMusic();
           // DungeonLoader.addLevel(Tuple.of("tutorial", Tutorial.class));
           // DungeonLoader.addLevel(Tuple.of("escaperoom", Dungeon.class));
-          DungeonLoader.addLevel(Tuple.of("test", Dungeon.class));
+          DungeonLoader.addLevel(Tuple.of("dungeon", Dungeon.class));
           createSystems();
           createHero();
           Crafting.loadRecipes();
@@ -55,7 +55,7 @@ public class MARoom {
   }
 
   private static void createHero() {
-    Entity hero = EntityFactory.newHero(CharacterClass.HUNTER);
+    Entity hero = EntityFactory.newHero(CharacterClass.ROGUE);
     hero.add(new HintLogComponent());
     Game.add(hero);
   }
