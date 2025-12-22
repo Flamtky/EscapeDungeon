@@ -135,7 +135,7 @@ public class DecoMode extends LevelEditorMode {
       }
     }
 
-    if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.LEFT) && rapidFireActive) {
+    if (LevelEditorSystem.isButtonPressed(Input.Buttons.LEFT) && rapidFireActive) {
       boolean checkBlocked = decoSnapMode.checkBlocked() && !ignoreBlockedCheck;
       placeDeco(snapPos, checkBlocked);
       if (!checkBlocked) {
