@@ -278,7 +278,7 @@ public final class HeroBuilder {
             });
     hc.currentHealthpoints(characterClass.hp());
     hero.add(hc);
-    CollideComponent col = new CollideComponent();
+    CollideComponent col = new CollideComponent(Vector2.of(dc.getWidth()/2 - 0.4f, 0.1f), Vector2.of(0.8f, 0.8f));
     col.onHold(
         (you, other, direction) ->
             other

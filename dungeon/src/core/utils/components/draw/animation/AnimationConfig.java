@@ -44,6 +44,14 @@ public class AnimationConfig implements Cloneable, Serializable {
   /** Whether the animation sprites should be drawn horizontally mirrored. Default: false. */
   private boolean mirrored = false;
 
+  // New: padding between frames (px)
+  private int paddingX = 0;
+  private int paddingY = 0;
+
+  // New: outer margin / offset from top-left before first frame (px)
+  private int marginX = 0;
+  private int marginY = 0;
+
   /**
    * Creates a new {@link AnimationConfig} with a specified {@link SpritesheetConfig}.
    *
@@ -187,6 +195,44 @@ public class AnimationConfig implements Cloneable, Serializable {
     return mirrored;
   }
 
+  // New: padding getters/setters
+  public AnimationConfig paddingX(int paddingX) {
+    this.paddingX = paddingX;
+    return this;
+  }
+
+  public AnimationConfig paddingY(int paddingY) {
+    this.paddingY = paddingY;
+    return this;
+  }
+
+  public int paddingX() {
+    return paddingX;
+  }
+
+  public int paddingY() {
+    return paddingY;
+  }
+
+  // New: margin getters/setters
+  public AnimationConfig marginX(int marginX) {
+    this.marginX = marginX;
+    return this;
+  }
+
+  public AnimationConfig marginY(int marginY) {
+    this.marginY = marginY;
+    return this;
+  }
+
+  public int marginX() {
+    return marginX;
+  }
+
+  public int marginY() {
+    return marginY;
+  }
+
   @Override
   public String toString() {
     return "AnimationConfig{"
@@ -202,6 +248,14 @@ public class AnimationConfig implements Cloneable, Serializable {
         + centered
         + ", mirrored="
         + mirrored
+        + ", paddingX="
+        + paddingX
+        + ", paddingY="
+        + paddingY
+        + ", marginX="
+        + marginX
+        + ", marginY="
+        + marginY
         + ", config="
         + config
         + '}';
@@ -245,6 +299,12 @@ public class AnimationConfig implements Cloneable, Serializable {
       animConfig.centered(entry.getBoolean("centered", false));
       animConfig.mirrored(entry.getBoolean("mirrored", false));
 
+      // parse optional padding/margin from the config JSON if present
+      animConfig.paddingX(configJson.getInt("paddingX", 0));
+      animConfig.paddingY(configJson.getInt("paddingY", 0));
+      animConfig.marginX(configJson.getInt("marginX", 0));
+      animConfig.marginY(configJson.getInt("marginY", 0));
+
       animationMap.put(animationName, animConfig);
     }
 
@@ -260,6 +320,7 @@ public class AnimationConfig implements Cloneable, Serializable {
       cloned.config = this.config.clone();
     }
 
+    // primitive fields are copied by default; no extra work required for padding/margin
     return cloned;
   }
 }

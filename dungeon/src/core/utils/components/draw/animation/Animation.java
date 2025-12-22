@@ -469,15 +469,41 @@ public class Animation implements Serializable, Cloneable {
     int offsetX = ssc.x();
     int offsetY = ssc.y();
 
+    // read padding/margin from animation config (defaults to 0)
+    int paddingX = config.paddingX();
+    int paddingY = config.paddingY();
+    int marginX = config.marginX();
+    int marginY = config.marginY();
+
     sprites = new Sprite[ssc.rows() * ssc.columns()];
-    for (int y = 0; y < ssc.rows(); y++) {
-      for (int x = 0; x < ssc.columns(); x++) {
-        int index = y * ssc.columns() + x;
+    for (int row = 0; row < ssc.rows(); row++) {
+      for (int col = 0; col < ssc.columns(); col++) {
+        int index = row * ssc.columns() + col;
         if (canUseTextures() && spritesheet != null) {
-          sprites[index] =
-              new Sprite(
-                  new TextureRegion(
-                      spritesheet, offsetX + sWidth * x, offsetY + sHeight * y, sWidth, sHeight));
+          int sx = offsetX + marginX + col * (sWidth + paddingX);
+          int sy = offsetY + marginY + row * (sHeight + paddingY);
+
+          int texW = spritesheet.getWidth();
+          int texH = spritesheet.getHeight();
+
+          if (sx < 0) sx = 0;
+          if (sy < 0) sy = 0;
+
+          if (sx >= texW || sy >= texH) {
+            LOGGER.debug("Sprite region outside texture bounds: sx={}, sy={}, texW={}, texH={}", sx, sy, texW, texH);
+            sprites[index] = new Sprite();
+            continue;
+          }
+
+          int frameW = Math.min(sWidth, texW - sx);
+          int frameH = Math.min(sHeight, texH - sy);
+
+          if (frameW <= 0 || frameH <= 0) {
+            LOGGER.debug("Sprite frame has non-positive size after clipping: w={}, h={}", frameW, frameH);
+            sprites[index] = new Sprite();
+          } else {
+            sprites[index] = new Sprite(new TextureRegion(spritesheet, sx, sy, frameW, frameH));
+          }
         } else {
           sprites[index] = new Sprite();
         }
