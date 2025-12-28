@@ -32,12 +32,14 @@ import core.utils.components.MissingComponentException;
 import core.utils.components.draw.BlendUtils;
 import core.utils.components.draw.ColorUtils;
 import core.utils.components.draw.animation.Animation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * A debug system that visually overlays entity information on top of the game world.
@@ -75,9 +77,31 @@ public class DebugDrawSystem extends System {
   private static final int CIRCLE_SEGMENTS = 60; // resolution of circles (higher = smoother)
   private static final BitmapFont FONT = FontHelper.getDefaultFont();
 
-  private static final Map<Entity, String> quickInfoCache = new HashMap<Entity, String>();
+  private static final Map<Entity, String> quickInfoCache = new HashMap<>();
+
+  private static final List<Consumer<ShapeRenderer>> externalRenderers = new ArrayList<>();
 
   private boolean render = false;
+
+  /**
+   * Registers an external renderer to be called during debug rendering.
+   *
+   * <p>This allows subprojects to add custom debug drawing without modifying the core system.
+   *
+   * @param renderer a consumer that receives the ShapeRenderer and draws custom debug graphics
+   */
+  public static void registerExternalRenderer(Consumer<ShapeRenderer> renderer) {
+    externalRenderers.add(renderer);
+  }
+
+  /**
+   * Unregisters a previously registered external renderer.
+   *
+   * @param renderer the renderer to remove
+   */
+  public static void unregisterExternalRenderer(Consumer<ShapeRenderer> renderer) {
+    externalRenderers.remove(renderer);
+  }
 
   /** Creates a new DebugDrawSystem. */
   public DebugDrawSystem() {
@@ -99,6 +123,11 @@ public class DebugDrawSystem extends System {
 
     if (!LevelEditorSystem.active()) {
       drawNamedPoints();
+    }
+
+    // Call external renderers (e.g., guard detection debug rays)
+    for (Consumer<ShapeRenderer> renderer : externalRenderers) {
+      renderer.accept(SHAPE_RENDERER);
     }
   }
 

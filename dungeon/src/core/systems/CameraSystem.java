@@ -175,4 +175,10 @@ public final class CameraSystem extends System {
     float posY = camY - (worldHeight / 2f);
     return new Rectangle(worldWidth, worldHeight, posX, posY);
   }
+
+  /** CameraSystem can't be paused. */
+  @Override
+  public void stop() {
+    run = true;
+  }
 }
