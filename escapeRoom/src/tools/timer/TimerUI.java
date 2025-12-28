@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class TimerUI extends Group {
 
-  private static final int FONT_SIZE = 16;
+  private static final int FONT_SIZE = 24;
   private static final Color FONT_COLOR = Color.WHITE;
   private static final float PADDING_X = 2;
   private static final float PADDING_Y = 2;
