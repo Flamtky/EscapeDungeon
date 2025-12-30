@@ -2,6 +2,7 @@ package guard;
 
 import contrib.components.CollideComponent;
 import contrib.utils.EntityUtils;
+import contrib.utils.RaycastUtil;
 import core.Entity;
 import core.Game;
 import core.System;
@@ -231,10 +232,7 @@ public class GuardDetectionSystem extends System {
    * @return true if the point is within both range and cone angle
    */
   private boolean isInViewCone(
-      Point guardPosition,
-      Vector2 viewDirection,
-      Point targetPos,
-      AlertnessComponent alertness) {
+      Point guardPosition, Vector2 viewDirection, Point targetPos, AlertnessComponent alertness) {
     float distance = RaycastUtil.distance(guardPosition, targetPos);
     return distance <= alertness.viewRange()
         && RaycastUtil.isInViewCone(

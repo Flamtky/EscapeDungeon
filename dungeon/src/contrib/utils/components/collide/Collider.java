@@ -582,7 +582,7 @@ public abstract class Collider {
   }
 
   /**
-   * Get the four corners of the collider’s bounds, scaled properly.
+   * Get the four corners of the collider's bounds, scaled properly.
    *
    * @return list of all four corners in order: bottom-left, bottom-right, top-left, top-right
    */
@@ -592,6 +592,16 @@ public abstract class Collider {
         bottomRight().scale(this.scale),
         topLeft().scale(this.scale),
         topRight().scale(this.scale));
+  }
+
+  /**
+   * Get the four corners of the collider's bounds in absolute world coordinates.
+   *
+   * @return list of all four corners in order: bottom-left, bottom-right, top-left, top-right
+   */
+  public List<Point> absoluteCorners() {
+    return List.of(
+        absoluteBottomLeft(), absoluteBottomRight(), absoluteTopLeft(), absoluteTopRight());
   }
 
   /**

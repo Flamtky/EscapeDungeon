@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import contrib.systems.DebugDrawSystem;
+import contrib.utils.RaycastUtil;
 import core.systems.CameraSystem;
 import core.utils.Point;
 import core.utils.Vector2;
@@ -221,9 +222,7 @@ public final class GuardDebugRenderer {
     renderer.end();
   }
 
-  /**
-   * Draws hover information for the ray closest to the mouse cursor.
-   */
+  /** Draws hover information for the ray closest to the mouse cursor. */
   private static void drawHoverInfo() {
     // Get mouse position in world coordinates
     Vector3 mouseScreen = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);

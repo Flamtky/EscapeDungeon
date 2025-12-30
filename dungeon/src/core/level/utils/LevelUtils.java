@@ -2,14 +2,13 @@ package core.level.utils;
 
 import com.badlogic.gdx.ai.pfa.DefaultGraphPath;
 import com.badlogic.gdx.ai.pfa.GraphPath;
+import contrib.utils.EntityUtils;
 import core.Entity;
 import core.Game;
-import core.components.PositionComponent;
 import core.level.Tile;
 import core.level.elements.tile.DoorTile;
 import core.utils.*;
 import core.utils.Vector2;
-import core.utils.components.MissingComponentException;
 import java.util.*;
 
 /** Offers some utility functions to work on and with {@link core.level.elements.ILevel}. */
@@ -141,12 +140,7 @@ public final class LevelUtils {
    */
   public static GraphPath<Tile> calculatePathToRandomTileInRange(
       final Entity entity, float radius) {
-    Point point =
-        entity
-            .fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(entity, PositionComponent.class))
-            .position();
-    return calculatePathToRandomTileInRange(point, radius);
+    return calculatePathToRandomTileInRange(EntityUtils.getPosition(entity), radius);
   }
 
   /**
@@ -159,13 +153,7 @@ public final class LevelUtils {
    * @return Path from one entity to the other entity.
    */
   public static GraphPath<Tile> calculatePath(final Entity from, final Entity to) {
-    PositionComponent fromPositionComponent =
-        from.fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(from, PositionComponent.class));
-    PositionComponent positionComponent =
-        to.fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(to, PositionComponent.class));
-    return calculatePath(fromPositionComponent.position(), positionComponent.position());
+    return calculatePath(EntityUtils.getPosition(from), EntityUtils.getPosition(to));
   }
 
   /**
@@ -337,17 +325,7 @@ public final class LevelUtils {
    * @return True if the position of the two entities is within the given range, else false.
    */
   public static boolean entityInRange(final Entity entity1, final Entity entity2, float range) {
-    Point entity1Position =
-        entity1
-            .fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(entity1, PositionComponent.class))
-            .position();
-    Point entity2Position =
-        entity2
-            .fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(entity2, PositionComponent.class))
-            .position();
-    return Point.inRange(entity1Position, entity2Position, range);
+    return Point.inRange(EntityUtils.getPosition(entity1), EntityUtils.getPosition(entity2), range);
   }
 
   /**
@@ -484,11 +462,8 @@ public final class LevelUtils {
     if (player == null) {
       return false;
     }
-    PositionComponent pc =
-        player
-            .fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(player, PositionComponent.class));
-    return Game.tileAt(pc.position())
+
+    return Game.tileAt(EntityUtils.getPosition(player))
         .map(tile -> LevelUtils.isTileWithinArea(tile, topLeft, bottomRight))
         .orElse(false);
   }

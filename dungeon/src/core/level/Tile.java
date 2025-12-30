@@ -11,8 +11,6 @@ import core.level.utils.TileTextureFactory;
 import core.utils.Direction;
 import core.utils.Point;
 import core.utils.components.path.IPath;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A Tile is a field of the level.
@@ -203,22 +201,33 @@ public abstract class Tile {
   /**
    * Returns the direction to a given tile.
    *
+   * <p>This method computes the direction vector between this tile and the goal tile. The result
+   * can be a cardinal direction (north, east, south, west) or a diagonal combination of two
+   * directions.
+   *
    * @param goal To which tile is the direction.
    * @return Can either be north, east, south, west, or a combination of two.
    */
   public Direction[] directionTo(final Tile goal) {
-    List<Direction> directions = new ArrayList<>();
+    int dirCount = 0;
+    Direction[] directions = new Direction[2]; // Max 2 directions (diagonal)
+
     if (globalPosition.x() < goal.coordinate().x()) {
-      directions.add(Direction.RIGHT);
+      directions[dirCount++] = Direction.RIGHT;
     } else if (globalPosition.x() > goal.coordinate().x()) {
-      directions.add(Direction.LEFT);
+      directions[dirCount++] = Direction.LEFT;
     }
+
     if (globalPosition.y() < goal.coordinate().y()) {
-      directions.add(Direction.UP);
+      directions[dirCount++] = Direction.UP;
     } else if (globalPosition.y() > goal.coordinate().y()) {
-      directions.add(Direction.DOWN);
+      directions[dirCount++] = Direction.DOWN;
     }
-    return directions.toArray(new Direction[0]);
+
+    // Return only the filled portion of the array
+    Direction[] result = new Direction[dirCount];
+    System.arraycopy(directions, 0, result, 0, dirCount);
+    return result;
   }
 
   /**

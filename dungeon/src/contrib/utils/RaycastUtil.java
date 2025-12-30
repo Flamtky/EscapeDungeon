@@ -1,4 +1,4 @@
-package guard;
+package contrib.utils;
 
 import contrib.components.CollideComponent;
 import core.Entity;
@@ -104,25 +104,6 @@ public final class RaycastUtil {
    */
   public static boolean hasLineOfSight(Point from, Point to) {
     return raycast(from, to).hit();
-  }
-
-  /**
-   * Performs a raycast between two points and returns detailed result information.
-   *
-   * <p>Uses Bresenham's line algorithm to step through tiles from the origin to the target. The ray
-   * is blocked if:
-   *
-   * <ul>
-   *   <li>A tile along the path cannot be seen through (e.g., walls)
-   *   <li>A solid entity's collider intersects the ray path
-   * </ul>
-   *
-   * @param from the starting point of the ray
-   * @param to the target point of the ray
-   * @return a RaycastResult containing hit status and blocking information
-   */
-  public static RaycastResult raycast(Point from, Point to) {
-    return raycast(from, to, (Entity[]) null);
   }
 
   /**

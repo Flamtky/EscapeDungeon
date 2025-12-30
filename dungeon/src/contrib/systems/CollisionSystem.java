@@ -1,5 +1,6 @@
 package contrib.systems;
 
+import contrib.components.AIComponent;
 import contrib.components.CollideComponent;
 import contrib.utils.components.collide.Collider;
 import contrib.utils.components.collide.CollisionUtils;
@@ -38,6 +39,12 @@ public final class CollisionSystem extends System {
    * If true, players will collide with each other. If false, players will pass through each other.
    */
   public static final boolean ALLOW_PLAYER_COLLISIONS = false;
+
+  /**
+   * If true, AI-controlled entities will collide with each other. If false, they will pass through
+   * each other.
+   */
+  public static final boolean ALLOW_AI_COLLISIONS = false;
 
   /** Solid entities will be kept at this distance after colliding. */
   public static final float COLLIDE_SET_DISTANCE = 0.01f;
@@ -150,6 +157,13 @@ public final class CollisionSystem extends System {
           boolean aIsPlayer = cdata.ea.isPresent(PlayerComponent.class);
           boolean bIsPlayer = cdata.eb.isPresent(PlayerComponent.class);
           if (aIsPlayer && bIsPlayer) { // player on player collision
+            return;
+          }
+        }
+        if (!ALLOW_AI_COLLISIONS) {
+          boolean aIsAI = cdata.ea.isPresent(AIComponent.class);
+          boolean bIsAI = cdata.eb.isPresent(AIComponent.class);
+          if (aIsAI && bIsAI) { // AI on AI collision
             return;
           }
         }

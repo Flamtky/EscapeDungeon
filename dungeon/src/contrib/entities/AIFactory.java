@@ -37,9 +37,6 @@ public final class AIFactory {
   private static final Random RANDOM = new Random();
 
   // FightAI Parameters:
-  // CollideAI
-  private static final float RUSH_RANGE_LOW = 0.5f;
-  private static final float RUSH_RANGE_HIGH = 2.0f;
 
   /** Cool down for the fireball skill that the monster uses (in milliseconds). */
   public static final int FIREBALL_COOL_DOWN = 750;
@@ -102,7 +99,7 @@ public final class AIFactory {
     int index = RANDOM.nextInt(0, 3);
 
     return switch (index) {
-      case 0 -> new AIChaseBehaviour(RANDOM.nextFloat(RUSH_RANGE_LOW, RUSH_RANGE_HIGH));
+      case 0 -> new AIChaseBehaviour();
       case 1 ->
           new AIRangeBehaviour(
               RANDOM.nextFloat(ATTACK_RANGE_LOW, ATTACK_RANGE_HIGH),
@@ -110,9 +107,7 @@ public final class AIFactory {
               new FireballSkill(SkillTools::playerPositionAsPoint, FIREBALL_COOL_DOWN));
       default ->
           new AIMeleeBehaviour(
-              RANDOM.nextFloat(RUSH_RANGE_LOW, RUSH_RANGE_HIGH),
-              1f,
-              new FireballSkill(SkillTools::playerPositionAsPoint, FIREBALL_COOL_DOWN));
+              1f, new FireballSkill(SkillTools::playerPositionAsPoint, FIREBALL_COOL_DOWN));
     };
   }
 

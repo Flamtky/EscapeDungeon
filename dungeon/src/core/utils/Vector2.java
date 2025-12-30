@@ -213,6 +213,20 @@ public interface Vector2 extends Serializable {
   }
 
   /**
+   * Calculates the squared distance between this vector and another vector.
+   *
+   * <p>This is more efficient than {@link #distance(Vector2)} for range comparisons since it avoids
+   * the expensive sqrt calculation.
+   *
+   * @param other The other vector
+   * @return The squared distance between the two vectors
+   */
+  default double distanceSquared(Vector2 other) {
+    Vector2 diff = subtract(other);
+    return diff.lengthSquared();
+  }
+
+  /**
    * Calculates the angle of this vector relative to the positive X axis (0° = +X) in degrees.
    *
    * <p>This is equivalent to {@code Math.toDegrees(Math.atan2(y(), x()))}.

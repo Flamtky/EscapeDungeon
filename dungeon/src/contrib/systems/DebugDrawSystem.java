@@ -394,7 +394,16 @@ public class DebugDrawSystem extends System {
         .fetch(AIComponent.class)
         .ifPresent(
             ai ->
-                info.append("AI State: ").append(ai.active() ? "Active" : "Inactive").append("\n"));
+                info.append("AI State: ")
+                    .append("\n\t\t FightAI: ")
+                    .append(ai.fightBehavior().getClass().getSimpleName())
+                    .append("\n\t\t IdleAI: ")
+                    .append(ai.idleBehavior().getClass().getSimpleName())
+                    .append("\n\t\t Transition: ")
+                    .append(ai.shouldFight().getClass().getSimpleName())
+                    .append("\n\t\t Current State: ")
+                    .append(ai.shouldFight().apply(entity) ? "FIGHT" : "IDLE")
+                    .append("\n"));
 
     entity
         .fetch(PlayerComponent.class)
