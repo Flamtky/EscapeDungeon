@@ -26,9 +26,9 @@ public enum DesignLabel {
   /** A very colorful, whimsical theme featuring a rainbow palette. */
   RAINBOW,
 
-  /** A new theme with 2-Tile-high beige walls */
+  /** A new theme with 2-Tile-high beige walls. */
   BEIGECASTLE,
 
-  /** A new theme with 2-Tile-high grey walls */
+  /** A new theme with 2-Tile-high grey walls. */
   GREYCASTLE
 }
