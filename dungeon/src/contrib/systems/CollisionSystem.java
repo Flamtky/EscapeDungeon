@@ -44,10 +44,10 @@ public final class CollisionSystem extends System {
 
   private final Map<CollisionKey, CollisionData> collisions = new HashMap<>();
 
-  /** Cache for collision data pairs to avoid recreating them every tick */
+  /** Cache for collision data pairs to avoid recreating them every tick. */
   private final List<CollisionData> cachedPairs = new ArrayList<>();
 
-  /** Flag to indicate whether the cache needs to be rebuilt */
+  /** Flag to indicate whether the cache needs to be rebuilt. */
   private boolean cacheInvalid = true;
 
   /** Create a new CollisionSystem. */
@@ -81,7 +81,7 @@ public final class CollisionSystem extends System {
     cachedPairs.forEach(this::onEnterLeaveCheck);
   }
 
-  /** Rebuild the cache of collision data pairs */
+  /** Rebuild the cache of collision data pairs. */
   private void rebuildCache() {
     cachedPairs.clear();
     filteredEntityStream().flatMap(this::createDataPairs).forEach(cachedPairs::add);

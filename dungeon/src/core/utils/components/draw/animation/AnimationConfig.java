@@ -195,40 +195,74 @@ public class AnimationConfig implements Cloneable, Serializable {
     return mirrored;
   }
 
-  // New: padding getters/setters
+  /**
+   * Sets the horizontal padding between frames.
+   *
+   * @param paddingX padding in pixels
+   * @return this config for chaining
+   */
   public AnimationConfig paddingX(int paddingX) {
     this.paddingX = paddingX;
     return this;
   }
 
+  /**
+   * Sets the vertical padding between frames.
+   *
+   * @param paddingY padding in pixels
+   * @return this config for chaining
+   */
   public AnimationConfig paddingY(int paddingY) {
     this.paddingY = paddingY;
     return this;
   }
 
+  /**
+   * @return the horizontal padding between frames in pixels
+   */
   public int paddingX() {
     return paddingX;
   }
 
+  /**
+   * @return the vertical padding between frames in pixels
+   */
   public int paddingY() {
     return paddingY;
   }
 
-  // New: margin getters/setters
+  /**
+   * Sets the horizontal margin (outer offset from top-left before first frame).
+   *
+   * @param marginX margin in pixels
+   * @return this config for chaining
+   */
   public AnimationConfig marginX(int marginX) {
     this.marginX = marginX;
     return this;
   }
 
+  /**
+   * Sets the vertical margin (outer offset from top-left before first frame).
+   *
+   * @param marginY margin in pixels
+   * @return this config for chaining
+   */
   public AnimationConfig marginY(int marginY) {
     this.marginY = marginY;
     return this;
   }
 
+  /**
+   * @return the horizontal margin (outer offset from top-left before first frame) in pixels
+   */
   public int marginX() {
     return marginX;
   }
 
+  /**
+   * @return the vertical margin (outer offset from top-left before first frame) in pixels
+   */
   public int marginY() {
     return marginY;
   }

@@ -115,6 +115,11 @@ public abstract class Tile {
     return designLabel;
   }
 
+  /**
+   * Change the design label of the tile.
+   *
+   * @param designLabel New design label of the tile.
+   */
   public void designLabel(DesignLabel designLabel) {
     this.designLabel = designLabel;
   }
