@@ -79,23 +79,23 @@ public enum CharacterClass {
    * a short bursts of speed.
    */
   ROGUE(
-    "character/rogue",
-    Vector2.of(5.5, 5.5),
-    1.2f,
-    20,
-    Set.of(
-      new BowSkill(SkillTools::cursorPositionAsPoint),
-      new DashSkill(5, 200, 3000, new Tuple<>(Resource.STAMINA, 20))),
-    Set.of(
-      new ItemWoodenBow(),
-      new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE),
-      new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE),
-      new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE)),
-    10,
-    0,
-    0,
-    120,
-    5),
+      "character/rogue",
+      Vector2.of(5.5, 5.5),
+      1.2f,
+      20,
+      Set.of(
+          new BowSkill(SkillTools::cursorPositionAsPoint),
+          new DashSkill(5, 200, 3000, new Tuple<>(Resource.STAMINA, 20))),
+      Set.of(
+          new ItemWoodenBow(),
+          new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE),
+          new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE),
+          new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE)),
+      10,
+      0,
+      0,
+      120,
+      5),
 
   /**
    * Rogue character class.
@@ -104,22 +104,21 @@ public enum CharacterClass {
    * a short bursts of speed.
    */
   APPRENTICE(
-    "character/char03",
-    Vector2.of(5.5, 5.5),
-    1.4f,
-    20,
-    Set.of(
-      new BowSkill(SkillTools::cursorPositionAsPoint)),
-    Set.of(
-      new ItemWoodenBow(),
-      new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE),
-      new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE),
-      new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE)),
-    10,
-    0,
-    0,
-    120,
-    5),
+      "character/char03",
+      Vector2.of(5.5, 5.5),
+      1.4f,
+      20,
+      Set.of(new BowSkill(SkillTools::cursorPositionAsPoint)),
+      Set.of(
+          new ItemWoodenBow(),
+          new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE),
+          new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE),
+          new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE)),
+      10,
+      0,
+      0,
+      120,
+      5),
   ;
 
   private final IPath textures;

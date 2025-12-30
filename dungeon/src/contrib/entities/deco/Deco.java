@@ -764,7 +764,11 @@ public enum Deco {
       new AnimationConfig().scaleX(2),
       new Rectangle(1.65f, 1.20f, 0.20f, 0.20f),
       Category.NATURE),
-
+  /** A decoration. */
+  WallEmpty(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 16, 1, 1, 16, 16)),
+      Category.WALLS),
   /** A decoration. */
   WallBackOrnamentBeige(
       "spritesheets/FG_Cellar.png",
@@ -775,7 +779,8 @@ public enum Deco {
   WallCornerTopLeftOutsideBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(16, 0, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallTopOutsideBeige(
@@ -788,7 +793,8 @@ public enum Deco {
   WallCornerTopRightOutsideBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(48, 0, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerTopLeftInsideBeige(
@@ -4080,6 +4086,12 @@ public enum Deco {
       new AnimationConfig(new SpritesheetConfig(176, 368, 1, 1, 16, 16)),
       new Rectangle(1f, 1f, 0f, 0f),
       Category.BOXES),
+  /** A decoration. */
+  BedRed(
+      "objects/bed/bed_red.png",
+      new AnimationConfig(new SpritesheetConfig(0, 0, 1, 1, 64, 32)),
+      new Rectangle(2f, 1f, 0f, 0f),
+      Category.FURNITURE),
   ;
 
   /** Categories for organizing decorative objects in the level editor. */

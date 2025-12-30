@@ -115,6 +115,10 @@ public abstract class Tile {
     return designLabel;
   }
 
+  public void designLabel(DesignLabel designLabel) {
+    this.designLabel = designLabel;
+  }
+
   /**
    * Defines the element type of this tile.
    *

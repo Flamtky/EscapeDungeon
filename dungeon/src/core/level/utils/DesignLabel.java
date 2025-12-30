@@ -24,5 +24,9 @@ public enum DesignLabel {
   DARK,
 
   /** A very colorful, whimsical theme featuring a rainbow palette. */
-  RAINBOW;
+  RAINBOW,
+
+  BEIGECASTLE,
+
+  GREYCASTLE
 }

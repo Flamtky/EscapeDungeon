@@ -101,7 +101,8 @@ public class DecoMode extends LevelEditorMode {
         setupPreviewEntity(snapPos);
         rapidFireActive = false;
       }
-    } else if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.RIGHT) && decoHeldEntity == null) {
+    } else if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.RIGHT)
+        && decoHeldEntity == null) {
       rapidFireActive = false;
       // Pickup deco on cursor
       Optional<DecoEntityData> clickedDeco = getDecoOnPosition(cursorPos);

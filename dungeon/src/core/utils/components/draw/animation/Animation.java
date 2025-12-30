@@ -490,7 +490,12 @@ public class Animation implements Serializable, Cloneable {
           if (sy < 0) sy = 0;
 
           if (sx >= texW || sy >= texH) {
-            LOGGER.debug("Sprite region outside texture bounds: sx={}, sy={}, texW={}, texH={}", sx, sy, texW, texH);
+            LOGGER.debug(
+                "Sprite region outside texture bounds: sx={}, sy={}, texW={}, texH={}",
+                sx,
+                sy,
+                texW,
+                texH);
             sprites[index] = new Sprite();
             continue;
           }
@@ -499,7 +504,8 @@ public class Animation implements Serializable, Cloneable {
           int frameH = Math.min(sHeight, texH - sy);
 
           if (frameW <= 0 || frameH <= 0) {
-            LOGGER.debug("Sprite frame has non-positive size after clipping: w={}, h={}", frameW, frameH);
+            LOGGER.debug(
+                "Sprite frame has non-positive size after clipping: w={}, h={}", frameW, frameH);
             sprites[index] = new Sprite();
           } else {
             sprites[index] = new Sprite(new TextureRegion(spritesheet, sx, sy, frameW, frameH));
