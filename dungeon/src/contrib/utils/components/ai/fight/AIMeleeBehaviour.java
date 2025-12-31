@@ -19,12 +19,11 @@ public class AIMeleeBehaviour extends AIChaseBehaviour implements Consumer<Entit
   /**
    * Attacks the player if he is within the given range. Otherwise, it will move towards the player.
    *
-   * @param chaseRange Range in which the entity will chase the player.
    * @param attackRange Range in which the attack skill should be executed.
    * @param fightSkill Skill to be used when an attack is performed.
    */
-  public AIMeleeBehaviour(float chaseRange, float attackRange, Skill fightSkill) {
-    super(chaseRange);
+  public AIMeleeBehaviour(float attackRange, Skill fightSkill) {
+    super();
     this.attackRange = attackRange;
     this.fightSkill = fightSkill;
   }

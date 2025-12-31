@@ -120,18 +120,13 @@ public class EntityUtils {
    * <p>This method retrieves the player entity from the game. If the player entity is not present
    * (which can happen if the player has fallen into a pit), the method returns null.
    *
-   * @return The current position of the player, or a null value if the player is not present.
+   * @return The current position of the player.
+   * @throws IllegalStateException if no player entity is found.
    */
   public static Point getPlayerPosition() {
-    // TODO: SMELL!
-    // we really shouldn't return `null` if no player was found, but `Optional.empty()` instead!
-    return Game.player()
-        .map(
-            e ->
-                e.fetch(PositionComponent.class)
-                    .orElseThrow(() -> MissingComponentException.build(e, PositionComponent.class))
-                    .position())
-        .orElse(null);
+    Entity player =
+        Game.player().orElseThrow(() -> new IllegalStateException("No player entity found"));
+    return getPosition(player);
   }
 
   /**

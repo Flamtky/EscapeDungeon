@@ -80,7 +80,7 @@ public final class AIComponent implements Component {
    * as the transition function, and {@link AIChaseBehaviour} as the fight behavior.
    */
   public AIComponent() {
-    this(new AIChaseBehaviour(2f), new RadiusWalk(5, 2), new RangeTransition(5f), DEFAULT_SPEED);
+    this(new AIChaseBehaviour(), new RadiusWalk(5, 2), new RangeTransition(5f), DEFAULT_SPEED);
   }
 
   /**
