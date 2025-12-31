@@ -123,12 +123,12 @@ public class TileTextureFactory {
   private static IPath resolvePrimaryPath(LevelPart levelPart) {
     String prefixPath = "dungeon/" + levelPart.design().name().toLowerCase() + "/";
 
-    if (levelPart.element == LevelElement.GITTER) {
+    /*if (levelPart.element == LevelElement.GITTER) {
       IPath path = findGitterElement(levelPart);
       if (path != null) {
         return new SimpleIPath(prefixPath + path.pathString() + ".png");
       }
-    }
+    }*/
 
     if (levelPart.element == LevelElement.GLASSWALL) {
       IPath path = findGlasswallElement(levelPart);
@@ -450,7 +450,7 @@ public class TileTextureFactory {
       return new SimpleIPath(holeAbove ? "floor/floor_hole1" : "floor/floor_hole");
     }
     return switch (e) {
-      case FLOOR -> new SimpleIPath("floor/floor_1");
+      case FLOOR, GITTER -> new SimpleIPath("floor/floor_1");
       case EXIT -> new SimpleIPath("floor/floor_ladder");
       case PIT -> new SimpleIPath("floor/floor_damaged");
       default -> null;

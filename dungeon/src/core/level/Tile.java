@@ -114,6 +114,15 @@ public abstract class Tile {
   }
 
   /**
+   * Change the design label of the tile.
+   *
+   * @param designLabel New design label of the tile.
+   */
+  public void designLabel(DesignLabel designLabel) {
+    this.designLabel = designLabel;
+  }
+
+  /**
    * Defines the element type of this tile.
    *
    * @return The LevelElement of this tile.
