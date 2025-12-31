@@ -27,13 +27,13 @@ import java.util.function.Function;
  *
  * <p>Usage:
  *
- * <pre>
+ * <pre>{@code
  * // Show an OK dialog
  * DialogFactory.showOkDialog("Hello World", "Greeting", () -> System.out.println("OK pressed"));
  *
  * // Show a Yes/No dialog
  * DialogFactory.showYesNoDialog("Continue?", "Confirm", () -> continueAction(), () -> cancelAction());
- * </pre>
+ * }</pre>
  *
  * @see DialogContext
  * @see DialogDesign
@@ -117,7 +117,7 @@ public class DialogFactory {
    *     found after creation
    */
   public static UIComponent show(
-      DialogContext context, boolean willPause, boolean canBeClosed, int[] targetEntityIds) {
+      DialogContext context, boolean willPause, boolean canBeClosed, int... targetEntityIds) {
     Objects.requireNonNull(context, "context");
 
     // Determine the owner entity (who holds the UIComponent)
