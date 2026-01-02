@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -263,6 +265,24 @@ public final class EntitySystemMapper {
     readLock.lock();
     try {
       return systems.contains(system);
+    } finally {
+      readLock.unlock();
+    }
+  }
+
+  public void forEach(Consumer<Entity> consumer) {
+    readLock.lock();
+    try {
+      entities.forEach(consumer);
+    } finally {
+      readLock.unlock();
+    }
+  }
+
+  public boolean anyMatch(Predicate<Entity> predicate) {
+    readLock.lock();
+    try {
+      return entities.stream().anyMatch(predicate);
     } finally {
       readLock.unlock();
     }

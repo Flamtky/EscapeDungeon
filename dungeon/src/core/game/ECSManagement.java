@@ -82,7 +82,8 @@ public final class ECSManagement {
    * @param entity the entity that has changes in its Component Collection.
    */
   public static void informAboutChanges(Entity entity) {
-    if (levelEntities().anyMatch(entity1 -> entity1.equals(entity))) {
+    var levelEntities = activeEntityStorage.stream().findFirst().get();
+    if (levelEntities.anyMatch(entity1 -> entity1.equals(entity))) {
       activeEntityStorage.forEach(f -> f.update(entity));
       LOGGER.info(entity + " informed the Game about component changes.");
     }
@@ -260,7 +261,7 @@ public final class ECSManagement {
    * @return a stream of all entities currently in the level
    */
   public static Stream<Entity> levelEntities() {
-    return levelEntities(new HashSet<>());
+    return levelEntities(Set.of());
   }
 
   /**
@@ -362,7 +363,7 @@ public final class ECSManagement {
         .forEach(
             entitySystemMappers ->
                 entitySystemMappers.forEach(
-                    entitySystemMapper -> entitySystemMapper.stream().forEach(allEntities::add)));
+                    entitySystemMapper -> entitySystemMapper.forEach(allEntities::add)));
 
     return allEntities.stream();
   }
