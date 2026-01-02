@@ -73,13 +73,11 @@ public class CharacterStateFactory {
       run.getConfig().framesPerSprite((int) (run.getConfig().framesPerSprite() / runSpeedupFactor));
       stIdle = new SimpleDirectionalState(StateMachine.IDLE_STATE, idle);
       stRun = new SimpleDirectionalState(VelocitySystem.STATE_NAME, run);
-
     } else if (animationMap.containsKey("idle") && animationMap.containsKey("run")) {
       Animation idle = animationMap.get("idle");
       Animation run = animationMap.get("run");
       stIdle = new SimpleDirectionalState(StateMachine.IDLE_STATE, idle);
       stRun = new SimpleDirectionalState(VelocitySystem.STATE_NAME, run);
-
     } else if (animationMap.containsKey("idle_down") && !animationMap.containsKey("run_down")) {
       Animation idleDown = animationMap.get("idle_down");
       Animation idleLeft = animationMap.get("idle_left");

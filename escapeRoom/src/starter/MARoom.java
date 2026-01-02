@@ -66,7 +66,7 @@ public class MARoom {
         contrib.configuration.KeyboardConfig.class,
         core.configuration.KeyboardConfig.class);
     Game.disableAudio(true);
-    Game.frameRate(30);
+    Game.frameRate(90);
   }
 
   private static void createSystems() {
