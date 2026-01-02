@@ -3,6 +3,7 @@ package contrib.systems;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import contrib.components.BarDisplayable;
 import contrib.utils.AttributeBarUtil;
+import contrib.utils.EntityUtils;
 import core.Entity;
 import core.System;
 import core.components.DrawComponent;
@@ -105,11 +106,6 @@ public final class AttributeBarSystem extends System {
       return;
     }
 
-    PositionComponent pc = entity.fetch(PositionComponent.class).orElse(null);
-    if (pc == null) {
-      return;
-    }
-
     boolean isVisible =
         entity.fetch(DrawComponent.class).map(DrawComponent::isVisible).orElse(false);
 
@@ -121,7 +117,8 @@ public final class AttributeBarSystem extends System {
       progressBar.setVisible(isVisible && bar.current() != bar.max());
 
       // Update position
-      AttributeBarUtil.updatePosition(progressBar, pc, entry.verticalOffset());
+      AttributeBarUtil.updatePosition(
+          progressBar, EntityUtils.getPosition(entity), entry.verticalOffset());
 
       // Update value
       progressBar.setValue(bar.current() / bar.max());
