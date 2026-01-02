@@ -14,6 +14,7 @@ import core.level.loader.DungeonLoader;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.Dungeon;
+import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
 import java.io.IOException;
 
@@ -86,6 +87,7 @@ public class MARoom {
     Game.add(new LeverSystem());
     Game.add(new PressurePlateSystem());
     Game.add(new IdleSoundSystem());
+    Game.add(new GuardDetectionSystem());
     if (DEBUG_MODE) Game.add(new Debugger());
   }
 

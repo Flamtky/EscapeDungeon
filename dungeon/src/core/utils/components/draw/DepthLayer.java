@@ -30,6 +30,9 @@ public enum DepthLayer {
   /** Decorative elements drawn in front of normal gameplay. */
   ForegroundDeco(50),
 
+  /** Enemies and NPCs are rendered on this layer. */
+  Character(80),
+
   /** Player characters are rendered on this layer. */
   Player(100),
 

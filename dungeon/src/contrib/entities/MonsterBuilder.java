@@ -20,6 +20,7 @@ import core.level.utils.Coordinate;
 import core.sound.SoundSpec;
 import core.utils.Direction;
 import core.utils.Point;
+import core.utils.components.draw.DepthLayer;
 import core.utils.components.draw.animation.Animation;
 import core.utils.components.draw.state.CharacterStateFactory;
 import core.utils.components.path.IPath;
@@ -589,7 +590,9 @@ public class MonsterBuilder<T extends MonsterBuilder<T>> {
     Entity monster = name().isEmpty() ? new Entity() : new Entity(name());
 
     monster.add(new PositionComponent(spawnPoint));
-    monster.add(new DrawComponent(CharacterStateFactory.createStateMachine(texture())));
+    monster.add(
+        new DrawComponent(
+            CharacterStateFactory.createStateMachine(texture()), DepthLayer.Character));
     monster.add(new VelocityComponent(speed(), mass(), onWallHit(), canEnterOpenPits()));
     monster.add(new CollideComponent());
     if (collideDamage() > 0)
@@ -597,8 +600,8 @@ public class MonsterBuilder<T extends MonsterBuilder<T>> {
     monster.add(
         new AIComponent(
             fightAISupplier().get(), idleAISupplier().get(), transitionAISupplier().get()));
-    monster.add(buildInventoryComponent());
-    monster.add(buildHealthComponent());
+    if (!drops().isEmpty() || !guaranteedDrops().isEmpty()) monster.add(buildInventoryComponent());
+    if (health() > -1) monster.add(buildHealthComponent());
 
     buildIdleSoundComponent().ifPresent(monster::add);
 

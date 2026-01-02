@@ -1,13 +1,11 @@
 package guard;
 
-import contrib.components.CollideComponent;
 import core.Entity;
 import core.Game;
-import core.components.DrawComponent;
-import core.components.PositionComponent;
-import core.utils.Direction;
 import core.utils.Point;
 import core.utils.components.path.SimpleIPath;
+import java.util.function.Function;
+import mobs.EscapeRoomMonsterBuilder;
 
 /**
  * Builder for creating guard entities in the escape room.
@@ -27,24 +25,17 @@ import core.utils.components.path.SimpleIPath;
  * @see AlertnessComponent
  * @see GuardDetectionSystem
  */
-public class GuardBuilder {
+public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
 
   /** Default texture path for guard entities. */
   private static final String DEFAULT_TEXTURE_PATH = "character/knight";
 
-  /** Default view direction for guards. */
-  private static final Direction DEFAULT_VIEW_DIRECTION = Direction.DOWN;
+  private float viewConeAngle = 45f;
+  private float viewRange = 15f;
+  private int alertnessThreshold = 100;
+  private boolean stayAlertOnceTriggered = true;
 
-  private float viewConeAngle = 90f;
-  private float viewRange = 20f;
-  private Direction viewDirection = DEFAULT_VIEW_DIRECTION;
-  private boolean addToGame = false;
-
-  /**
-   * Creates a new GuardBuilder with default settings.
-   *
-   * <p>Default view cone angle is 90 degrees, default view range is 20 tiles.
-   */
+  /** Creates a new GuardBuilder with default settings. */
   public GuardBuilder() {
     // Default constructor
   }
@@ -72,67 +63,68 @@ public class GuardBuilder {
   }
 
   /**
-   * Sets the initial view direction for the guard.
+   * Sets the alertness threshold and behavior for the guard.
    *
-   * @param direction the direction the guard faces
+   * @param threshold the alertness threshold to trigger behavior
+   * @param stayOnceTriggered whether the guard stays alert once triggered
    * @return this builder for chaining
    */
-  public GuardBuilder viewDirection(Direction direction) {
-    this.viewDirection = direction;
-    return this;
-  }
-
-  /**
-   * Configures whether the entity should be automatically added to the game after building.
-   *
-   * @param add true to add to game automatically, false otherwise
-   * @return this builder for chaining
-   */
-  public GuardBuilder addToGame(boolean add) {
-    this.addToGame = add;
+  public GuardBuilder alertnessThreshold(int threshold, boolean stayOnceTriggered) {
+    this.alertnessThreshold = threshold;
+    this.stayAlertOnceTriggered = stayOnceTriggered;
     return this;
   }
 
   /**
    * Builds the guard entity at the specified spawn position.
    *
-   * <p>The guard entity will have:
-   *
-   * <ul>
-   *   <li>{@link PositionComponent} - positioned at the spawn point with the configured view
-   *       direction
-   *   <li>{@link DrawComponent} - using the knight texture
-   *   <li>{@link CollideComponent} - for collision detection (solid)
-   *   <li>{@link AlertnessComponent} - for detection tracking with configured view cone settings
-   * </ul>
-   *
-   * @param spawnPos the position to spawn the guard at
-   * @return the built guard entity
+   * @param spawnPos the position to spawn the guard
+   * @return the constructed guard entity
    */
   public Entity build(Point spawnPos) {
-    Entity guard = new Entity("Guard");
+    this.name("Guard");
+    this.texture(new SimpleIPath(DEFAULT_TEXTURE_PATH));
+    this.health(-1); // no health component by default
+    var oldAddToGame = this.addToGame;
+    this.addToGame(false); // add manually after adding alertness component
+    this.transitionAI(() -> new GuardTransition(alertnessThreshold, stayAlertOnceTriggered));
 
-    // Position component with view direction
-    PositionComponent pc = new PositionComponent(spawnPos, viewDirection);
-    guard.add(pc);
-
-    // Draw component with knight texture
-    DrawComponent dc = new DrawComponent(new SimpleIPath(DEFAULT_TEXTURE_PATH));
-    guard.add(dc);
-
-    // Collide component (solid by default)
-    CollideComponent cc = new CollideComponent();
-    cc.isSolid(true);
-    guard.add(cc);
+    Entity guard = super.build(spawnPos);
 
     // Alertness component with configured view cone settings
     AlertnessComponent ac = new AlertnessComponent(viewConeAngle, viewRange);
     guard.add(ac);
 
-    if (addToGame) {
+    if (oldAddToGame) {
       Game.add(guard);
     }
 
     return guard;
+  }
+
+  private static class GuardTransition implements Function<Entity, Boolean> {
+
+    private final int threshold;
+    private final boolean stayOnceTriggered;
+    private boolean triggered = false;
+
+    public GuardTransition(int threshold, boolean stayOnceTriggered) {
+      this.threshold = threshold;
+      this.stayOnceTriggered = stayOnceTriggered;
+    }
+
+    @Override
+    public Boolean apply(Entity entity) {
+      AlertnessComponent ac =
+          entity
+              .fetch(AlertnessComponent.class)
+              .orElseThrow(() -> new IllegalStateException("Guard missing AlertnessComponent"));
+
+      if (ac.alertness() >= threshold) {
+        triggered = stayOnceTriggered || triggered;
+        return true;
+      }
+      return stayOnceTriggered && triggered;
+    }
   }
 }

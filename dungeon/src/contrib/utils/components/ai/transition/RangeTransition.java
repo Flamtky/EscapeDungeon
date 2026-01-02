@@ -38,16 +38,16 @@ public final class RangeTransition implements Function<Entity, Boolean> {
 
   @Override
   public Boolean apply(final Entity entity) {
-    // Early exit: if not staying in fight mode and already been in fight mode, no need to check
+    // Early exit: if staying in fight mode and already been in fight mode, no need to check
     // range
-    if (!stayInFightMode && hasBeenInFightMode) {
+    if (stayInFightMode && hasBeenInFightMode) {
       return true;
     }
 
-    if (LevelUtils.playerInRange(entity, range)) {
+    boolean inRange = LevelUtils.playerInRange(entity, range);
+    if (inRange) {
       hasBeenInFightMode = true;
-      return true;
     }
-    return stayInFightMode && hasBeenInFightMode; // Stay in fight mode if player has been in range
+    return inRange;
   }
 }

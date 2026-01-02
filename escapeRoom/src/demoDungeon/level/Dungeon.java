@@ -12,6 +12,8 @@ import core.Game;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
 import core.components.VelocityComponent;
+import contrib.utils.components.ai.fight.AIChaseBehaviour;
+import contrib.utils.components.ai.idle.PatrolWalk;
 import core.level.DungeonLevel;
 import core.level.elements.tile.DoorTile;
 import core.level.utils.*;
@@ -23,9 +25,12 @@ import core.utils.TriConsumer;
 import core.utils.Vector2;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
+import guard.AlertnessComponent;
+import guard.GuardBuilder;
 import java.util.*;
 import mushRoom.Sounds;
 import mushRoom.shaders.TorchPostProcessing;
+import mobs.EscapeRoomMonsterBuilder;
 
 /**
  * The Demolevel. intel 13
@@ -175,6 +180,9 @@ public class Dungeon extends DungeonLevel {
   @Override
   protected void onFirstTick() {
     createPushPuzzle();
+    for (int i = 0; i < 10; i++) {
+      createGuards();
+    }
   }
 
   private void createPushPuzzle() {
@@ -415,5 +423,27 @@ public class Dungeon extends DungeonLevel {
         layout[y][x].designLabel(newDesignLabel);
       }
     }
+  }
+
+  private void createGuards() {
+    var guard =
+        ((GuardBuilder) EscapeRoomMonsterBuilder.GUARD.builder())
+            .alertnessThreshold(100, true)
+            .addToGame()
+            .speed(3.5f)
+            .fightAI(AIChaseBehaviour::new)
+            .idleAI(() -> new PatrolWalk(250, 10, 10, PatrolWalk.MODE.BACK_AND_FORTH))
+            .build(this.getPoint("guardSpawn"));
+
+    // Register alertness callbacks for testing
+    guard
+        .fetch(AlertnessComponent.class)
+        .ifPresent(
+            ac -> {
+              ac.registerCallback(25f, () -> System.out.println("Guard is slightly suspicious..."));
+              ac.registerCallback(50f, () -> System.out.println("Guard is getting alert!"));
+              ac.registerCallback(75f, () -> System.out.println("Guard is highly suspicious!"));
+              ac.registerCallback(100f, () -> System.out.println("Guard is FULLY ALERTED!"));
+            });
   }
 }
