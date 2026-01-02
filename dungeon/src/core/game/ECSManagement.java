@@ -43,6 +43,12 @@ public final class ECSManagement {
   private static final Map<ILevel, Set<EntitySystemMapper>> LEVEL_STORAGE_MAP = new HashMap<>();
   private static Set<EntitySystemMapper> activeEntityStorage = new HashSet<>();
 
+  /** Cache for entity lookups by ID. */
+  private static final Map<Integer, Entity> ENTITY_ID_CACHE = new HashMap<>();
+
+  /** Cached reference to the primary entity mapper (empty filter rules). */
+  private static EntitySystemMapper primaryEntityMapper;
+
   private static int currentTick = 0;
 
   /**
@@ -67,7 +73,8 @@ public final class ECSManagement {
 
   static {
     LEVEL_STORAGE_MAP.put(null, activeEntityStorage);
-    activeEntityStorage.add(new EntitySystemMapper());
+    primaryEntityMapper = new EntitySystemMapper();
+    activeEntityStorage.add(primaryEntityMapper);
     for (System system : ESSENTIAL_SYSTEMS) {
       ECSManagement.add(system);
     }
@@ -82,9 +89,23 @@ public final class ECSManagement {
    * @param entity the entity that has changes in its Component Collection.
    */
   public static void informAboutChanges(Entity entity) {
-    var levelEntities = activeEntityStorage.stream().findFirst().get();
-    if (levelEntities.anyMatch(entity1 -> entity1.equals(entity))) {
-      activeEntityStorage.forEach(f -> f.update(entity));
+    if (primaryEntityMapper == null) {
+      // During initialization, fall back to checking all mappers
+      boolean exists =
+          activeEntityStorage.stream()
+              .filter(f -> f.equals(Set.of()))
+              .findFirst()
+              .map(m -> m.anyMatch(e -> e.equals(entity)))
+              .orElse(false);
+      if (exists) {
+        new ArrayList<>(activeEntityStorage).forEach(f -> f.update(entity));
+        LOGGER.info(entity + " informed the Game about component changes.");
+      }
+      return;
+    }
+    if (primaryEntityMapper.anyMatch(e -> e.equals(entity))) {
+      // Create a copy to avoid ConcurrentModificationException when update triggers add/remove
+      new ArrayList<>(activeEntityStorage).forEach(f -> f.update(entity));
       LOGGER.info(entity + " informed the Game about component changes.");
     }
   }
@@ -105,15 +126,20 @@ public final class ECSManagement {
    */
   public static Entity add(Entity entity) {
     // Prevent duplicate IDs for different entity instances
-    boolean duplicateIdExists = allEntities().anyMatch(e -> e != entity && e.id() == entity.id());
-    if (duplicateIdExists)
+    Entity cachedEntity = ENTITY_ID_CACHE.get(entity.id());
+    if (cachedEntity != null && cachedEntity != entity) {
       throw new IllegalArgumentException(
           "An Entity with id " + entity.id() + " already exists in the game.");
+    }
 
     // Ensure the provider knows about this id (idempotent).
     EntityIdProvider.ensureRegistered(entity.id());
 
-    activeEntityStorage.forEach(f -> f.add(entity));
+    // Update cache
+    ENTITY_ID_CACHE.put(entity.id(), entity);
+
+    // Create a copy to avoid ConcurrentModificationException when triggerOnAdd adds more entities
+    new ArrayList<>(activeEntityStorage).forEach(f -> f.add(entity));
     LOGGER.info(entity + " will be added to the Game.");
 
     try {
@@ -139,8 +165,10 @@ public final class ECSManagement {
    * @return removed entity for chaining
    */
   public static Entity remove(Entity entity) {
-    activeEntityStorage.forEach(f -> f.remove(entity));
+    // Create a copy to avoid ConcurrentModificationException when triggerOnRemove modifies entities
+    new ArrayList<>(activeEntityStorage).forEach(f -> f.remove(entity));
     EntityIdProvider.unregister(entity.id());
+    ENTITY_ID_CACHE.remove(entity.id());
     LOGGER.info(entity + " will be removed from the Game.");
 
     try {
@@ -223,6 +251,19 @@ public final class ECSManagement {
    */
   public static void activeEntityStorage(final Set<EntitySystemMapper> entityStorage) {
     activeEntityStorage = entityStorage;
+    // Update the primary entity mapper reference (mapper with empty filter rules)
+    primaryEntityMapper =
+        entityStorage.stream().filter(f -> f.equals(Set.of())).findFirst().orElse(null);
+    // Rebuild entity ID cache for the new storage
+    rebuildEntityIdCache();
+  }
+
+  /** Rebuilds the entity ID cache from the current active entity storage. */
+  private static void rebuildEntityIdCache() {
+    ENTITY_ID_CACHE.clear();
+    if (primaryEntityMapper != null) {
+      primaryEntityMapper.forEach(e -> ENTITY_ID_CACHE.put(e.id(), e));
+    }
   }
 
   /**
@@ -284,15 +325,20 @@ public final class ECSManagement {
    * @return a stream of all entities currently in the level, that contains the given components.
    */
   public static Stream<Entity> levelEntities(Set<Class<? extends Component>> filter) {
-    Stream<Entity> returnStream;
+    // Fast path: use cached primary mapper for empty filter
+    if (filter.isEmpty() && primaryEntityMapper != null) {
+      return primaryEntityMapper.stream();
+    }
+
     Optional<EntitySystemMapper> rf =
         activeEntityStorage.stream().filter(f -> f.equals(filter)).findFirst();
 
     if (rf.isEmpty()) {
       EntitySystemMapper newMapper = createNewEntitySystemMapper(filter);
-      returnStream = newMapper.stream();
-    } else returnStream = rf.get().stream();
-    return returnStream;
+      return newMapper.stream();
+    } else {
+      return rf.get().stream();
+    }
   }
 
   /**
@@ -322,7 +368,7 @@ public final class ECSManagement {
    * @see PlayerComponent
    */
   public static Stream<Entity> allPlayers() {
-    return levelEntities().filter(e -> e.isPresent(PlayerComponent.class));
+    return levelEntities(Set.of(PlayerComponent.class));
   }
 
   /**
@@ -407,7 +453,8 @@ public final class ECSManagement {
    * @return {@code true} if the entity is found, {@code false} otherwise
    */
   public static boolean existInAll(Entity entity) {
-    return allEntities().anyMatch(entity1 -> entity1.equals(entity));
+    return ENTITY_ID_CACHE.containsKey(entity.id())
+        && ENTITY_ID_CACHE.get(entity.id()).equals(entity);
   }
 
   /**
@@ -419,7 +466,10 @@ public final class ECSManagement {
    * @return {@code true} if the entity is found, {@code false} otherwise
    */
   public static boolean existInLevel(Entity entity) {
-    return levelEntities().anyMatch(entity1 -> entity1.equals(entity));
+    if (primaryEntityMapper == null) {
+      return levelEntities().anyMatch(e -> e.equals(entity));
+    }
+    return primaryEntityMapper.anyMatch(e -> e.equals(entity));
   }
 
   private static boolean isAuthoritative(System.AuthoritativeSide side, System system) {
@@ -456,16 +506,17 @@ public final class ECSManagement {
    *     System.AuthoritativeSide#BOTH for all systems})
    */
   public static void executeOneTick(System.AuthoritativeSide side) {
-    List<System> authoritativeSystems =
-        ECSManagement.systems().values().stream()
-            .filter(sys -> isAuthoritative(side, sys))
-            .toList();
+    List<System> systemsSnapshot = new ArrayList<>(SYSTEMS.values());
 
     // Execute logic for each system.
-    for (System system : authoritativeSystems) {
+    for (System system : systemsSnapshot) {
       if (newLevelLoadedThisTick) {
         currentTick++;
         return; // Early exit if a new level was loaded this tick.
+      }
+
+      if (!isAuthoritative(side, system)) {
+        continue;
       }
 
       system.lastExecuteInFrames(system.lastExecuteInFrames() + 1);
@@ -479,7 +530,9 @@ public final class ECSManagement {
     if (!Game.isHeadless() && Game.windowHeight() > 0 && Game.windowWidth() > 0) {
       // Render logic: Call the render method for each system if OpenGL context is available.
       float delta = Gdx.graphics.getDeltaTime();
-      systems().values().forEach(system -> system.render(delta));
+      for (System system : systemsSnapshot) {
+        system.render(delta);
+      }
     }
 
     currentTick++;
@@ -494,6 +547,6 @@ public final class ECSManagement {
    *     entity with the given ID exists.
    */
   public static Optional<Entity> findEntityById(int entityId) {
-    return ECSManagement.allEntities().filter(e -> e.id() == entityId).findFirst();
+    return Optional.ofNullable(ENTITY_ID_CACHE.get(entityId));
   }
 }
