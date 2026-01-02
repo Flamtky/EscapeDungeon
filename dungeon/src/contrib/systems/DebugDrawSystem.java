@@ -76,12 +76,19 @@ public class DebugDrawSystem extends System {
 
   private static final int CIRCLE_SEGMENTS = 60; // resolution of circles (higher = smoother)
   private static final BitmapFont FONT = FontHelper.getDefaultFont();
+  private static final int VIEW_PADDING = 5; // extra padding when checking if in camera view
+  private static final int MAX_ENTITIES = 1000; // max entities to render debug info for
 
   private static final Map<Entity, String> quickInfoCache = new HashMap<>();
 
   private static final List<Consumer<ShapeRenderer>> externalRenderers = new ArrayList<>();
 
   private boolean render = false;
+
+  // FPS counter fields
+  private float fpsAccumulator = 0f;
+  private int frameCount = 0;
+  private int displayedFps = 0;
 
   /**
    * Registers an external renderer to be called during debug rendering.
@@ -119,11 +126,16 @@ public class DebugDrawSystem extends System {
     if (!render) return;
 
     SHAPE_RENDERER.setProjectionMatrix(CameraSystem.camera().combined);
-    filteredEntityStream(PositionComponent.class).forEach(this::drawPosition);
+    filteredEntityStream(PositionComponent.class)
+        .filter(this::inCameraView)
+        .limit(MAX_ENTITIES)
+        .forEach(this::drawEntityDebugInfo);
 
     if (!LevelEditorSystem.active()) {
       drawNamedPoints();
     }
+
+    updateFpsCounter(delta);
 
     // Call external renderers (e.g., guard detection debug rays)
     for (Consumer<ShapeRenderer> renderer : externalRenderers) {
@@ -131,7 +143,36 @@ public class DebugDrawSystem extends System {
     }
   }
 
-  private void drawPosition(Entity entity) {
+  private void updateFpsCounter(float delta) {
+    // Accumulate delta times and frame count
+    fpsAccumulator += delta;
+    frameCount++;
+
+    // When 1 second has elapsed, calculate average FPS
+    if (fpsAccumulator >= 1.0f) {
+      displayedFps = frameCount;
+      fpsAccumulator = 0f;
+      frameCount = 0;
+    }
+
+    String fpsText = String.format("FPS: %d", displayedFps);
+    drawText(fpsText, new Point(10, Game.windowHeight() - 10), Color.WHITE);
+  }
+
+  private boolean inCameraView(Entity entity) {
+    Point pos = EntityUtils.getPosition(entity);
+    Point[] corners =
+        new Point[] {
+          pos,
+          new Point(pos.x() + VIEW_PADDING, pos.y() + VIEW_PADDING),
+          new Point(pos.x() - VIEW_PADDING, pos.y() - VIEW_PADDING),
+          new Point(pos.x() + VIEW_PADDING, pos.y() - VIEW_PADDING)
+        };
+
+    return Arrays.stream(corners).anyMatch(CameraSystem::isPointInFrustum);
+  }
+
+  private void drawEntityDebugInfo(Entity entity) {
     PositionComponent pc =
         entity
             .fetch(PositionComponent.class)
@@ -177,10 +218,11 @@ public class DebugDrawSystem extends System {
     }
 
     if (entity.isPresent(DrawComponent.class)) drawTextureSize(entity, pc, alpha);
-    if (entity.isPresent(CollideComponent.class)) drawCollideHitbox(entity, alpha);
-    if (entity.isPresent(InteractionComponent.class))
+    if (CameraSystem.isEntityHovered(entity) && entity.isPresent(CollideComponent.class))
+      drawCollideHitbox(entity, alpha);
+    if (CameraSystem.isEntityHovered(entity) && entity.isPresent(InteractionComponent.class))
       drawInteractionRange(entity, EntityUtils.getPosition(entity), alpha);
-    if (CameraSystem.isEntityHovered(entity) && decoComponent.isEmpty()) drawEntityInfo(entity, pc);
+    if (CameraSystem.isEntityHovered(entity)) drawEntityInfo(entity, pc);
   }
 
   /** Draws named points from the current level. */

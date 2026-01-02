@@ -4141,16 +4141,15 @@ public enum Deco {
     }
   }
 
-  private IPath path;
-  private AnimationConfig config;
+  private final IPath path;
+  private final AnimationConfig config;
+  private Category category = Category.OTHER;
   private Rectangle defaultCollider = null;
   private int defaultDepth;
-  private Category category = Category.OTHER;
 
   Deco(String path, AnimationConfig config) {
     this.path = new SimpleIPath(path);
     this.config = config;
-    this.category = Category.OTHER;
   }
 
   Deco(String path, AnimationConfig config, Category category) {
