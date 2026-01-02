@@ -767,6 +767,8 @@ public enum Deco {
   WallEmpty(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(0, 16, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallBackOrnamentBeige(
@@ -801,18 +803,21 @@ public enum Deco {
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(80, 0, 1, 1, 16, 32)),
       new Rectangle(1f, 2f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallFrontBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(96, 0, 1, 1, 16, 32)),
       new Rectangle(1f, 2f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerTopRightInsideBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(112, 0, 1, 1, 16, 32)),
       new Rectangle(1f, 2f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallLeftBeige(
@@ -831,42 +836,49 @@ public enum Deco {
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(0, 32, 1, 1, 16, 32)),
       new Rectangle(1f, 2f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerFrontLeftOutsideBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(16, 32, 1, 1, 16, 32)),
       new Rectangle(1f, 2f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerFrontRightOutsideBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(48, 32, 1, 1, 16, 32)),
       new Rectangle(1f, 2f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerFrontLeftInsideBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(80, 48, 1, 1, 16, 16)),
       new Rectangle(1f, 1f, 0f, 0f),
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerFrontRightInsideBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(112, 48, 1, 1, 16, 16)),
       new Rectangle(1f, 1f, 0f, 0f),
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallFrontAngledUpBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(0, 64, 1, 1, 16, 48)),
       new Rectangle(1f, 2f, 0f, 1f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallFrontAngledDownBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(16, 64, 1, 1, 16, 48)),
       new Rectangle(1f, 2f, 0f, 1f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerFrontRightAngledBeige(
@@ -884,29 +896,29 @@ public enum Deco {
   WallTopAngledDown1Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(32, 80, 1, 1, 16, 16)),
-    null,
-    DepthLayer.Player.depth() + 1,
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallTopAngledUp1Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(48, 80, 1, 1, 16, 16)),
-    null,
-    DepthLayer.Player.depth() + 1,
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallTopAngledDown2Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(32, 96, 1, 1, 16, 16)),
-    null,
-    DepthLayer.Player.depth() + 1,
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallTopAngledUp2Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(48, 96, 1, 1, 16, 16)),
-    null,
-    DepthLayer.Player.depth() + 1,
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallLeftArchBeige(
@@ -918,8 +930,8 @@ public enum Deco {
   ArchMiddleBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(112, 64, 1, 1, 16, 16)),
-    null,
-    DepthLayer.Player.depth() + 1,
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallRightArchBeige(
@@ -934,55 +946,62 @@ public enum Deco {
       Category.WALLS),
   /** A decoration. */
   ArchShadowMiddle(
-    "spritesheets/FG_Cellar.png",
-    new AnimationConfig(new SpritesheetConfig(112, 80, 1, 1, 16, 16)),
-    Category.WALLS),
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(112, 80, 1, 1, 16, 16)),
+      Category.WALLS),
   /** A decoration. */
   ArchShadowRight(
-    "spritesheets/FG_Cellar.png",
-    new AnimationConfig(new SpritesheetConfig(128, 80, 1, 1, 16, 16)),
-    Category.WALLS),
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(128, 80, 1, 1, 16, 16)),
+      Category.WALLS),
   /** A decoration. */
   WallBackOrnamentGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(0, 112, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerTopLeftOutsideGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(16, 112, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallTopOutsideGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(32, 112, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerTopRightOutsideGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(48, 112, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerTopLeftInsideGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(80, 112, 1, 1, 16, 32)),
       new Rectangle(1f, 2f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallFrontGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(96, 112, 1, 1, 16, 32)),
       new Rectangle(1f, 2f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerTopRightInsideGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(112, 112, 1, 1, 16, 32)),
       new Rectangle(1f, 2f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallLeftGray(
@@ -1001,78 +1020,91 @@ public enum Deco {
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(0, 144, 1, 1, 16, 32)),
       new Rectangle(1f, 2f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerFrontLeftOutsideGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(16, 144, 1, 1, 16, 32)),
       new Rectangle(1f, 2f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerFrontRightOutsideGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(48, 144, 1, 1, 16, 32)),
       new Rectangle(1f, 2f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerFrontLeftInsideGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(80, 160, 1, 1, 16, 16)),
       new Rectangle(1f, 1f, 0f, 0f),
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerFrontRightInsideGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(112, 160, 1, 1, 16, 16)),
       new Rectangle(1f, 1f, 0f, 0f),
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallFrontAngledUpGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(0, 176, 1, 1, 16, 48)),
       new Rectangle(1f, 2f, 0f, 1f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallFrontAngledDownGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(16, 176, 1, 1, 16, 48)),
       new Rectangle(1f, 2f, 0f, 1f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerFrontRightAngledGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(32, 176, 1, 1, 16, 48)),
       new Rectangle(1f, 3f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerFrontLeftAngledGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(48, 176, 1, 1, 16, 48)),
       new Rectangle(1f, 3f, 0f, 0f),
+      DepthLayer.Player.depth() - 1,
       Category.WALLS),
   /** A decoration. */
   WallTopAngledDown1Gray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(0, 224, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallTopAngledUp1Gray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(16, 224, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallTopAngledDown2Gray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(0, 240, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallTopAngledUp2Gray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(16, 240, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallLeftArchGray(
@@ -1084,6 +1116,8 @@ public enum Deco {
   ArchMiddleGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(80, 192, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallRightArchGray(
@@ -1095,321 +1129,449 @@ public enum Deco {
   FloorTileArrowDownBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(160, 0, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowLeftBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(176, 0, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowRightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(192, 0, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowUpBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 0, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(160, 16, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerBottomLeftBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(176, 16, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerTopLeftBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(192, 16, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerTopRightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 16, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerBottomRightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(224, 16, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerCenterBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(240, 16, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowDownDarkBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(160, 32, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowLeftDarkBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(176, 32, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowRightDarkBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(192, 32, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowUpDarkBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 32, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDarkBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(160, 48, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerBottomLeftDarkBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(176, 48, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerTopLeftDarkBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(192, 48, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerTopRightDarkBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 48, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerBottomRightDarkBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(224, 48, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerCenterDarkBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(240, 48, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   HoleTileDryGrassBeige1(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(160, 64, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   HoleTileDryGrassBeige2(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(176, 64, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   HoleTileDryGrassBeige3(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(192, 64, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   HoleTileDryGrassBeige4(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 64, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   HoleTileDryGrassBeige5(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(224, 64, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   HoleTileDryGrassBeige6(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(240, 64, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowDownGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(160, 128, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowLeftGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(176, 128, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowRightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(192, 128, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowUpGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 128, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(160, 144, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerBottomLeftGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(176, 144, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerTopLeftGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(192, 144, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerTopRightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 144, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerBottomRightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(224, 144, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerCenterGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(240, 144, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowDownDarkGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(160, 160, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowLeftDarkGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(176, 160, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowRightDarkGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(192, 160, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileArrowUpDarkGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 160, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDarkGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(160, 176, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerBottomLeftDarkGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(176, 176, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerTopLeftDarkGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(192, 176, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerTopRightDarkGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 176, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerBottomRightDarkGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(224, 176, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileCornerCenterDarkGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(240, 176, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   HoleTileDryGrassGray1(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(160, 192, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   HoleTileDryGrassGray2(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(176, 192, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   HoleTileDryGrassGray3(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(192, 192, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   HoleTileDryGrassGray4(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 192, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   HoleTileDryGrassGray5(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(224, 192, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   HoleTileDryGrassGray6(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(240, 192, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDropBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(160, 208, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDropCrossBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 208, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDropCornerTopLeftBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(224, 208, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDropCornerBottomLeftBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 208, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDropCornerBottomRightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(224, 208, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDropCornerTopRightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(240, 208, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDropGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(160, 224, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDropCrossGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 224, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDropCornerTopLeftGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(224, 224, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDropCornerBottomLeftGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(208, 224, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDropCornerBottomRightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(224, 224, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   FloorTileDropCornerTopRightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(240, 224, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 3,
       Category.FLOORS),
   /** A decoration. */
   Pillar1GrayWater(
@@ -1913,11 +2075,15 @@ public enum Deco {
   TorchGrayAnimated(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(0, 416, 1, 4, 16, 16)).framesPerSprite(10),
+      null,
+      DepthLayer.Player.depth(),
       Category.ANIMATED),
   /** A decoration. */
   TorchBeigeAnimated(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(80, 416, 1, 4, 16, 16)).framesPerSprite(10),
+      null,
+      DepthLayer.Player.depth(),
       Category.ANIMATED),
   /** A decoration. */
   FireboxGrayAnimated(
@@ -1983,218 +2149,254 @@ public enum Deco {
   BannerRed1(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 0, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.BANNER),
   /** A decoration. */
   BannerRed2(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(272, 0, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.BANNER),
   /** A decoration. */
   BannerRed1Damaged(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 0, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.BANNER),
   /** A decoration. */
   BannerRed2Damaged(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(304, 0, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.BANNER),
   /** A decoration. */
   BannerRedLarge(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 0, 1, 1, 16, 32)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.BANNER),
   /** A decoration. */
   BannerRedLargeDamaged(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(464, 0, 1, 1, 16, 32)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.BANNER),
   /** A decoration. */
   BannerBlackLarge(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(480, 0, 1, 1, 16, 32)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.BANNER),
   /** A decoration. */
   BannerBlackLargeDamaged(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(496, 0, 1, 1, 16, 32)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.BANNER),
   /** A decoration. */
   BannerBlack1(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 16, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.BANNER),
   /** A decoration. */
   BannerBlack2(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(272, 16, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.BANNER),
   /** A decoration. */
   BannerBlack1Damaged(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 16, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.BANNER),
   /** A decoration. */
   BannerBlack2Damaged(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(304, 16, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.BANNER),
   /** A decoration. */
   Window1Gray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 32, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window2Gray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(272, 32, 1, 1, 16, 32)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window3Gray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 32, 1, 1, 16, 32)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window4TopGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(304, 32, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window4MiddleGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 32, 1, 1, 16, 32)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window5Gray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 48, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window4BottomGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(304, 48, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Drain1Gray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 64, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth() - 2,
+      Category.WINDOW),
   /** A decoration. */
   Drain2Gray(
       "spritesheets/FG_Cellar.png",
-      new AnimationConfig(new SpritesheetConfig(272, 64, 1, 1, 16, 64)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      new AnimationConfig(new SpritesheetConfig(272, 64, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 2,
+      Category.WINDOW),
   /** A decoration. */
   Drain3Gray(
       "spritesheets/FG_Cellar.png",
-      new AnimationConfig(new SpritesheetConfig(288, 64, 1, 1, 16, 64)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      new AnimationConfig(new SpritesheetConfig(288, 64, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 2,
+      Category.WINDOW),
   /** A decoration. */
   Drain4Gray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(304, 64, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Drain5Gray(
       "spritesheets/FG_Cellar.png",
-      new AnimationConfig(new SpritesheetConfig(320, 64, 1, 1, 16, 64)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      new AnimationConfig(new SpritesheetConfig(320, 64, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window1Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 80, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window2Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(272, 80, 1, 1, 16, 32)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window3Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 80, 1, 1, 16, 32)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window4TopBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(304, 80, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window4MiddleBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 80, 1, 1, 16, 32)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window5Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 96, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Window4BottomBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(304, 96, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Drain1Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 112, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth() - 2,
+      Category.WINDOW),
   /** A decoration. */
   Drain2Beige(
       "spritesheets/FG_Cellar.png",
-      new AnimationConfig(new SpritesheetConfig(272, 112, 1, 1, 16, 64)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      new AnimationConfig(new SpritesheetConfig(272, 112, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 2,
+      Category.WINDOW),
   /** A decoration. */
   Drain3Beige(
       "spritesheets/FG_Cellar.png",
-      new AnimationConfig(new SpritesheetConfig(288, 112, 1, 1, 16, 64)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      new AnimationConfig(new SpritesheetConfig(288, 112, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth() - 2,
+      Category.WINDOW),
   /** A decoration. */
   Drain4Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(304, 112, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Drain5Beige(
       "spritesheets/FG_Cellar.png",
-      new AnimationConfig(new SpritesheetConfig(320, 112, 1, 1, 16, 64)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      new AnimationConfig(new SpritesheetConfig(320, 112, 1, 1, 16, 16)),
+      null,
+      DepthLayer.Player.depth(),
+      Category.WINDOW),
   /** A decoration. */
   Pillar4Gray(
       "spritesheets/FG_Cellar.png",
@@ -2415,13 +2617,15 @@ public enum Deco {
   TorchOff1Gray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 32, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth(),
       Category.OTHER),
   /** A decoration. */
   TorchOff2Gray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 32, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth(),
       Category.OTHER),
   /** A decoration. */
   FireboxOff1Gray(
@@ -2439,25 +2643,25 @@ public enum Deco {
   SpikeSingle1EmptyGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 64, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
       Category.OTHER),
   /** A decoration. */
   SpikeTripple1EmptyGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 64, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
       Category.OTHER),
   /** A decoration. */
   TorchOff1Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 80, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth(),
       Category.OTHER),
   /** A decoration. */
   TorchOff2Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 80, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth(),
       Category.OTHER),
   /** A decoration. */
   FireboxOff1Beige(
@@ -2475,49 +2679,41 @@ public enum Deco {
   SpikeSingle1EmptyBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 112, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
       Category.OTHER),
   /** A decoration. */
   SpikeTripple1EmptyBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 112, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
       Category.OTHER),
   /** A decoration. */
   SpikeSingle2EmptyGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 144, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
       Category.OTHER),
   /** A decoration. */
   SpikeTripple2EmptyGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(368, 144, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
       Category.OTHER),
   /** A decoration. */
   SpikeTripple3EmptyGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 160, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
       Category.OTHER),
   /** A decoration. */
   SpikeTripple2EmptyBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(368, 160, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
       Category.OTHER),
   /** A decoration. */
   SpikeSingle2EmptyBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 176, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
       Category.OTHER),
   /** A decoration. */
   SpikeTripple3EmptyBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(368, 176, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
       Category.OTHER),
   /** A decoration. */
   Vase1Set(
@@ -2529,25 +2725,25 @@ public enum Deco {
   Vase1(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(384, 128, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      new Rectangle(0.25f, 0.25f, 0f, 0f),
       Category.FURNITURE),
   /** A decoration. */
   Vase2(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(400, 128, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      new Rectangle(0.25f, 0.25f, 0f, 0f),
       Category.FURNITURE),
   /** A decoration. */
   Vase3(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 128, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      new Rectangle(0.25f, 0.25f, 0f, 0f),
       Category.FURNITURE),
   /** A decoration. */
   Vase4(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 128, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      new Rectangle(0.25f, 0.25f, 0f, 0f),
       Category.FURNITURE),
   /** A decoration. */
   Chest1Closed(
@@ -2907,427 +3103,498 @@ public enum Deco {
   DoorBrown2(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(368, 224, 1, 1, 16, 32)),
-      new Rectangle(1f, 2f, 0f, 0f)),
+      new Rectangle(1f, 2f, 0f, 0f),
+      Category.OTHER),
   /** A decoration. */
   WaterDeep(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(272, 320, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopLeftInnerRoundGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 256, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBackRoundGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(272, 256, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopRightInnerRoundGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 256, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepSide1RoundGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 272, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepSide2RoundGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 272, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomLeftInnerRoundGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 288, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepFrontRoundGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(272, 288, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomRightInnerRoundGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 288, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopLeftOuterRoundGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 304, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopRightOuterRoundGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 304, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomLeftOuterRoundGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 336, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomRightOuterRoundGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 336, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopLeftInnerStraightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 256, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBackStraightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(336, 256, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopRightInnerStraightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 256, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepSide1StraightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 272, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepSide2StraightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 272, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomLeftInnerStraightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 288, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepFrontStraightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(336, 288, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomRightInnerStraightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 288, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopLeftOuterStraightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 304, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopRightOuterStraightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 304, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomLeftOuterStraightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 336, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomRightOuterStraightGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 336, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopLeftInnerRoundBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 368, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBackRoundBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(272, 368, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopRightInnerRoundBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 368, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepSide1RoundBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 384, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepSide2RoundBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 384, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomLeftInnerRoundBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 400, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepFrontRoundBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(272, 400, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomRightInnerRoundBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 400, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopLeftOuterRoundBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 416, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopRightOuterRoundBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 416, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomLeftOuterRoundBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 448, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomRightOuterRoundBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(288, 448, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopLeftInnerStraightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 368, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBackStraightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(336, 368, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopRightInnerStraightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 368, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepSide1StraightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 384, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepSide2StraightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 384, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomLeftInnerStraightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 400, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepFrontStraightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(336, 400, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomRightInnerStraightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 400, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopLeftOuterStraightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 416, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepTopRightOuterStraightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 416, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomLeftOuterStraightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 448, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterDeepBottomRightOuterStraightBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 448, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHigh(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(400, 320, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighTopLeftInnerRound(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(384, 256, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighBackRound(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(400, 256, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighTopRightInnerRound(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 256, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighSide1Round(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(384, 272, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighSide2Round(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 272, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighBottomLeftInnerRound(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(384, 288, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighFrontRound(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(400, 288, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighBottomRightInnerRound(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 288, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighTopLeftOuterRound(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(384, 304, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighTopRightOuterRound(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 304, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighBottomLeftOuterRound(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(384, 336, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighBottomRightOuterRound(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 336, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighAngledUpFront1(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 256, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighAngledUpFront2(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 272, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighAngledDownFront1(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(480, 256, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighAngledDownFront2(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(480, 272, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighAngledUpBack1(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 320, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighAngledUpBack2(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 304, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighAngledDownBack1(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(480, 320, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 2,
       Category.WATER),
   /** A decoration. */
   WaterHighAngledDownBack2(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(480, 304, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
-      Category.OTHER),
+      null,
+      DepthLayer.Player.depth() - 2,
+      Category.WATER),
   /** A decoration. */
   BRIDGESHorizontalGray(
       "spritesheets/FG_Cellar.png",
@@ -4136,6 +4403,10 @@ public enum Deco {
     BOXES("Kisten"),
     /** Animated decorations. */
     ANIMATED("Animiert"),
+    /** Banner decorations. */
+    BANNER("Banner"),
+    /** Window decorations. */
+    WINDOW("Fenster"),
     /** Miscellaneous decorations. */
     OTHER("Sonstiges"),
     /** Tileset previews. */
