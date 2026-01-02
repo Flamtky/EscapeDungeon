@@ -5,6 +5,7 @@ import com.badlogic.gdx.audio.Music;
 import contrib.crafting.Crafting;
 import contrib.entities.CharacterClass;
 import contrib.entities.EntityFactory;
+import contrib.modules.levelHide.LevelHideSystem;
 import contrib.systems.*;
 import contrib.utils.components.Debugger;
 import core.Entity;
@@ -71,9 +72,12 @@ public class MARoom {
 
   private static void createSystems() {
     if (DEBUG_MODE) Game.add(new LevelEditorSystem());
+    Game.add(new LevelHideSystem());
     Game.add(new CollisionSystem());
     Game.add(new ManaRestoreSystem());
-    Game.add(new StaminaRestoreSystem());
+    Game.add(new StaminaDrainSystem());
+    Game.add(new StaminaExhaustionSystem());
+    Game.add(new DebugSleepSystem());
     Game.add(new AISystem());
     Game.add(new ProjectileSystem());
     Game.add(new HealthSystem());

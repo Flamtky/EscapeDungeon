@@ -31,10 +31,10 @@ public class StaminaDrainSystem extends System {
   private static final boolean SHOW_ETA_DEBUG = true;
 
   /** The stamina drain rate per second when the entity is idle (not moving). */
-  private static final float IDLE_DRAIN_RATE = 0.5f;
+  private static final float IDLE_DRAIN_RATE = 0.3f;
 
   /** The stamina drain rate per second when the entity is moving. */
-  private static final float MOVING_DRAIN_RATE = 3.0f;
+  private static final float MOVING_DRAIN_RATE = 1.25f;
 
   /**
    * The velocity threshold below which an entity is considered idle. Velocities with magnitude

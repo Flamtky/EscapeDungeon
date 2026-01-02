@@ -29,7 +29,7 @@ public class StaminaExhaustionSystem extends System {
    * The speed multiplier applied when an entity is exhausted. A value of 0.2 means the entity moves
    * at 20% of their normal speed.
    */
-  private static final float EXHAUSTED_SPEED_MULTIPLIER = 0.2f;
+  private static final float EXHAUSTED_SPEED_MULTIPLIER = 0.3f;
 
   /**
    * The stamina threshold (as absolute value) at or below which an entity becomes exhausted. When
