@@ -45,8 +45,6 @@ public class MARoom {
     Game.userOnSetup(
         () -> {
           setupMusic();
-          // DungeonLoader.addLevel(Tuple.of("tutorial", Tutorial.class));
-          // DungeonLoader.addLevel(Tuple.of("escaperoom", Dungeon.class));
           DungeonLoader.addLevel(Tuple.of("dungeon", Dungeon.class));
           createSystems();
           createHero();

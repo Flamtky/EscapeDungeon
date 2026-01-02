@@ -28,7 +28,7 @@ import core.utils.Point;
 public class StaminaDrainSystem extends System {
 
   /** Whether to show the stamina ETA debug information on screen. */
-  private static final boolean SHOW_ETA_DEBUG = true;
+  private static final boolean SHOW_ETA_DEBUG = false;
 
   /** The stamina drain rate per second when the entity is idle (not moving). */
   private static final float IDLE_DRAIN_RATE = 0.3f;

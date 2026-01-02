@@ -16,11 +16,13 @@ import contrib.components.UIComponent;
 import contrib.crafting.Crafting;
 import contrib.entities.CharacterClass;
 import contrib.entities.HeroBuilder;
+import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
 import contrib.hud.UIUtils;
 import contrib.hud.dialogs.DialogFactory;
 import contrib.systems.AttributeBarSystem;
 import contrib.systems.DebugDrawSystem;
+import contrib.systems.EventScheduler;
 import contrib.utils.CheckPatternPainter;
 import core.Entity;
 import core.Game;
@@ -41,6 +43,8 @@ import core.sound.player.NoSoundPlayer;
 import core.systems.*;
 import core.utils.Direction;
 import core.utils.IVoidFunction;
+import core.utils.Point;
+import core.utils.Tuple;
 import core.utils.components.MissingComponentException;
 import core.utils.logging.DungeonLogger;
 import java.util.*;
@@ -103,10 +107,34 @@ public final class GameLoop extends ScreenAdapter {
 
         Game.currentLevel()
             .ifPresent(
-                level ->
-                    level
-                        .decorations()
-                        .forEach(tuple -> Game.add(DecoFactory.createDeco(tuple.b(), tuple.a()))));
+                level -> {
+                  // hero pos or default 0,0
+                  final Point heroPos =
+                      allPlayers.stream()
+                          .findFirst()
+                          .flatMap(e -> e.fetch(PositionComponent.class))
+                          .map(PositionComponent::position)
+                          .orElse(new Point(0, 0));
+                  int batch_size = 75;
+
+                  List<Tuple<Deco, Point>> sortedDecos =
+                      level.decorations().stream()
+                          .sorted(Comparator.comparingDouble(d -> heroPos.distanceSquared(d.b())))
+                          .toList();
+
+                  long batches = (sortedDecos.size() + batch_size - 1) / batch_size;
+
+                  for (int i = 0; i < batches; i++) {
+                    final int skip = i * batch_size;
+                    final int limit = Math.min(batch_size, sortedDecos.size() - skip);
+                    EventScheduler.scheduleAction(
+                        () ->
+                            sortedDecos
+                                .subList(skip, skip + limit)
+                                .forEach(t -> Game.add(DecoFactory.createDeco(t.b(), t.a()))),
+                        20L * i);
+                  }
+                });
 
         if (firstLoad && Game.isCheckPatternEnabled())
           Game.currentLevel()

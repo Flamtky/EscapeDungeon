@@ -1,6 +1,7 @@
 package demoDungeon.level;
 
 import core.level.DungeonLevel;
+import core.level.Tile;
 import core.level.utils.*;
 import core.utils.Point;
 import java.util.*;
@@ -11,6 +12,8 @@ import java.util.*;
  * <p>The player has to craft a Healpotion.
  */
 public class Dungeon extends DungeonLevel {
+
+  private final Set<Tile> updatedTiles = new HashSet<>();
 
   /**
    * Creates a new Demo Level.
@@ -65,6 +68,8 @@ public class Dungeon extends DungeonLevel {
         getPoint("outside13").toCoordinate(),
         getPoint("outside14").toCoordinate(),
         DesignLabel.DEFAULT);
+
+    refreshLevelTextures();
   }
 
   @Override
@@ -82,7 +87,7 @@ public class Dungeon extends DungeonLevel {
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
         layout[y][x].designLabel(newDesignLabel);
-        layout[y][x].refreshTexture();
+        updatedTiles.add(layout[y][x]);
       }
     }
   }

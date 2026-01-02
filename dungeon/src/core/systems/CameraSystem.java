@@ -30,7 +30,7 @@ import core.utils.Vector2;
  * @see CameraComponent
  */
 public final class CameraSystem extends System {
-  /** WTF? . */
+  /** Default zoom factor of the camera. */
   public static final float DEFAULT_ZOOM_FACTOR = 0.35f;
 
   private static final float FIELD_WIDTH_AND_HEIGHT_IN_PIXEL = 16f;
