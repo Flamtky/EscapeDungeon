@@ -9,7 +9,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import contrib.entities.*;
 import contrib.systems.EventScheduler;
-import contrib.systems.LevelTickSystem;
 import contrib.systems.PathSystem;
 import contrib.utils.components.Debugger;
 import core.Entity;
@@ -216,7 +215,6 @@ public class ComparePathfindingStarter {
 
   private static void createSystems() {
     Game.add(new PathSystem());
-    Game.add(new LevelTickSystem());
     Game.add(new PathfindingSystem());
   }
 

@@ -149,7 +149,6 @@ public class PathfinderStarter {
   private static void createSystems() {
     Game.add(new MazeEditorSystem());
     Game.add(new PathSystem());
-    Game.add(new LevelTickSystem());
     Game.add(pathfindingSystem);
   }
 

@@ -155,7 +155,6 @@ public class AdvancedDungeon {
     Game.add(new SpikeSystem());
     Game.add(new IdleSoundSystem());
     Game.add(new PathSystem());
-    Game.add(new LevelTickSystem());
     Game.add(new LeverSystem());
     Game.add(new BlockSystem());
     Game.add(new FallingSystem());

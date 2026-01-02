@@ -110,8 +110,6 @@ public class MushRoom {
     Game.add(new CollisionSystem());
     Game.add(new ProjectileSystem());
     Game.add(new HealthSystem());
-    Game.add(new HudSystem());
-    Game.add(new LevelTickSystem());
     Game.add(new LeverSystem());
     Game.add(new PressurePlateSystem());
     Game.add(new IdleSoundSystem());

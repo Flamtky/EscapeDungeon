@@ -76,7 +76,6 @@ public class SpriteTestRoom {
     Game.add(new SpikeSystem());
     if (!DEBUG_MODE) Game.add(new FallingSystem());
     Game.add(new PathSystem());
-    Game.add(new LevelTickSystem());
     Game.add(new PitSystem());
     Game.add(new LeverSystem());
     Game.add(new PressurePlateSystem());
