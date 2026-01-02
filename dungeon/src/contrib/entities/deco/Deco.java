@@ -757,7 +757,6 @@ public enum Deco {
       new AnimationConfig(new SpritesheetConfig(212, 15, 1, 1, 24, 33)).scaleX(1.20f),
       new Rectangle(1.00f, 1.00f, 0.10f, 0.00f),
       Category.OFFICE),
-
   /** A decoration. */
   LogBig(
       "objects/nature/big_log.png",
@@ -773,7 +772,8 @@ public enum Deco {
   WallBackOrnamentBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(0, 0, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallCornerTopLeftOutsideBeige(
@@ -884,25 +884,29 @@ public enum Deco {
   WallTopAngledDown1Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(32, 80, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+    null,
+    DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallTopAngledUp1Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(48, 80, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+    null,
+    DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallTopAngledDown2Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(32, 96, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+    null,
+    DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallTopAngledUp2Beige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(48, 96, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+    null,
+    DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallLeftArchBeige(
@@ -914,6 +918,8 @@ public enum Deco {
   ArchMiddleBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(112, 64, 1, 1, 16, 16)),
+    null,
+    DepthLayer.Player.depth() + 1,
       Category.WALLS),
   /** A decoration. */
   WallRightArchBeige(
@@ -922,10 +928,20 @@ public enum Deco {
       new Rectangle(1f, 1f, 0f, 0f),
       Category.WALLS),
   /** A decoration. */
-  ArchShadow(
+  ArchShadowLeft(
       "spritesheets/FG_Cellar.png",
-      new AnimationConfig(new SpritesheetConfig(96, 80, 1, 1, 48, 16)),
+      new AnimationConfig(new SpritesheetConfig(96, 80, 1, 1, 16, 16)),
       Category.WALLS),
+  /** A decoration. */
+  ArchShadowMiddle(
+    "spritesheets/FG_Cellar.png",
+    new AnimationConfig(new SpritesheetConfig(112, 80, 1, 1, 16, 16)),
+    Category.WALLS),
+  /** A decoration. */
+  ArchShadowRight(
+    "spritesheets/FG_Cellar.png",
+    new AnimationConfig(new SpritesheetConfig(128, 80, 1, 1, 16, 16)),
+    Category.WALLS),
   /** A decoration. */
   WallBackOrnamentGray(
       "spritesheets/FG_Cellar.png",
@@ -4096,8 +4112,6 @@ public enum Deco {
 
   /** Categories for organizing decorative objects in the level editor. */
   public enum Category {
-    /** Tileset previews. */
-    TILESETS("Tilesets"),
     /** Wall decorations. */
     WALLS("Wände"),
     /** Floor tiles and decorations. */
@@ -4123,7 +4137,9 @@ public enum Deco {
     /** Animated decorations. */
     ANIMATED("Animiert"),
     /** Miscellaneous decorations. */
-    OTHER("Sonstiges");
+    OTHER("Sonstiges"),
+    /** Tileset previews. */
+    TILESETS("Tilesets");
 
     private final String displayName;
 
