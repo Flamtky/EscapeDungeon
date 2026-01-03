@@ -3,6 +3,8 @@ package demoDungeon.level;
 import com.badlogic.gdx.graphics.Color;
 import contrib.components.CollideComponent;
 import contrib.components.DecoComponent;
+import contrib.components.PressurePlateComponent;
+import contrib.components.ProjectileComponent;
 import contrib.entities.LeverFactory;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
@@ -15,8 +17,11 @@ import core.components.VelocityComponent;
 import core.level.DungeonLevel;
 import core.level.elements.tile.DoorTile;
 import core.level.utils.*;
+import core.utils.Direction;
 import core.utils.Point;
+import core.utils.TriConsumer;
 import core.utils.Vector2;
+import core.utils.components.draw.DepthLayer;
 import core.utils.components.draw.shader.ColorGradeShader;
 import core.utils.components.draw.shader.HueRemapShader;
 import core.utils.components.path.SimpleIPath;
@@ -133,6 +138,7 @@ public class Dungeon extends DungeonLevel {
           Entity pushStone = new Entity("push_stone");
           pushStone.add(new PositionComponent(pos));
           DrawComponent dc = new DrawComponent(new SimpleIPath("objects/push-stone.png"));
+          dc.depth(DepthLayer.Player.depth());
           Color tintColor = index < stoneColors.length ? stoneColors[index] : Color.WHITE;
           dc.tintColor(Color.rgba8888(tintColor));
           //dc.shaders().add("outline", new OutlineShader(20));
@@ -151,11 +157,13 @@ public class Dungeon extends DungeonLevel {
           Point doorPos = getPoint("push_door" + index);
           DoorTile doorTile = (DoorTile) tileAt(doorPos).orElseThrow();
           doorTile.close();
+          /*Color tintColor = index < stoneColors.length ? stoneColors[index] : Color.WHITE;
+          doorTile.tintColor(Color.rgba8888(tintColor));*/
 
           Entity pp =
             LeverFactory.pressurePlate(
               platePos,
-              0.1f,
+              1f,
               new ICommand() {
                 public void execute() {
                   Sounds.DOOR_OPEN_SOUND.play();
@@ -170,9 +178,41 @@ public class Dungeon extends DungeonLevel {
           pp.fetch(DrawComponent.class)
             .ifPresent(
               dc -> {
-                Color tintColor = index < plateColors.length ? plateColors[index] : Color.WHITE;
-                dc.tintColor(Color.rgba8888(tintColor));
+                Color tColor = index < plateColors.length ? plateColors[index] : Color.WHITE;
+                dc.tintColor(Color.rgba8888(tColor));
               });
+          PressurePlateComponent pressurePlateComponent = pp.fetch(PressurePlateComponent.class).orElseThrow();
+          TriConsumer<Entity, Entity, Direction> onCollideEnter =
+            (self, other, dir) -> {
+              self.fetch(DrawComponent.class).ifPresent( dc -> {
+                boolean colorMatches =
+                  other.fetch(DrawComponent.class)
+                    .map(odc -> odc.tintColor() == dc.tintColor())
+                    .orElse(false);
+                if (colorMatches) {
+                  other.fetch(VelocityComponent.class)
+                    .ifPresent(vc -> pressurePlateComponent.increase(vc.mass()));
+                }
+              });
+            };
+          TriConsumer<Entity, Entity, Direction> onCollideLeave =
+            (self, other, dir) -> {
+              if (other.isPresent(ProjectileComponent.class)) return;
+              self.fetch(DrawComponent.class).ifPresent( dc -> {
+                boolean colorMatches =
+                  other.fetch(DrawComponent.class)
+                    .map(odc -> odc.tintColor() == dc.tintColor())
+                    .orElse(false);
+                if (colorMatches) {
+                  other
+                    .fetch(VelocityComponent.class)
+                    .ifPresent(vc -> pressurePlateComponent.decrease(vc.mass()));
+                }
+              });
+            };
+          pp.add(new CollideComponent(onCollideEnter, onCollideLeave).isSolid(false));
+
+
           Game.add(pp);
           puzzlePushEntities.add(pp);
         });
@@ -182,7 +222,7 @@ public class Dungeon extends DungeonLevel {
         tuple -> {
           Point pos = tuple.a();
           int index = tuple.b();
-          Entity water = DecoFactory.createDeco(pos, Deco.WaterDeep);
+          Entity water = DecoFactory.createDeco(pos, Deco.WaterHigh);
           water.remove(DecoComponent.class);
           water.fetch(DrawComponent.class)
             .ifPresent(
@@ -190,7 +230,17 @@ public class Dungeon extends DungeonLevel {
                 Color tintColor = index < waterColors.length ? waterColors[index] : Color.WHITE;
                 dc.tintColor(Color.rgba8888(tintColor));
               });
+
           CollideComponent cc = new CollideComponent();
+          cc.collideEnter((self, other, dir) -> {
+            if (other.name().equals("push_stone")) {
+              self.fetch(DrawComponent.class).ifPresent( dc -> {
+                other.fetch(DrawComponent.class).ifPresent( odc -> {
+                  odc.tintColor(dc.tintColor());
+                });
+              });
+            }
+          });
           cc.isSolid(false);
           water.add(cc);
           Game.add(water);
