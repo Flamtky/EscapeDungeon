@@ -4,6 +4,7 @@ import core.level.Tile;
 import core.level.utils.Coordinate;
 import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
+import core.level.utils.TileTextureFactory;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
 
@@ -16,7 +17,6 @@ import core.utils.components.path.SimpleIPath;
  */
 public class DoorTile extends Tile {
 
-  private final IPath closedTexturePath;
   private DoorTile otherDoor;
   private Tile doorstep;
   private boolean open;
@@ -33,8 +33,7 @@ public class DoorTile extends Tile {
   public DoorTile(
       final IPath texturePath, final Coordinate globalPosition, final DesignLabel designLabel) {
     super(texturePath, globalPosition, designLabel);
-    String[] splitPath = texturePath.pathString().split("\\.");
-    closedTexturePath = new SimpleIPath(splitPath[0] + "_closed." + splitPath[1]);
+
     levelElement = LevelElement.DOOR;
     open = true;
   }
@@ -111,10 +110,20 @@ public class DoorTile extends Tile {
     return open;
   }
 
+  private IPath closedTexturePath() {
+    if (texturePath != null) {
+      String[] splitPath = texturePath.pathString().split("\\.");
+      return new SimpleIPath(splitPath[0] + "_closed." + splitPath[1]);
+    }
+    else {
+      return null;
+    }
+  }
+
   @Override
   public IPath texturePath() {
     if (open && (otherDoor == null || otherDoor.isOpen())) return texturePath;
-    else return closedTexturePath;
+    else return closedTexturePath();
   }
 
   @Override
@@ -123,9 +132,11 @@ public class DoorTile extends Tile {
     tileStr = tileStr.replace("Tile", "DoorTile").replace("}", "");
     String doorStepStr = this.doorstep == null ? "null" : this.doorstep.coordinate().toString();
     String otherDoorStr = this.otherDoor == null ? "null" : this.otherDoor.coordinate().toString();
+    String closedTexturePathStr =
+        closedTexturePath() == null ? "null" : closedTexturePath().pathString();
     return tileStr
         + ", closedTexturePath="
-        + this.closedTexturePath.pathString()
+        + closedTexturePathStr
         + ", open="
         + this.open
         + ", Doorstep="

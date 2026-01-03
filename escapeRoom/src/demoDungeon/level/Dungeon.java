@@ -1,9 +1,27 @@
 package demoDungeon.level;
 
+import com.badlogic.gdx.graphics.Color;
+import contrib.components.CollideComponent;
+import contrib.components.DecoComponent;
+import contrib.entities.LeverFactory;
+import contrib.entities.deco.Deco;
+import contrib.entities.deco.DecoFactory;
+import contrib.utils.ICommand;
+import core.Entity;
+import core.Game;
+import core.components.DrawComponent;
+import core.components.PositionComponent;
+import core.components.VelocityComponent;
 import core.level.DungeonLevel;
-import core.level.Tile;
+import core.level.elements.tile.DoorTile;
 import core.level.utils.*;
 import core.utils.Point;
+import core.utils.Vector2;
+import core.utils.components.draw.shader.ColorGradeShader;
+import core.utils.components.draw.shader.HueRemapShader;
+import core.utils.components.path.SimpleIPath;
+import mushRoom.Sounds;
+
 import java.util.*;
 
 /**
@@ -13,7 +31,15 @@ import java.util.*;
  */
 public class Dungeon extends DungeonLevel {
 
-  private final Set<Tile> updatedTiles = new HashSet<>();
+  private DoorTile puzzlePushDoor;
+  private DoorTile puzzlePushExit;
+
+  private final List<Entity> puzzlePushEntities = new ArrayList<>();
+  private final Color[] stoneColors = {Color.WHITE, Color.RED, Color.BLUE, Color.RED, Color.BLUE, Color.RED, Color.BLUE,
+    Color.GREEN, Color.BLUE, Color.GREEN, Color.WHITE, Color.RED, Color.WHITE, Color.WHITE, Color.WHITE, Color.GREEN, Color.BLUE, Color.GREEN, Color.BLUE, Color.RED, Color.YELLOW};
+  private final Color[] plateColors = {Color.WHITE, Color.RED, Color.BLUE, Color.RED, Color.BLUE, Color.RED, Color.BLUE,
+    Color.GREEN, Color.BLUE, Color.GREEN, Color.WHITE, Color.RED, Color.WHITE, Color.WHITE, Color.WHITE, Color.GREEN, Color.BLUE, Color.GREEN, Color.BLUE, Color.RED, Color.YELLOW};
+  private final Color[] waterColors = {Color.GREEN, Color.RED, Color.BLUE, Color.RED, Color.RED, Color.GREEN, Color.BLUE, Color.RED, Color.BLUE, Color.GREEN };
 
   /**
    * Creates a new Demo Level.
@@ -73,7 +99,109 @@ public class Dungeon extends DungeonLevel {
   }
 
   @Override
-  protected void onFirstTick() {}
+  protected void onFirstTick() {
+    Point doorPos = getPoint("push_door0");
+    DoorTile doorTile = (DoorTile) tileAt(doorPos).orElseThrow();
+    System.out.println(doorTile);
+    createPushPuzzle();
+    Point doorPos1 = getPoint("push_door0");
+    DoorTile doorTile1 = (DoorTile) tileAt(doorPos).orElseThrow();
+    System.out.println(doorTile1);
+  }
+
+  private void createPushPuzzle() {
+    createPushPuzzleEntities();
+
+   /* Game.add(
+      LeverFactory.createLever(
+        getPoint("push-reset"),
+        new ICommand() {
+          public void execute() {
+            resetPushStones();
+          }
+
+          public void undo() {}
+        }));*/
+  }
+
+  private void createPushPuzzleEntities() {
+    listPointsIndexed("push_stone")
+      .forEach(
+        tuple -> {
+          Point pos = tuple.a();
+          int index = tuple.b();
+          Entity pushStone = new Entity("push_stone");
+          pushStone.add(new PositionComponent(pos));
+          DrawComponent dc = new DrawComponent(new SimpleIPath("objects/push-stone.png"));
+          Color tintColor = index < stoneColors.length ? stoneColors[index] : Color.WHITE;
+          dc.tintColor(Color.rgba8888(tintColor));
+          //dc.shaders().add("outline", new OutlineShader(20));
+          pushStone.add(dc);
+          pushStone.add(new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f)));
+          pushStone.add(new VelocityComponent(5.0f));
+          Game.add(pushStone);
+          puzzlePushEntities.add(pushStone);
+        });
+
+    listPointsIndexed("push_plate")
+      .forEach(
+        tuple -> {
+          Point platePos = tuple.a();
+          int index = tuple.b();
+          Point doorPos = getPoint("push_door" + index);
+          DoorTile doorTile = (DoorTile) tileAt(doorPos).orElseThrow();
+          doorTile.close();
+
+          Entity pp =
+            LeverFactory.pressurePlate(
+              platePos,
+              0.1f,
+              new ICommand() {
+                public void execute() {
+                  Sounds.DOOR_OPEN_SOUND.play();
+                  doorTile.open();
+                }
+
+                public void undo() {
+                  Sounds.DOOR_CLOSE_SOUND.play();
+                  doorTile.close();
+                }
+              });
+          pp.fetch(DrawComponent.class)
+            .ifPresent(
+              dc -> {
+                Color tintColor = index < plateColors.length ? plateColors[index] : Color.WHITE;
+                dc.tintColor(Color.rgba8888(tintColor));
+              });
+          Game.add(pp);
+          puzzlePushEntities.add(pp);
+        });
+
+    listPointsIndexed("push_water")
+      .forEach(
+        tuple -> {
+          Point pos = tuple.a();
+          int index = tuple.b();
+          Entity water = DecoFactory.createDeco(pos, Deco.WaterDeep);
+          water.remove(DecoComponent.class);
+          water.fetch(DrawComponent.class)
+            .ifPresent(
+              dc -> {
+                Color tintColor = index < waterColors.length ? waterColors[index] : Color.WHITE;
+                dc.tintColor(Color.rgba8888(tintColor));
+              });
+          CollideComponent cc = new CollideComponent();
+          cc.isSolid(false);
+          water.add(cc);
+          Game.add(water);
+        });
+  }
+
+  private void resetPushStones() {
+    puzzlePushEntities.forEach(Game::remove);
+    puzzlePushEntities.clear();
+    createPushPuzzleEntities();
+  }
 
   @Override
   protected void onTick() {}
@@ -87,7 +215,6 @@ public class Dungeon extends DungeonLevel {
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
         layout[y][x].designLabel(newDesignLabel);
-        updatedTiles.add(layout[y][x]);
       }
     }
   }
