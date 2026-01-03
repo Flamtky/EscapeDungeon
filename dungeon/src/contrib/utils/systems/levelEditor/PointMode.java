@@ -66,8 +66,7 @@ public class PointMode extends LevelEditorMode {
               UIUtils.closeDialog(dialogUI, true);
             });
         dialogUI.registerCallback(
-          DialogContextKeys.ON_CANCEL,
-          data -> UIUtils.closeDialog(dialogUI, true));
+            DialogContextKeys.ON_CANCEL, data -> UIUtils.closeDialog(dialogUI, true));
       }
     } else if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.RIGHT)) {
       Optional<String> clickedPoint = getOnPosition(cursorPos);

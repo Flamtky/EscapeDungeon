@@ -4,7 +4,6 @@ import core.level.Tile;
 import core.level.utils.Coordinate;
 import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
-import core.level.utils.TileTextureFactory;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
 
@@ -114,8 +113,7 @@ public class DoorTile extends Tile {
     if (texturePath != null) {
       String[] splitPath = texturePath.pathString().split("\\.");
       return new SimpleIPath(splitPath[0] + "_closed." + splitPath[1]);
-    }
-    else {
+    } else {
       return null;
     }
   }
