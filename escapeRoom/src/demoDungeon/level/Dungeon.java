@@ -1,10 +1,22 @@
 package demoDungeon.level;
 
+import contrib.components.CatapultableComponent;
+import contrib.components.CollideComponent;
+import contrib.configuration.KeyboardConfig;
+import core.Entity;
+import core.Game;
+import core.components.InputComponent;
+import core.components.PositionComponent;
+import core.components.VelocityComponent;
 import core.level.DungeonLevel;
 import core.level.Tile;
 import core.level.utils.*;
+import core.utils.MissingPlayerException;
 import core.utils.Point;
+import core.utils.Vector2;
+
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * The Demolevel.
@@ -34,8 +46,6 @@ public class Dungeon extends DungeonLevel {
         DesignLabel.GREYCASTLE);
     changeTileDesignLabel(
         getPoint("grass11").toCoordinate(), getPoint("grass12").toCoordinate(), DesignLabel.FOREST);
-    changeTileDesignLabel(
-        getPoint("fire11").toCoordinate(), getPoint("fire12").toCoordinate(), DesignLabel.FIRE);
     changeTileDesignLabel(
         getPoint("temple11").toCoordinate(),
         getPoint("temple12").toCoordinate(),
@@ -73,10 +83,42 @@ public class Dungeon extends DungeonLevel {
   }
 
   @Override
-  protected void onFirstTick() {}
+  protected void onFirstTick() {
+    changeIceTiles(
+      getPoint("fire11").toCoordinate(), getPoint("fire12").toCoordinate(), DesignLabel.ICE);
+      refreshLevelTextures();
+  }
 
   @Override
-  protected void onTick() {}
+  protected void onTick() {
+    Entity hero = Game.player().orElseThrow(MissingPlayerException::new);
+    PositionComponent pc = hero.fetch(PositionComponent.class).get();
+    Point currentPos = pc.position().translate(Vector2.of(1, 0.5));
+    VelocityComponent vc = hero.fetch(VelocityComponent.class).get();
+    CatapultableComponent catapultableComponent = hero.fetch(CatapultableComponent.class).get();
+    Tile currentTile = Game.tileAt(currentPos).get();
+
+    if (currentTile.designLabel() == DesignLabel.ICE) {
+      Tile tileInFront = Game.tileAt(currentPos.translate(pc.viewDirection())).get();
+      vc.onWallHit((self) -> {
+        vc.currentVelocity(Vector2.ZERO);
+        catapultableComponent.reactivate().accept(hero);
+      });
+      if(!tileInFront.levelElement().value()) {
+        vc.currentVelocity(Vector2.ZERO);
+        catapultableComponent.reactivate().accept(hero);
+      }
+      else {
+        vc.currentVelocity(pc.viewDirection().scale(vc.maxSpeed()));
+        catapultableComponent.deactivate().accept(hero);
+      }
+    }
+    else {
+      catapultableComponent.reactivate().accept(hero);
+      vc.onWallHit(e -> {});
+    }
+
+  }
 
   private void changeTileDesignLabel(Coordinate a, Coordinate b, DesignLabel newDesignLabel) {
     int minX = Math.min(a.x(), b.x());
@@ -87,6 +129,21 @@ public class Dungeon extends DungeonLevel {
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
         layout[y][x].designLabel(newDesignLabel);
+        updatedTiles.add(layout[y][x]);
+      }
+    }
+  }
+  private void changeIceTiles(Coordinate a, Coordinate b, DesignLabel newDesignLabel) {
+    int minX = Math.min(a.x(), b.x());
+    int maxX = Math.max(a.x(), b.x());
+    int minY = Math.min(a.y(), b.y());
+    int maxY = Math.max(a.y(), b.y());
+
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        layout[y][x].designLabel(newDesignLabel);
+        layout[y][x].tintColor(-1);
+        layout[y][x].friction(0);
         updatedTiles.add(layout[y][x]);
       }
     }
