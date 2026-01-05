@@ -83,7 +83,7 @@ public final class CollisionSystem extends System {
   public void execute() {
     // Rebuild cache if entities were added or removed
     if (cacheInvalid) {
-      // rebuildCache();
+      rebuildCache();
     }
     cachedPairs.forEach(this::onEnterLeaveCheck);
   }

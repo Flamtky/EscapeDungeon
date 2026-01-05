@@ -1,19 +1,27 @@
 package demoDungeon.level;
 
+import com.badlogic.gdx.graphics.Color;
 import contrib.components.CatapultableComponent;
 import contrib.components.CollideComponent;
-import contrib.configuration.KeyboardConfig;
+import contrib.components.FlyComponent;
+import contrib.components.InventoryComponent;
+import contrib.utils.EntityUtils;
 import core.Entity;
 import core.Game;
+import core.components.DrawComponent;
 import core.components.InputComponent;
 import core.components.PositionComponent;
 import core.components.VelocityComponent;
+import core.configuration.KeyboardConfig;
 import core.level.DungeonLevel;
 import core.level.Tile;
 import core.level.utils.*;
-import core.utils.MissingPlayerException;
-import core.utils.Point;
-import core.utils.Vector2;
+import core.network.messages.c2s.InputMessage;
+import core.utils.*;
+import core.utils.components.draw.DepthLayer;
+import core.utils.components.path.SimpleIPath;
+import escapeDungeon.components.IceMovementComponent;
+import escapeDungeon.items.IceWallPlacer;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -87,37 +95,123 @@ public class Dungeon extends DungeonLevel {
     changeIceTiles(
       getPoint("fire11").toCoordinate(), getPoint("fire12").toCoordinate(), DesignLabel.ICE);
       refreshLevelTextures();
+    createPushPuzzleEntities();
+    Entity hero = Game.allPlayers().findFirst().orElseThrow();
+    hero.fetch(InventoryComponent.class).ifPresent((ic) -> {
+      ic.add(new IceWallPlacer());
+    });
   }
 
   @Override
   protected void onTick() {
-    Entity hero = Game.player().orElseThrow(MissingPlayerException::new);
+    Game.allPlayers().forEach(hero -> {
+      if (hero.fetch(IceMovementComponent.class).isPresent()) {
+        iceMovement(hero);
+      }
+      else {
+        iceControls(hero);
+      }
+    });
+  }
+
+  private void iceMovement(Entity hero) {
     PositionComponent pc = hero.fetch(PositionComponent.class).get();
-    Point currentPos = pc.position().translate(Vector2.of(1, 0.5));
+    Point currentPos = EntityUtils.getPosition(hero);
     VelocityComponent vc = hero.fetch(VelocityComponent.class).get();
-    CatapultableComponent catapultableComponent = hero.fetch(CatapultableComponent.class).get();
+    InputComponent ic = hero.fetch(InputComponent.class).get();
+    Tile currentTile = Game.tileAt(currentPos).get();
+
+  }
+
+  private void createPushPuzzleEntities() {
+    listPointsIndexed("snow_Wall")
+      .forEach(
+        tuple -> {
+          Point pos = tuple.a();
+          Entity snowWall = new Entity("snow_Wall");
+          snowWall.add(new PositionComponent(pos));
+          DrawComponent dc = new DrawComponent(new SimpleIPath("dungeon/ice/floor/floor_hole.png"));
+          dc.depth(DepthLayer.Player.depth());
+          CollideComponent cc = new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f));
+          TriConsumer<Entity, Entity, Direction> onCollideEnter =
+            (self, other, dir) -> {
+              if (other.fetch(InputComponent.class).isPresent()) {
+                Game.remove(self);
+              }
+            };
+          cc.collideEnter(onCollideEnter);
+          snowWall.add(dc);
+          snowWall.add(cc);
+          Game.add(snowWall);
+        });
+    listPointsIndexed("ice_Wall")
+      .forEach(
+        tuple -> {
+          Point pos = tuple.a();
+          Tile iceTile = Game.tileAt(pos).get();
+          iceTile.levelElement(LevelElement.HOLE);
+          iceTile.refreshTexture();
+        });
+  }
+
+  private int directionKey (Direction direction) {
+    return switch (direction) {
+      case UP -> KeyboardConfig.MOVEMENT_UP.value();
+      case DOWN -> KeyboardConfig.MOVEMENT_DOWN.value();
+      case LEFT -> KeyboardConfig.MOVEMENT_LEFT.value();
+      case RIGHT -> KeyboardConfig.MOVEMENT_RIGHT.value();
+      default -> -1;
+    };
+  }
+
+  private void addCallbacks(InputComponent inputComp) {
+    inputComp.registerCallback(
+      core.configuration.KeyboardConfig.MOVEMENT_UP.value(),
+      (caller) ->
+        Game.network().sendInput(new InputMessage(InputMessage.Action.MOVE, Direction.UP)));
+    inputComp.registerCallback(
+      core.configuration.KeyboardConfig.MOVEMENT_DOWN.value(),
+      (caller) ->
+        Game.network().sendInput(new InputMessage(InputMessage.Action.MOVE, Direction.DOWN)));
+    inputComp.registerCallback(
+      core.configuration.KeyboardConfig.MOVEMENT_RIGHT.value(),
+      (caller) ->
+        Game.network().sendInput(new InputMessage(InputMessage.Action.MOVE, Direction.RIGHT)));
+    inputComp.registerCallback(
+      core.configuration.KeyboardConfig.MOVEMENT_LEFT.value(),
+      (caller) ->
+        Game.network().sendInput(new InputMessage(InputMessage.Action.MOVE, Direction.LEFT)));
+  }
+
+  private void iceControls(Entity hero) {
+    PositionComponent pc = hero.fetch(PositionComponent.class).get();
+    Point currentPos = EntityUtils.getPosition(hero);
+    VelocityComponent vc = hero.fetch(VelocityComponent.class).get();
+    InputComponent ic = hero.fetch(InputComponent.class).get();
     Tile currentTile = Game.tileAt(currentPos).get();
 
     if (currentTile.designLabel() == DesignLabel.ICE) {
+      if (hero.fetch(FlyComponent.class).isEmpty()) {
+        hero.add(new FlyComponent());
+      }
       Tile tileInFront = Game.tileAt(currentPos.translate(pc.viewDirection())).get();
+
       vc.onWallHit((self) -> {
         vc.currentVelocity(Vector2.ZERO);
-        catapultableComponent.reactivate().accept(hero);
+        ic.removeCallback(directionKey(pc.viewDirection()));
+        ic.deactivateControls(false);
       });
-      if(!tileInFront.levelElement().value()) {
-        vc.currentVelocity(Vector2.ZERO);
-        catapultableComponent.reactivate().accept(hero);
-      }
-      else {
+      if(tileInFront.levelElement().value()) {
         vc.currentVelocity(pc.viewDirection().scale(vc.maxSpeed()));
-        catapultableComponent.deactivate().accept(hero);
+        addCallbacks(ic);
+        ic.deactivateControls(true);
       }
-    }
-    else {
-      catapultableComponent.reactivate().accept(hero);
+    } else {
+      addCallbacks(ic);
+      ic.deactivateControls(false);
       vc.onWallHit(e -> {});
+      hero.remove(FlyComponent.class);
     }
-
   }
 
   private void changeTileDesignLabel(Coordinate a, Coordinate b, DesignLabel newDesignLabel) {
@@ -133,6 +227,7 @@ public class Dungeon extends DungeonLevel {
       }
     }
   }
+
   private void changeIceTiles(Coordinate a, Coordinate b, DesignLabel newDesignLabel) {
     int minX = Math.min(a.x(), b.x());
     int maxX = Math.max(a.x(), b.x());
@@ -143,7 +238,7 @@ public class Dungeon extends DungeonLevel {
       for (int x = minX; x <= maxX; x++) {
         layout[y][x].designLabel(newDesignLabel);
         layout[y][x].tintColor(-1);
-        layout[y][x].friction(0);
+        //layout[y][x].friction(0);
         updatedTiles.add(layout[y][x]);
       }
     }
