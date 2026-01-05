@@ -1,7 +1,5 @@
 package demoDungeon.level;
 
-import com.badlogic.gdx.graphics.Color;
-import contrib.components.CatapultableComponent;
 import contrib.components.CollideComponent;
 import contrib.components.FlyComponent;
 import contrib.components.InventoryComponent;
@@ -22,9 +20,7 @@ import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
 import escapeDungeon.components.IceMovementComponent;
 import escapeDungeon.items.IceWallPlacer;
-
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * The Demolevel.
@@ -93,68 +89,50 @@ public class Dungeon extends DungeonLevel {
   @Override
   protected void onFirstTick() {
     changeIceTiles(
-      getPoint("fire11").toCoordinate(), getPoint("fire12").toCoordinate(), DesignLabel.ICE);
-      refreshLevelTextures();
+        getPoint("fire11").toCoordinate(), getPoint("fire12").toCoordinate(), DesignLabel.ICE);
+    refreshLevelTextures();
     createPushPuzzleEntities();
     Entity hero = Game.allPlayers().findFirst().orElseThrow();
-    hero.fetch(InventoryComponent.class).ifPresent((ic) -> {
-      ic.add(new IceWallPlacer());
-    });
+    hero.fetch(InventoryComponent.class).ifPresent((ic) -> ic.add(new IceWallPlacer()));
   }
 
   @Override
   protected void onTick() {
-    Game.allPlayers().forEach(hero -> {
-      if (hero.fetch(IceMovementComponent.class).isPresent()) {
-        iceMovement(hero);
-      }
-      else {
-        iceControls(hero);
-      }
-    });
-  }
-
-  private void iceMovement(Entity hero) {
-    PositionComponent pc = hero.fetch(PositionComponent.class).get();
-    Point currentPos = EntityUtils.getPosition(hero);
-    VelocityComponent vc = hero.fetch(VelocityComponent.class).get();
-    InputComponent ic = hero.fetch(InputComponent.class).get();
-    Tile currentTile = Game.tileAt(currentPos).get();
-
+    Game.allPlayers()
+        .forEach(
+            hero -> {
+              if (hero.fetch(IceMovementComponent.class).isEmpty()) {
+                iceControls(hero);
+              }
+            });
   }
 
   private void createPushPuzzleEntities() {
     listPointsIndexed("snow_Wall")
-      .forEach(
-        tuple -> {
-          Point pos = tuple.a();
-          Entity snowWall = new Entity("snow_Wall");
-          snowWall.add(new PositionComponent(pos));
-          DrawComponent dc = new DrawComponent(new SimpleIPath("dungeon/ice/floor/floor_hole.png"));
-          dc.depth(DepthLayer.Player.depth());
-          CollideComponent cc = new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f));
-          TriConsumer<Entity, Entity, Direction> onCollideEnter =
-            (self, other, dir) -> {
-              if (other.fetch(InputComponent.class).isPresent()) {
-                Game.remove(self);
-              }
-            };
-          cc.collideEnter(onCollideEnter);
-          snowWall.add(dc);
-          snowWall.add(cc);
-          Game.add(snowWall);
-        });
-    listPointsIndexed("ice_Wall")
-      .forEach(
-        tuple -> {
-          Point pos = tuple.a();
-          Tile iceTile = Game.tileAt(pos).get();
-          iceTile.levelElement(LevelElement.HOLE);
-          iceTile.refreshTexture();
-        });
+        .forEach(
+            tuple -> {
+              Point pos = tuple.a();
+              Entity snowWall = new Entity("snow_Wall");
+              snowWall.add(new PositionComponent(pos));
+              DrawComponent dc =
+                  new DrawComponent(new SimpleIPath("dungeon/ice/floor/floor_hole.png"));
+              dc.depth(DepthLayer.Player.depth());
+              CollideComponent cc =
+                  new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f));
+              TriConsumer<Entity, Entity, Direction> onCollideEnter =
+                  (self, other, dir) -> {
+                    if (other.fetch(InputComponent.class).isPresent()) {
+                      Game.remove(self);
+                    }
+                  };
+              cc.collideEnter(onCollideEnter);
+              snowWall.add(dc);
+              snowWall.add(cc);
+              Game.add(snowWall);
+            });
   }
 
-  private int directionKey (Direction direction) {
+  private int directionKey(Direction direction) {
     return switch (direction) {
       case UP -> KeyboardConfig.MOVEMENT_UP.value();
       case DOWN -> KeyboardConfig.MOVEMENT_DOWN.value();
@@ -166,21 +144,21 @@ public class Dungeon extends DungeonLevel {
 
   private void addCallbacks(InputComponent inputComp) {
     inputComp.registerCallback(
-      core.configuration.KeyboardConfig.MOVEMENT_UP.value(),
-      (caller) ->
-        Game.network().sendInput(new InputMessage(InputMessage.Action.MOVE, Direction.UP)));
+        core.configuration.KeyboardConfig.MOVEMENT_UP.value(),
+        (caller) ->
+            Game.network().sendInput(new InputMessage(InputMessage.Action.MOVE, Direction.UP)));
     inputComp.registerCallback(
-      core.configuration.KeyboardConfig.MOVEMENT_DOWN.value(),
-      (caller) ->
-        Game.network().sendInput(new InputMessage(InputMessage.Action.MOVE, Direction.DOWN)));
+        core.configuration.KeyboardConfig.MOVEMENT_DOWN.value(),
+        (caller) ->
+            Game.network().sendInput(new InputMessage(InputMessage.Action.MOVE, Direction.DOWN)));
     inputComp.registerCallback(
-      core.configuration.KeyboardConfig.MOVEMENT_RIGHT.value(),
-      (caller) ->
-        Game.network().sendInput(new InputMessage(InputMessage.Action.MOVE, Direction.RIGHT)));
+        core.configuration.KeyboardConfig.MOVEMENT_RIGHT.value(),
+        (caller) ->
+            Game.network().sendInput(new InputMessage(InputMessage.Action.MOVE, Direction.RIGHT)));
     inputComp.registerCallback(
-      core.configuration.KeyboardConfig.MOVEMENT_LEFT.value(),
-      (caller) ->
-        Game.network().sendInput(new InputMessage(InputMessage.Action.MOVE, Direction.LEFT)));
+        core.configuration.KeyboardConfig.MOVEMENT_LEFT.value(),
+        (caller) ->
+            Game.network().sendInput(new InputMessage(InputMessage.Action.MOVE, Direction.LEFT)));
   }
 
   private void iceControls(Entity hero) {
@@ -196,12 +174,13 @@ public class Dungeon extends DungeonLevel {
       }
       Tile tileInFront = Game.tileAt(currentPos.translate(pc.viewDirection())).get();
 
-      vc.onWallHit((self) -> {
-        vc.currentVelocity(Vector2.ZERO);
-        ic.removeCallback(directionKey(pc.viewDirection()));
-        ic.deactivateControls(false);
-      });
-      if(tileInFront.levelElement().value()) {
+      vc.onWallHit(
+          (self) -> {
+            vc.currentVelocity(Vector2.ZERO);
+            ic.removeCallback(directionKey(pc.viewDirection()));
+            ic.deactivateControls(false);
+          });
+      if (tileInFront.levelElement().value()) {
         vc.currentVelocity(pc.viewDirection().scale(vc.maxSpeed()));
         addCallbacks(ic);
         ic.deactivateControls(true);
@@ -238,7 +217,6 @@ public class Dungeon extends DungeonLevel {
       for (int x = minX; x <= maxX; x++) {
         layout[y][x].designLabel(newDesignLabel);
         layout[y][x].tintColor(-1);
-        //layout[y][x].friction(0);
         updatedTiles.add(layout[y][x]);
       }
     }
