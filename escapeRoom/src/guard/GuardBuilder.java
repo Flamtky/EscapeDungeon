@@ -1,8 +1,10 @@
 package guard;
 
+import contrib.components.CollideComponent;
 import core.Entity;
 import core.Game;
 import core.utils.Point;
+import core.utils.Vector2;
 import core.utils.components.path.SimpleIPath;
 import java.util.function.Function;
 import mobs.EscapeRoomMonsterBuilder;
@@ -90,6 +92,12 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
     this.transitionAI(() -> new GuardTransition(alertnessThreshold, stayAlertOnceTriggered));
 
     Entity guard = super.build(spawnPos);
+
+    // decrease collider size
+    CollideComponent cc = guard.fetch(CollideComponent.class).orElseThrow();
+    cc.collider().width(0.5f);
+    cc.collider().height(0.5f);
+    cc.collider().offset(Vector2.of(0.25f, 0.05f));
 
     // Alertness component with configured view cone settings
     AlertnessComponent ac = new AlertnessComponent(viewConeAngle, viewRange);

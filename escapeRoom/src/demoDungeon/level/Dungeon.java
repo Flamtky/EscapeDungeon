@@ -7,16 +7,19 @@ import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
 import contrib.systems.EventScheduler;
 import contrib.utils.ICommand;
+import contrib.utils.components.ai.fight.AIChaseBehaviour;
+import contrib.utils.components.ai.idle.PatrolWalk;
 import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
 import core.components.VelocityComponent;
-import contrib.utils.components.ai.fight.AIChaseBehaviour;
-import contrib.utils.components.ai.idle.PatrolWalk;
 import core.level.DungeonLevel;
+import core.level.Tile;
 import core.level.elements.tile.DoorTile;
 import core.level.utils.*;
+import core.systems.DrawSystem;
+import core.utils.*;
 import core.systems.DrawSystem;
 import core.utils.*;
 import core.utils.Direction;
@@ -28,6 +31,7 @@ import core.utils.components.path.SimpleIPath;
 import guard.AlertnessComponent;
 import guard.GuardBuilder;
 import java.util.*;
+import mobs.EscapeRoomMonsterBuilder;
 import mushRoom.Sounds;
 import mushRoom.shaders.TorchPostProcessing;
 import mobs.EscapeRoomMonsterBuilder;
@@ -101,6 +105,8 @@ public class Dungeon extends DungeonLevel {
     Color.GREEN
   };
 
+  private final Tuple<Point[], PatrolWalk.MODE>[] guardCheckPoints;
+
   /**
    * Creates a new Demo Level.
    *
@@ -108,6 +114,7 @@ public class Dungeon extends DungeonLevel {
    * @param designLabel The design label of the level.
    * @param namedPoints The custom points of the level.
    */
+  @SuppressWarnings("unchecked")
   public Dungeon(LevelElement[][] layout, DesignLabel designLabel, Map<String, Point> namedPoints) {
     super(layout, designLabel, namedPoints, "Demo");
     changeTileDesignLabel(
@@ -175,14 +182,127 @@ public class Dungeon extends DungeonLevel {
           torchShader.addArea(new Rectangle(getPoint("forest23"), getPoint("forest24")));
           ds.sceneShaders().add("torches", torchShader);
         });
+
+    guardCheckPoints =
+        new Tuple[] {
+          // 8
+          Tuple.of(
+              new Point[] {
+                getPoint("guard1_cp1"),
+                getPoint("guard1_cp2"),
+                getPoint("guard1_cp3"),
+                getPoint("guard1_cp4"),
+                getPoint("guard1_cp5"),
+                getPoint("guard1_cp6"),
+                getPoint("guard1_cp7"),
+                getPoint("guard1_cp8")
+              },
+              PatrolWalk.MODE.BACK_AND_FORTH),
+          // 9
+          Tuple.of(
+              new Point[] {
+                getPoint("guard2_cp1"),
+                getPoint("guard2_cp2"),
+                getPoint("guard2_cp3"),
+                getPoint("guard2_cp4"),
+                getPoint("guard2_cp5"),
+                getPoint("guard2_cp6"),
+                getPoint("guard2_cp7"),
+                getPoint("guard2_cp8"),
+                getPoint("guard2_cp9"),
+              },
+              PatrolWalk.MODE.RANDOM),
+          // 11
+          Tuple.of(
+              new Point[] {
+                getPoint("guard3_cp1"),
+                getPoint("guard3_cp2"),
+                getPoint("guard3_cp3"),
+                getPoint("guard3_cp4"),
+                getPoint("guard3_cp5"),
+                getPoint("guard3_cp6"),
+                getPoint("guard3_cp7"),
+                getPoint("guard3_cp8"),
+                getPoint("guard3_cp9"),
+                getPoint("guard3_cp10"),
+                getPoint("guard3_cp11"),
+              },
+              PatrolWalk.MODE.LOOP),
+          // 19
+          Tuple.of(
+              new Point[] {
+                getPoint("guard4_cp1"),
+                getPoint("guard4_cp2"),
+                getPoint("guard4_cp3"),
+                getPoint("guard4_cp4"),
+                getPoint("guard4_cp5"),
+                getPoint("guard4_cp6"),
+                getPoint("guard4_cp7"),
+                getPoint("guard4_cp8"),
+                getPoint("guard4_cp9"),
+                getPoint("guard4_cp10"),
+                getPoint("guard4_cp11"),
+                getPoint("guard4_cp12"),
+                getPoint("guard4_cp13"),
+                getPoint("guard4_cp14"),
+                getPoint("guard4_cp15"),
+                getPoint("guard4_cp16"),
+                getPoint("guard4_cp17"),
+                getPoint("guard4_cp18"),
+                getPoint("guard4_cp19"),
+              },
+              PatrolWalk.MODE.LOOP),
+          // 11
+          Tuple.of(
+              new Point[] {
+                getPoint("guard5_cp1"),
+                getPoint("guard5_cp2"),
+                getPoint("guard5_cp3"),
+                getPoint("guard5_cp4"),
+                getPoint("guard5_cp5"),
+                getPoint("guard5_cp6"),
+                getPoint("guard5_cp7"),
+                getPoint("guard5_cp8"),
+                getPoint("guard5_cp9"),
+                getPoint("guard5_cp10"),
+                getPoint("guard5_cp11"),
+              },
+              PatrolWalk.MODE.BACK_AND_FORTH),
+          // 23
+          Tuple.of(
+              new Point[] {
+                getPoint("guard6_cp1"),
+                getPoint("guard6_cp2"),
+                getPoint("guard6_cp3"),
+                getPoint("guard6_cp4"),
+                getPoint("guard6_cp5"),
+                getPoint("guard6_cp6"),
+                getPoint("guard6_cp7"),
+                getPoint("guard6_cp8"),
+                getPoint("guard6_cp9"),
+                getPoint("guard6_cp10"),
+                getPoint("guard6_cp11"),
+                getPoint("guard6_cp12"),
+                getPoint("guard6_cp13"),
+                getPoint("guard6_cp14"),
+                getPoint("guard6_cp15"),
+                getPoint("guard6_cp16"),
+                getPoint("guard6_cp17"),
+                getPoint("guard6_cp18"),
+                getPoint("guard6_cp19"),
+                getPoint("guard6_cp20"),
+                getPoint("guard6_cp21"),
+                getPoint("guard6_cp22"),
+                getPoint("guard6_cp23"),
+              },
+              PatrolWalk.MODE.LOOP),
+        };
   }
 
   @Override
   protected void onFirstTick() {
     createPushPuzzle();
-    for (int i = 0; i < 10; i++) {
-      createGuards();
-    }
+    initGuards();
   }
 
   private void createPushPuzzle() {
@@ -425,14 +545,24 @@ public class Dungeon extends DungeonLevel {
     }
   }
 
-  private void createGuards() {
-    var guard =
+  private void initGuards() {
+    for (Tuple<Point[], PatrolWalk.MODE> guardCheckPoint : guardCheckPoints) {
+      Tile[] checkPoints = new Tile[guardCheckPoint.a().length];
+      for (int j = 0; j < guardCheckPoint.a().length; j++) {
+        checkPoints[j] = tileAt(guardCheckPoint.a()[j]).orElseThrow();
+      }
+      createGuards(checkPoints, guardCheckPoint.b());
+    }
+  }
+
+  private void createGuards(Tile[] patrolPoints, PatrolWalk.MODE mode) {
+    Entity guard =
         ((GuardBuilder) EscapeRoomMonsterBuilder.GUARD.builder())
             .alertnessThreshold(100, true)
             .addToGame()
             .speed(3.5f)
             .fightAI(AIChaseBehaviour::new)
-            .idleAI(() -> new PatrolWalk(250, 10, 10, PatrolWalk.MODE.BACK_AND_FORTH))
+            .idleAI(() -> new PatrolWalk(Arrays.asList(patrolPoints), 5_000, mode))
             .build(this.getPoint("guardSpawn"));
 
     // Register alertness callbacks for testing
