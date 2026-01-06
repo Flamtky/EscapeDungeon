@@ -157,24 +157,6 @@ public final class LevelUtils {
   }
 
   /**
-   * Finds the path from the position of one entity to the position of the player.
-   *
-   * <p>If no player exists in the game, the path will be calculated from the given entity to the
-   * given entity.
-   *
-   * <p>Throws an IllegalArgumentException if one of the entities position is non-accessible.
-   *
-   * @param entity Entity from which the path to the player is calculated.
-   * @return Path from the entity to the player, if there is no player, the path from the entity to
-   *     itself.
-   */
-  public static GraphPath<Tile> calculatePathToPlayer(final Entity entity) {
-    Optional<Entity> player = Game.player();
-    if (player.isPresent()) return calculatePath(entity, player.get());
-    else return calculatePath(entity, entity);
-  }
-
-  /**
    * Get the last Tile in the given GraphPath.
    *
    * @param path Considered GraphPath.
@@ -326,18 +308,6 @@ public final class LevelUtils {
    */
   public static boolean entityInRange(final Entity entity1, final Entity entity2, float range) {
     return Point.inRange(EntityUtils.getPosition(entity1), EntityUtils.getPosition(entity2), range);
-  }
-
-  /**
-   * Check if the player is in the given range of an entity.
-   *
-   * @param entity Entity whose position specifies the center point.
-   * @param range The range within which the player should be located.
-   * @return True if the position of the player is within the given radius of the position of the
-   *     given entity. If there is no player, return false.
-   */
-  public static boolean playerInRange(final Entity entity, float range) {
-    return Game.player().filter(value -> entityInRange(entity, value, range)).isPresent();
   }
 
   /**

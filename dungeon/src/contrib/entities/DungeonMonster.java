@@ -30,7 +30,8 @@ public enum DungeonMonster {
               .idleSound(MonsterIdleSound.HIGH_PITCH)
               .fightAI(AIFactory::randomFightAI)
               .idleAI(AIFactory::randomIdleAI)
-              .transitionAI(() -> (self) -> AIFactory.randomTransition(self).apply(self))
+              .transitionAI(
+                  () -> (self, player) -> AIFactory.randomTransition(self).apply(self, player))
               .collideDamage(5)
               .collideCooldown(2 * Game.frameRate())
               .damageType(DamageType.PHYSICAL)),
@@ -57,7 +58,8 @@ public enum DungeonMonster {
               .idleSound(MonsterIdleSound.BURP)
               .fightAI(AIFactory::randomFightAI)
               .idleAI(AIFactory::randomIdleAI)
-              .transitionAI(() -> (self) -> AIFactory.randomTransition(self).apply(self))
+              .transitionAI(
+                  () -> (self, player) -> AIFactory.randomTransition(self).apply(self, player))
               .collideDamage(4)
               .collideCooldown(2 * Game.frameRate())
               .damageType(DamageType.PHYSICAL)),
@@ -84,7 +86,8 @@ public enum DungeonMonster {
               .idleSound(MonsterIdleSound.LOWER_PITCH)
               .fightAI(AIFactory::randomFightAI)
               .idleAI(AIFactory::randomIdleAI)
-              .transitionAI(() -> (self) -> AIFactory.randomTransition(self).apply(self))
+              .transitionAI(
+                  () -> (self, player) -> AIFactory.randomTransition(self).apply(self, player))
               .collideDamage(8)
               .collideCooldown(2 * Game.frameRate())
               .damageType(DamageType.PHYSICAL)),
@@ -111,7 +114,8 @@ public enum DungeonMonster {
               .idleSound(MonsterIdleSound.BASIC)
               .fightAI(AIFactory::randomFightAI)
               .idleAI(AIFactory::randomIdleAI)
-              .transitionAI(() -> (self) -> AIFactory.randomTransition(self).apply(self))
+              .transitionAI(
+                  () -> (self, player) -> AIFactory.randomTransition(self).apply(self, player))
               .collideDamage(3)
               .collideCooldown(2 * Game.frameRate())
               .damageType(DamageType.PHYSICAL)),
@@ -138,7 +142,8 @@ public enum DungeonMonster {
               .idleSound(MonsterIdleSound.LOWER_PITCH)
               .fightAI(AIFactory::randomFightAI)
               .idleAI(AIFactory::randomIdleAI)
-              .transitionAI(() -> (self) -> AIFactory.randomTransition(self).apply(self))
+              .transitionAI(
+                  () -> (self, player) -> AIFactory.randomTransition(self).apply(self, player))
               .collideDamage(4)
               .collideCooldown(2 * Game.frameRate())
               .damageType(DamageType.PHYSICAL)),
@@ -165,7 +170,8 @@ public enum DungeonMonster {
               .idleSound(MonsterIdleSound.LOWER_PITCH)
               .fightAI(AIFactory::randomFightAI)
               .idleAI(AIFactory::randomIdleAI)
-              .transitionAI(() -> (self) -> AIFactory.randomTransition(self).apply(self))
+              .transitionAI(
+                  () -> (self, player) -> AIFactory.randomTransition(self).apply(self, player))
               .collideDamage(4)
               .collideCooldown(2 * Game.frameRate())
               .damageType(DamageType.PHYSICAL));

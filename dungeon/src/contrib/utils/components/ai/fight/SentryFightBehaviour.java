@@ -12,13 +12,13 @@ import core.level.utils.LevelUtils;
 import core.utils.Direction;
 import core.utils.Point;
 import core.utils.components.MissingComponentException;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * A fight behavior for a patrolling "sentry" entity that patrols back and forth between two points
  * (A and B) and attacks when the player is within a given range.
  */
-public class SentryFightBehaviour implements Consumer<Entity>, ISkillUser {
+public class SentryFightBehaviour implements BiConsumer<Entity, Entity>, ISkillUser {
   private final Point pointA;
   private final Point pointB;
   private final boolean canEnterWalls;
@@ -61,7 +61,7 @@ public class SentryFightBehaviour implements Consumer<Entity>, ISkillUser {
   }
 
   @Override
-  public void accept(Entity entity) {
+  public void accept(Entity entity, Entity player) {
     PositionComponent entityPosComp =
         entity
             .fetch(PositionComponent.class)
@@ -88,17 +88,17 @@ public class SentryFightBehaviour implements Consumer<Entity>, ISkillUser {
     fightSkill.endPointSupplier(() -> targetEndPoint);
 
     // attack if player is in range
-    tryAttack(entity);
+    tryAttack(entity, player);
   }
 
   private Point getTargetPoint() {
     return toB ? pointB : pointA;
   }
 
-  private void tryAttack(Entity entity) {
+  private void tryAttack(Entity entity, Entity player) {
     if (fightSkill == null) return;
 
-    if (LevelUtils.playerInRange(entity, attackRange)) {
+    if (LevelUtils.entityInRange(entity, player, attackRange)) {
       long now = System.currentTimeMillis();
       if (now - lastAttackTime >= fightSkill.cooldown()) {
         useSkill(fightSkill, entity);

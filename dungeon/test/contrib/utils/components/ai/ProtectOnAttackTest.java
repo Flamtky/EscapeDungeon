@@ -71,7 +71,7 @@ public class ProtectOnAttackTest {
     // given
     AIComponent attackerAI =
         new AIComponent(
-            entity -> {
+            (entity, player) -> {
               updateCounter++;
             },
             new RadiusWalk(2, 2),
@@ -91,7 +91,7 @@ public class ProtectOnAttackTest {
     // given
     AIComponent attackerAI =
         new AIComponent(
-            entity -> {
+            (entity, player) -> {
               updateCounter++;
             },
             new RadiusWalk(2, 2),
@@ -109,7 +109,7 @@ public class ProtectOnAttackTest {
     // given
     AIComponent attackerAI =
         new AIComponent(
-            entity -> {
+            (entity, player) -> {
               updateCounter++;
             },
             new RadiusWalk(2, 2),
@@ -135,7 +135,7 @@ public class ProtectOnAttackTest {
     // given
     AIComponent attackerAI =
         new AIComponent(
-            entity -> {
+            (entity, player) -> {
               updateCounter++;
             },
             new RadiusWalk(2, 2),

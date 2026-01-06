@@ -13,7 +13,7 @@ import core.level.utils.LevelUtils;
 import core.utils.Point;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * Implements a combat AI. The entity attacks the player if they are within a specified minimum and
@@ -22,7 +22,7 @@ import java.util.function.Consumer;
  *
  * @see ISkillUser
  */
-public class AIRangeBehaviour implements Consumer<Entity>, ISkillUser {
+public class AIRangeBehaviour implements BiConsumer<Entity, Entity>, ISkillUser {
 
   private enum Proximity {
     TOO_CLOSE,
@@ -57,11 +57,11 @@ public class AIRangeBehaviour implements Consumer<Entity>, ISkillUser {
   }
 
   @Override
-  public void accept(final Entity entity) {
-    switch (proximity(entity)) {
+  public void accept(final Entity entity, final Entity player) {
+    switch (proximity(entity, player)) {
       case IN_RANGE -> useSkill(fightSkill, entity);
-      case TOO_CLOSE -> moveAwayFromPlayer(entity);
-      case TOO_FAR -> moveToPlayer(entity);
+      case TOO_CLOSE -> moveAwayFromPlayer(entity, player);
+      case TOO_FAR -> moveToPlayer(entity, player);
     }
   }
 
@@ -69,34 +69,24 @@ public class AIRangeBehaviour implements Consumer<Entity>, ISkillUser {
    * Determines the proximity of the entity to the player.
    *
    * @param entity The entity to check.
+   * @param player The player entity.
    * @return The proximity status of the entity relative to the player.
    */
-  private Proximity proximity(final Entity entity) {
-    if (inRange(entity, minAttackRange)) return Proximity.TOO_CLOSE;
-    if (inRange(entity, maxAttackRange)) return Proximity.IN_RANGE;
+  private Proximity proximity(final Entity entity, final Entity player) {
+    if (LevelUtils.entityInRange(entity, player, minAttackRange)) return Proximity.TOO_CLOSE;
+    if (LevelUtils.entityInRange(entity, player, maxAttackRange)) return Proximity.IN_RANGE;
     return Proximity.TOO_FAR;
-  }
-
-  /**
-   * Checks if the entity is in range of the player.
-   *
-   * @param entity The entity to check.
-   * @param radius The radius within which the entity should be considered in range.
-   * @return True if the entity is in range, false otherwise.
-   */
-  private boolean inRange(final Entity entity, final float radius) {
-    return LevelUtils.playerInRange(entity, radius);
   }
 
   /**
    * Moves the entity away from the player if he is too close.
    *
    * @param entity The entity to move.
+   * @param player The player entity.
    */
-  private void moveAwayFromPlayer(Entity entity) {
+  private void moveAwayFromPlayer(Entity entity, Entity player) {
     // Get player position
-    Game.player()
-        .flatMap(Game::positionOf)
+    Game.positionOf(player)
         // Get entity position and determine escape path
         .flatMap(
             positionPlayer ->
@@ -147,9 +137,10 @@ public class AIRangeBehaviour implements Consumer<Entity>, ISkillUser {
    * Moves the entity towards the player if he is too far away.
    *
    * @param entity The entity to move.
+   * @param player The player entity.
    */
-  private void moveToPlayer(Entity entity) {
-    GraphPath<Tile> path = LevelUtils.calculatePathToPlayer(entity);
+  private void moveToPlayer(Entity entity, Entity player) {
+    GraphPath<Tile> path = LevelUtils.calculatePath(entity, player);
     AIUtils.followPath(entity, path);
   }
 

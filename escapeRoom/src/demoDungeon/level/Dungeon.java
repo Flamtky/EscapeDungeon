@@ -7,7 +7,6 @@ import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
 import contrib.systems.EventScheduler;
 import contrib.utils.ICommand;
-import contrib.utils.components.ai.fight.AIChaseBehaviour;
 import contrib.utils.components.ai.idle.PatrolWalk;
 import core.Entity;
 import core.Game;
@@ -28,7 +27,6 @@ import core.utils.TriConsumer;
 import core.utils.Vector2;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
-import guard.AlertnessComponent;
 import guard.GuardBuilder;
 import java.util.*;
 import mobs.EscapeRoomMonsterBuilder;
@@ -555,25 +553,12 @@ public class Dungeon extends DungeonLevel {
     }
   }
 
-  private void createGuards(Tile[] patrolPoints, PatrolWalk.MODE mode) {
-    Entity guard =
-        ((GuardBuilder) EscapeRoomMonsterBuilder.GUARD.builder())
-            .alertnessThreshold(100, true)
-            .addToGame()
-            .speed(3.5f)
-            .fightAI(AIChaseBehaviour::new)
-            .idleAI(() -> new PatrolWalk(Arrays.asList(patrolPoints), 5_000, mode))
-            .build(this.getPoint("guardSpawn"));
-
-    // Register alertness callbacks for testing
-    guard
-        .fetch(AlertnessComponent.class)
-        .ifPresent(
-            ac -> {
-              ac.registerCallback(25f, () -> System.out.println("Guard is slightly suspicious..."));
-              ac.registerCallback(50f, () -> System.out.println("Guard is getting alert!"));
-              ac.registerCallback(75f, () -> System.out.println("Guard is highly suspicious!"));
-              ac.registerCallback(100f, () -> System.out.println("Guard is FULLY ALERTED!"));
-            });
+  private Entity createGuards(Tile[] patrolPoints, PatrolWalk.MODE mode) {
+    return ((GuardBuilder) EscapeRoomMonsterBuilder.GUARD.builder())
+        .alertnessThreshold(100, 25, false)
+        .addToGame()
+        .speed(3.5f)
+        .idleAI(() -> new PatrolWalk(Arrays.asList(patrolPoints), 5_000, mode))
+        .build(this.getPoint("guardSpawn"));
   }
 }

@@ -88,6 +88,7 @@ public class MARoom {
     Game.add(new PressurePlateSystem());
     Game.add(new IdleSoundSystem());
     Game.add(new GuardDetectionSystem());
+    Game.add(new AttachmentSystem());
     if (DEBUG_MODE) Game.add(new Debugger());
   }
 
