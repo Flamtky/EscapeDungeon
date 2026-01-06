@@ -15,6 +15,11 @@ import core.level.DungeonLevel;
 import core.level.elements.tile.DoorTile;
 import core.level.utils.*;
 import core.utils.*;
+import core.systems.DrawSystem;
+import core.utils.Direction;
+import core.utils.Point;
+import core.utils.TriConsumer;
+import core.utils.Vector2;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
 import java.util.*;
@@ -142,6 +147,16 @@ public class Dungeon extends DungeonLevel {
         DesignLabel.WATER);
 
     refreshLevelTextures();
+
+    Game.system(
+        DrawSystem.class,
+        (ds) -> {
+          // TODO: Enable me later
+          // ds.sceneShaders().add("pp", new MushroomPostProcessing(new
+          // Rectangle(0,0)).viewDistance(0.75f));
+          // ((MushroomPostProcessing) ds.sceneShaders().get("pp")).viewDistance(0.75f); // new view
+          // distance
+        });
   }
 
   @Override

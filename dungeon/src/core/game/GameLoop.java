@@ -115,7 +115,7 @@ public final class GameLoop extends ScreenAdapter {
                           .flatMap(e -> e.fetch(PositionComponent.class))
                           .map(PositionComponent::position)
                           .orElse(new Point(0, 0));
-                  int batch_size = 75;
+                  int batch_size = 25;
 
                   List<Tuple<Deco, Point>> sortedDecos =
                       level.decorations().stream()
@@ -132,7 +132,7 @@ public final class GameLoop extends ScreenAdapter {
                             sortedDecos
                                 .subList(skip, skip + limit)
                                 .forEach(t -> Game.add(DecoFactory.createDeco(t.b(), t.a()))),
-                        20L * i);
+                        15L * i);
                   }
                 });
 

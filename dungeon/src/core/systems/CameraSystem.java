@@ -31,7 +31,7 @@ import core.utils.Vector2;
  */
 public final class CameraSystem extends System {
   /** Default zoom factor of the camera. */
-  public static final float DEFAULT_ZOOM_FACTOR = 0.35f;
+  public static final float DEFAULT_ZOOM_FACTOR = 0.30f;
 
   private static final float CAMERA_FOCUS_LERP = 0.2f;
 
