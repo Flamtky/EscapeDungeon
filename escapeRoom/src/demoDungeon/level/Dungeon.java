@@ -1,10 +1,7 @@
 package demoDungeon.level;
 
 import com.badlogic.gdx.graphics.Color;
-import contrib.components.CollideComponent;
-import contrib.components.DecoComponent;
-import contrib.components.PressurePlateComponent;
-import contrib.components.ProjectileComponent;
+import contrib.components.*;
 import contrib.entities.LeverFactory;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
@@ -17,10 +14,7 @@ import core.components.VelocityComponent;
 import core.level.DungeonLevel;
 import core.level.elements.tile.DoorTile;
 import core.level.utils.*;
-import core.utils.Direction;
-import core.utils.Point;
-import core.utils.TriConsumer;
-import core.utils.Vector2;
+import core.utils.*;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
 import java.util.*;
@@ -137,15 +131,15 @@ public class Dungeon extends DungeonLevel {
     changeTileDesignLabel(
         getPoint("outside11").toCoordinate(),
         getPoint("outside12").toCoordinate(),
-        DesignLabel.DEFAULT);
+        DesignLabel.WATER);
     changeTileDesignLabel(
         getPoint("outside11").toCoordinate(),
         getPoint("outside13").toCoordinate(),
-        DesignLabel.DEFAULT);
+        DesignLabel.WATER);
     changeTileDesignLabel(
         getPoint("outside13").toCoordinate(),
         getPoint("outside14").toCoordinate(),
-        DesignLabel.DEFAULT);
+        DesignLabel.WATER);
 
     refreshLevelTextures();
   }

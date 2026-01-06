@@ -30,5 +30,8 @@ public enum DesignLabel {
   BEIGECASTLE,
 
   /** A new theme with 2-Tile-high grey walls. */
-  GREYCASTLE
+  GREYCASTLE,
+
+  /** A watery theme with blue tones and aquatic elements. */
+  WATER
 }
