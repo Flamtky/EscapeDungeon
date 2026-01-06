@@ -591,8 +591,7 @@ public class MonsterBuilder<T extends MonsterBuilder<T>> {
 
     monster.add(new PositionComponent(spawnPoint));
     monster.add(
-        new DrawComponent(
-            CharacterStateFactory.createStateMachine(texture()), DepthLayer.Character));
+        new DrawComponent(CharacterStateFactory.createStateMachine(texture()), DepthLayer.Player));
     monster.add(new VelocityComponent(speed(), mass(), onWallHit(), canEnterOpenPits()));
     monster.add(new CollideComponent());
     if (collideDamage() > 0)
