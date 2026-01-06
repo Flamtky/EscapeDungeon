@@ -17,6 +17,7 @@ import core.components.VelocityComponent;
 import core.level.DungeonLevel;
 import core.level.elements.tile.DoorTile;
 import core.level.utils.*;
+import core.systems.DrawSystem;
 import core.utils.Direction;
 import core.utils.Point;
 import core.utils.TriConsumer;
@@ -148,6 +149,16 @@ public class Dungeon extends DungeonLevel {
         DesignLabel.DEFAULT);
 
     refreshLevelTextures();
+
+    Game.system(
+        DrawSystem.class,
+        (ds) -> {
+          // TODO: Enable me later
+          // ds.sceneShaders().add("pp", new MushroomPostProcessing(new
+          // Rectangle(0,0)).viewDistance(0.75f));
+          // ((MushroomPostProcessing) ds.sceneShaders().get("pp")).viewDistance(0.75f); // new view
+          // distance
+        });
   }
 
   @Override
