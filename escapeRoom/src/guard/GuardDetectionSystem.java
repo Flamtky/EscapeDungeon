@@ -13,6 +13,7 @@ import core.utils.Vector2;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collector;
+import starter.IllegalComponent;
 
 /**
  * System that handles guard detection of player entities.
@@ -94,6 +95,12 @@ public class GuardDetectionSystem extends System {
         Game.allPlayers()
             .filter(
                 player -> !player.isPresent(AttachmentComponent.class)) // Ignore attached players
+            .filter(
+                player ->
+                    player
+                        .fetch(IllegalComponent.class)
+                        .map(IllegalComponent::isIllegal)
+                        .orElse(false))
             .collect(
                 Collector.of(
                     Accumulator::new,
