@@ -311,6 +311,15 @@ public class HeroController {
     int adjustedFromSlot = fromSlot < 0 ? -(fromSlot + 1) : fromSlot;
     int adjustedToSlot = toSlot < 0 ? -(toSlot + 1) : toSlot;
 
+    if (adjustedFromSlot >= source.items().length || adjustedToSlot >= target.items().length) {
+      LOGGER.debug(
+          "Invalid slot indices for entity {}: fromSlot {}, toSlot {}",
+          player.id(),
+          adjustedFromSlot,
+          adjustedToSlot);
+      return false;
+    }
+
     Optional<Item> itemToMove = source.remove(adjustedFromSlot);
     if (itemToMove.isEmpty()) {
       LOGGER.debug(
@@ -323,8 +332,23 @@ public class HeroController {
         .ifPresentOrElse(
             existingItem -> {
               // Slot occupied, swap items
-              source.set(adjustedFromSlot, existingItem);
-              target.set(adjustedToSlot, itemToMove.get());
+              var suc = source.set(adjustedFromSlot, existingItem);
+              if (!suc) {
+                LOGGER.error(
+                    "Failed to swap items between inventories for entity {}: could not set item in source slot {}",
+                    player.id(),
+                    adjustedFromSlot);
+                return;
+              }
+              suc = target.set(adjustedToSlot, itemToMove.get());
+              if (!suc) {
+                LOGGER.error(
+                    "Failed to swap items between inventories for entity {}: could not set item in target slot {}",
+                    player.id(),
+                    adjustedToSlot);
+                source.set(adjustedFromSlot, existingItem); // revert source
+                return;
+              }
               LOGGER.debug(
                   "Swapped items between inventories in slots {} and {} for entity {}",
                   adjustedFromSlot,
@@ -332,7 +356,15 @@ public class HeroController {
                   player.id());
             },
             () -> {
-              target.set(adjustedToSlot, itemToMove.get());
+              var suc = target.set(adjustedToSlot, itemToMove.get());
+              if (!suc) {
+                LOGGER.error(
+                    "Failed to move item to target inventory for entity {}: could not set item in slot {}",
+                    player.id(),
+                    adjustedToSlot);
+                source.set(adjustedFromSlot, itemToMove.get()); // revert source
+                return;
+              }
               LOGGER.debug(
                   "Moved item to slot {} of target inventory for entity {}",
                   adjustedToSlot,
@@ -381,7 +413,10 @@ public class HeroController {
       InventoryComponent inventory, Item item, int itemSlot, Entity entity) {
     try {
       if (inventory.get(itemSlot).isEmpty()) {
-        inventory.set(itemSlot, item);
+        var suc = inventory.set(itemSlot, item);
+        if (!suc) {
+          throw new RuntimeException("Failed to return item to original slot");
+        }
       } else if (!inventory.add(item)) {
         throw new RuntimeException("No space to return item to inventory");
       }
