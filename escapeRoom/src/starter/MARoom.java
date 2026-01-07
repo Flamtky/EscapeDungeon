@@ -90,6 +90,7 @@ public class MARoom {
     Game.add(new GuardDetectionSystem());
     Game.add(new AttachmentSystem());
     Game.add(new IllegalSystem());
+    Game.add(new BedSleepSystem());
     if (DEBUG_MODE) Game.add(new Debugger());
   }
 

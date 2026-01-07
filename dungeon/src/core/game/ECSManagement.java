@@ -5,6 +5,7 @@ import contrib.components.CollideComponent;
 import contrib.systems.EventScheduler;
 import contrib.systems.HudSystem;
 import contrib.systems.LevelTickSystem;
+import contrib.systems.PositionSync;
 import core.Component;
 import core.Entity;
 import core.Game;
@@ -327,6 +328,8 @@ public final class ECSManagement {
    * @param entity the entity to add
    */
   private static void addToTileCacheInternal(Entity entity) {
+    // Sync collider position before calculating tile coordinate
+    PositionSync.syncPosition(entity);
     Coordinate coord = getEntityTileCoordinate(entity);
     if (coord == null) {
       return;
@@ -462,6 +465,42 @@ public final class ECSManagement {
       }
     } finally {
       tileCacheWriteLock.unlock();
+    }
+  }
+
+  /**
+   * Refreshes the tile cache for an entity after its position has changed.
+   *
+   * <p>This method should be called after updating an entity's position to ensure the spatial cache
+   * remains accurate. It compares the cached tile coordinate with the current tile coordinate and
+   * updates the cache if they differ.
+   *
+   * @param entity the entity whose tile cache should be refreshed
+   */
+  public static void refreshEntityTileCache(Entity entity) {
+    tileCacheReadLock.lock();
+    Coordinate oldCoord;
+    try {
+      oldCoord = ENTITY_TILE_CACHE.get(entity);
+    } finally {
+      tileCacheReadLock.unlock();
+    }
+
+    Coordinate newCoord = getEntityTileCoordinate(entity);
+
+    // Only update if coordinates changed
+    if (oldCoord == null && newCoord != null) {
+      // Entity wasn't in cache, add it
+      tileCacheWriteLock.lock();
+      try {
+        ENTITY_TILE_CACHE.put(entity, newCoord);
+        TILE_ENTITY_CACHE.computeIfAbsent(newCoord, k -> new HashSet<>()).add(entity);
+      } finally {
+        tileCacheWriteLock.unlock();
+      }
+    } else if (oldCoord != null && !oldCoord.equals(newCoord)) {
+      // Entity moved to different tile
+      updateEntityTileCache(entity, oldCoord, newCoord);
     }
   }
 

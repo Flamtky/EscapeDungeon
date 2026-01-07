@@ -2,6 +2,8 @@ package contrib.entities.deco;
 
 import contrib.components.CollideComponent;
 import contrib.components.DecoComponent;
+import contrib.hud.dialogs.DialogFactory;
+import contrib.modules.interaction.Interaction;
 import contrib.modules.interaction.InteractionComponent;
 import core.Entity;
 import core.components.DrawComponent;
@@ -48,7 +50,16 @@ public class DecoFactory {
       entity.add(cc);
     }
     if (NON_INTERACTIVE_DECO_NAMES.stream().noneMatch(deco.name()::matches))
-      entity.add(new InteractionComponent());
+      entity.add(
+          new InteractionComponent(
+              () ->
+                  new Interaction(
+                      (self, actor) ->
+                          DialogFactory.showOkDialog(
+                              "You see a " + deco.name() + ".", deco.name(), () -> {}, actor.id()),
+                      Interaction.DEFAULT_INTERACTION_RADIUS,
+                      true,
+                      deco.name())));
     return entity;
   }
 

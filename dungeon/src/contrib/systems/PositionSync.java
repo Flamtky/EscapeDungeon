@@ -3,6 +3,7 @@ package contrib.systems;
 import contrib.components.CollideComponent;
 import core.Entity;
 import core.components.PositionComponent;
+import core.game.ECSManagement;
 
 /**
  * This system syncs the position of entities with other components that rely on mid-frame position
@@ -36,5 +37,8 @@ public class PositionSync {
                         cc.collider().scale(pc.scale());
                       });
             });
+
+    // Refresh tile cache after position sync
+    ECSManagement.refreshEntityTileCache(e);
   }
 }
