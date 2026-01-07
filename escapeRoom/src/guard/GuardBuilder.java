@@ -7,8 +7,8 @@ import contrib.utils.components.ai.AIUtils;
 import contrib.utils.components.ai.fight.AIChaseBehaviour;
 import core.Entity;
 import core.Game;
-import core.components.InputComponent;
 import core.components.PositionComponent;
+import core.components.VelocityComponent;
 import core.level.utils.LevelUtils;
 import core.utils.Point;
 import core.utils.Vector2;
@@ -175,6 +175,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
 
     private static final float CLOSE_DISTANCE = 0.75f;
     private Entity grabbedPlayer = null;
+    private float oldMaxSpeed = -1f;
 
     @Override
     public void accept(final Entity guard, final Entity player) {
@@ -204,7 +205,13 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
               player.fetch(PositionComponent.class).orElseThrow(),
               guard.fetch(PositionComponent.class).orElseThrow());
       player.add(ac);
-      player.fetch(InputComponent.class).ifPresent(ic -> ic.deactivateControls(true));
+      player
+          .fetch(VelocityComponent.class)
+          .ifPresent(
+              vc -> {
+                oldMaxSpeed = vc.maxSpeed();
+                vc.maxSpeed(0f);
+              });
       player.fetch(CollideComponent.class).ifPresent(cc -> cc.isSolid(false));
     }
 
@@ -217,7 +224,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
 
       if (path.getCount() <= 1) { // TODO: PathFinished not working here
         // Release player in cell
-        grabbedPlayer.fetch(InputComponent.class).ifPresent(ic -> ic.deactivateControls(false));
+        grabbedPlayer.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(oldMaxSpeed));
         grabbedPlayer.fetch(CollideComponent.class).ifPresent(cc -> cc.isSolid(true));
         grabbedPlayer.remove(AttachmentComponent.class);
         this.grabbedPlayer = null;

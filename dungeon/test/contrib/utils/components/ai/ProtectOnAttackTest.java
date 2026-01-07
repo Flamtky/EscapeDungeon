@@ -17,8 +17,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/** WTF? . */
-public class ProtectOnAttackTest {
+class ProtectOnAttackTest {
 
   private AISystem system;
   private Entity protector;
@@ -29,9 +28,8 @@ public class ProtectOnAttackTest {
   private HealthComponent entityHC;
   private int updateCounter;
 
-  /** WTF? . */
   @BeforeEach
-  public void setup() {
+  void setup() {
     // Get a protector
     protector = new Entity();
     Game.add(protector);
@@ -45,6 +43,7 @@ public class ProtectOnAttackTest {
     // Get an attacker
     attacker = new Entity();
     attacker.add(new PlayerComponent());
+    Game.add(attacker);
 
     // Prepare a list of entities with a HealthComponent
     entitiesToProtect = new ArrayList<>();
@@ -58,9 +57,8 @@ public class ProtectOnAttackTest {
     system = new AISystem();
   }
 
-  /** WTF? . */
   @AfterEach
-  public void cleanup() {
+  void cleanup() {
     Game.removeAllSystems();
     Game.removeAllEntities();
   }
@@ -71,9 +69,7 @@ public class ProtectOnAttackTest {
     // given
     AIComponent attackerAI =
         new AIComponent(
-            (entity, player) -> {
-              updateCounter++;
-            },
+            (entity, player) -> updateCounter++,
             new RadiusWalk(2, 2),
             new ProtectOnAttack(protectedEntity));
     protector.add(attackerAI);
