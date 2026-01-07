@@ -21,7 +21,7 @@ import java.io.IOException;
 /**
  * Starter for the Demo Escaperoom Dungeon.
  *
- * <p>Usage: run with the Gradle task {@code runDemoRoom}.
+ * <p>Usage: run with the Gradle task {@code runMA}.
  */
 public class MARoom {
   private static final boolean DEBUG_MODE = true;
