@@ -392,8 +392,13 @@ public final class ECSManagement {
   /**
    * Gets all entities at the specified tile coordinate with lazy validation for moving entities.
    *
-   * <p>Entities without VelocityComponent are trusted from cache. Entities with VelocityComponent
-   * are validated and cache is updated if their tile has changed.
+   * <p>Entities without {@link VelocityComponent} are trusted from cache. Entities with {@link
+   * VelocityComponent} are validated on-demand and the cache is updated if their tile has changed.
+   * This lazy validation approach avoids per-frame cache updates for moving entities.
+   *
+   * <p><b>Note:</b> For entities without {@link VelocityComponent} that are teleported or have
+   * their position changed programmatically, call {@link #refreshEntityTileCache(Entity)} after the
+   * position change to update the cache.
    *
    * @param coordinate the tile coordinate to query
    * @return stream of entities at the given tile
@@ -471,9 +476,14 @@ public final class ECSManagement {
   /**
    * Refreshes the tile cache for an entity after its position has changed.
    *
-   * <p>This method should be called after updating an entity's position to ensure the spatial cache
-   * remains accurate. It compares the cached tile coordinate with the current tile coordinate and
-   * updates the cache if they differ.
+   * <p>This method compares the cached tile coordinate with the current tile coordinate and updates
+   * the cache if they differ.
+   *
+   * <p><b>Note:</b> This method is automatically called by {@link
+   * contrib.systems.PositionSync#syncPosition} for entities without a {@link VelocityComponent}.
+   * Entities with {@link VelocityComponent} are lazily revalidated when {@link
+   * #getEntitiesAtTile(Coordinate)} is called. You typically don't need to call this method
+   * directly unless you're updating position without going through {@code PositionSync}.
    *
    * @param entity the entity whose tile cache should be refreshed
    */

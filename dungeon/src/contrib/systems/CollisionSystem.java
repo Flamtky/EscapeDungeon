@@ -54,19 +54,98 @@ public final class CollisionSystem extends System {
   /** Cache for collision data pairs to avoid recreating them every tick. */
   private final List<CollisionData> cachedPairs = new ArrayList<>();
 
-  /** Flag to indicate whether the cache needs to be rebuilt. */
+  /** Set of entities currently tracked by this system for incremental cache updates. */
+  private final Set<Entity> trackedEntities = new HashSet<>();
+
+  /** Flag to indicate whether the cache needs to be rebuilt from scratch. */
   private boolean cacheInvalid = true;
 
   /** Create a new CollisionSystem. */
   public CollisionSystem() {
     super(CollideComponent.class);
     onEntityAdd = this::onAddEntity;
-    onEntityRemove = e -> invalidateCache();
+    onEntityRemove = this::onRemoveEntity;
   }
 
   private void onAddEntity(Entity e) {
     PositionSync.syncPosition(e);
-    invalidateCache();
+    if (cacheInvalid) {
+      // Cache will be rebuilt anyway, just track the entity
+      trackedEntities.add(e);
+      return;
+    }
+    // Incremental add: create pairs between new entity and all existing entities
+    addEntityToCache(e);
+  }
+
+  private void onRemoveEntity(Entity e) {
+    if (cacheInvalid) {
+      // Cache will be rebuilt anyway, just untrack the entity
+      trackedEntities.remove(e);
+      return;
+    }
+    // Incremental remove: remove pairs involving this entity
+    removeEntityFromCache(e);
+  }
+
+  /**
+   * Adds an entity to the cache incrementally by creating pairs with all existing entities.
+   *
+   * @param e the entity to add
+   */
+  private void addEntityToCache(Entity e) {
+    CollideComponent cc =
+        e.fetch(CollideComponent.class)
+            .orElseThrow(() -> MissingComponentException.build(e, CollideComponent.class));
+    boolean eIsStationary = isStationary(e);
+
+    for (Entity other : trackedEntities) {
+      // Skip stationary-stationary pairs
+      boolean otherIsStationary = isStationary(other);
+      if (eIsStationary && otherIsStationary) {
+        continue;
+      }
+
+      CollideComponent otherCc =
+          other
+              .fetch(CollideComponent.class)
+              .orElseThrow(() -> MissingComponentException.build(other, CollideComponent.class));
+
+      // Maintain consistent ordering (lower ID first)
+      if (e.id() < other.id()) {
+        cachedPairs.add(new CollisionData(e, cc, other, otherCc));
+      } else {
+        cachedPairs.add(new CollisionData(other, otherCc, e, cc));
+      }
+    }
+    trackedEntities.add(e);
+  }
+
+  /**
+   * Removes an entity from the cache by removing all pairs involving it.
+   *
+   * @param e the entity to remove
+   */
+  private void removeEntityFromCache(Entity e) {
+    trackedEntities.remove(e);
+    int entityId = e.id();
+
+    // Remove all pairs involving this entity
+    cachedPairs.removeIf(data -> data.ea.id() == entityId || data.eb.id() == entityId);
+
+    // Trigger onLeave for any active collisions and remove them
+    List<CollisionKey> toRemove = new ArrayList<>();
+    for (Map.Entry<CollisionKey, CollisionData> entry : collisions.entrySet()) {
+      CollisionKey key = entry.getKey();
+      if (key.a == entityId || key.b == entityId) {
+        CollisionData cdata = entry.getValue();
+        Direction d = checkDirectionOfCollision(cdata.a.collider(), cdata.b.collider());
+        cdata.a.onLeave(cdata.ea, cdata.eb, d);
+        cdata.b.onLeave(cdata.eb, cdata.ea, d.opposite());
+        toRemove.add(key);
+      }
+    }
+    toRemove.forEach(collisions::remove);
   }
 
   private void invalidateCache() {
@@ -85,12 +164,16 @@ public final class CollisionSystem extends System {
     if (cacheInvalid) {
       rebuildCache();
     }
-    cachedPairs.forEach(this::onEnterLeaveCheck);
+    // Iterate over a copy to avoid ConcurrentModificationException when entities are removed
+    // during collision handling (e.g., projectile hits solid and gets destroyed)
+    new ArrayList<>(cachedPairs).forEach(this::onEnterLeaveCheck);
   }
 
-  /** Rebuild the cache of collision data pairs. */
+  /** Rebuild the cache of collision data pairs from scratch. */
   private void rebuildCache() {
     cachedPairs.clear();
+    trackedEntities.clear();
+    filteredEntityStream().forEach(trackedEntities::add);
     filteredEntityStream().flatMap(this::createDataPairs).forEach(cachedPairs::add);
     cacheInvalid = false;
   }
