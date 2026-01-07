@@ -26,8 +26,9 @@ def apply_patch(base, patch):
             added.append(name)
     return result, added, updated
 
-def points_to_string(points):
-    return ';'.join(f"{name}:{coords}" for name, coords in points.items())
+def points_to_string(points, sort=True):
+    keys = sorted(points.keys()) if sort else points.keys()
+    return ';'.join(f"{name}:{points[name]}" for name in keys)
 
 def copy_to_clipboard(text):
     try:
@@ -52,6 +53,8 @@ def format_names(names):
     return f" [{first}, ... (+{middle} more), {last}]"
 
 def main():
+    sort_enabled = True
+
     print("Paste base string:")
     s1 = input().strip()
     print("\nPaste patch string:")
@@ -62,20 +65,21 @@ def main():
 
     if base == patch:
         print("\n[INFO] Strings identical. No changes needed.")
-        copy_to_clipboard(points_to_string(base))
+        copy_to_clipboard(points_to_string(base, sort=sort_enabled))
         print("[INFO] Copied to clipboard.")
         return
 
     result, added, updated = apply_patch(base, patch)
-    result_str = points_to_string(result)
+    result_str = points_to_string(result, sort=sort_enabled)
 
     copy_to_clipboard(result_str)
 
     print(f"\n[INFO] Base: {len(base)} points")
     print(f"[INFO] Patch: {len(patch)} points")
-    print(f"[INFO] Points added: {len(added)}{format_names(added)}")
-    print(f"[INFO] Points updated: {len(updated)}{format_names(updated)}")
+    print(f"[INFO] Points added: {len(added)}{format_names(sorted(added) if sort_enabled else added)}")
+    print(f"[INFO] Points updated: {len(updated)}{format_names(sorted(updated) if sort_enabled else updated)}")
     print(f"[INFO] Total: {len(result)} points")
+    print(f"[INFO] Sorted: {'yes' if sort_enabled else 'no'}")
     print("[INFO] Result copied to clipboard.")
 
 if __name__ == "__main__":
