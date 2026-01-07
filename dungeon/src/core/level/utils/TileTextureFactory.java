@@ -137,12 +137,12 @@ public class TileTextureFactory {
       }
     }
 
-    if (levelPart.element == LevelElement.PORTAL) {
+    /*if (levelPart.element == LevelElement.PORTAL) {
       IPath path = findPortalElement(levelPart);
       if (path != null) {
         return new SimpleIPath(prefixPath + path.pathString() + ".png");
       }
-    }
+    }*/
 
     IPath path = findTexturePathFloor(levelPart);
     if (path != null) {

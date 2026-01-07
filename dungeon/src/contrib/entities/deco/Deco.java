@@ -3599,7 +3599,8 @@ public enum Deco {
   BRIDGESHorizontalGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(272, 464, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalBeige(
