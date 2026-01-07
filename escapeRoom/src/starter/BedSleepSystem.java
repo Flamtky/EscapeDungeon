@@ -5,8 +5,6 @@ import contrib.components.DecoComponent;
 import contrib.components.StaminaComponent;
 import contrib.entities.deco.Deco;
 import contrib.hud.dialogs.DialogFactory;
-import contrib.modules.interaction.IInteractable;
-import contrib.modules.interaction.ISimpleIInteractable;
 import contrib.modules.interaction.Interaction;
 import contrib.modules.interaction.InteractionComponent;
 import contrib.systems.HealthSystem;
@@ -81,11 +79,11 @@ public class BedSleepSystem extends System {
     bed.fetch(CollideComponent.class)
         .ifPresent(collideComponent -> collideComponent.isSolid(false));
 
-    InteractionComponent interaction = new InteractionComponent(() -> new Interaction(
-      this::startSleep,
-        Interaction.DEFAULT_INTERACTION_RADIUS,
-        true,
-        "Sleep"));
+    InteractionComponent interaction =
+        new InteractionComponent(
+            () ->
+                new Interaction(
+                    this::startSleep, Interaction.DEFAULT_INTERACTION_RADIUS, true, "Sleep"));
     bed.add(interaction);
   }
 
@@ -124,7 +122,9 @@ public class BedSleepSystem extends System {
             bedPos ->
                 player
                     .fetch(PositionComponent.class)
-                    .ifPresent(playerPos -> playerPos.position(bedPos.position().translate(-0.2f, -0.2f))));
+                    .ifPresent(
+                        playerPos ->
+                            playerPos.position(bedPos.position().translate(-0.2f, -0.2f))));
     PositionSync.syncPosition(player);
 
     // Disable player controls during sleep
