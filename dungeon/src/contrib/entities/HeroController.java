@@ -17,6 +17,7 @@ import contrib.utils.components.skill.cursorSkill.CursorSkill;
 import contrib.utils.components.skill.projectileSkill.ProjectileSkill;
 import core.Entity;
 import core.Game;
+import core.components.InputComponent;
 import core.components.PlayerComponent;
 import core.components.VelocityComponent;
 import core.level.utils.LevelUtils;
@@ -61,6 +62,11 @@ public class HeroController {
    */
   public static void moveHero(Entity hero, Direction direction, Vector2 speed) {
     LOGGER.debug("Moving hero {} in direction {}", hero.id(), direction);
+
+    if (hero.fetch(InputComponent.class).map(InputComponent::deactivateControls).orElse(false)) {
+      LOGGER.debug("Hero {} controls are deactivated, cannot move.", hero.id());
+      return;
+    }
 
     VelocityComponent vc =
         hero.fetch(VelocityComponent.class)

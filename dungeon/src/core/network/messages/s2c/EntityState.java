@@ -30,6 +30,8 @@ public class EntityState implements NetworkMessage {
   private final Integer maxHealth;
   private final Float curMana;
   private final Float maxMana;
+  private final Float curStamina;
+  private final Float maxStamina;
   private final String stateName;
   private final Integer tintColor;
   private final List<SoundSpec> sounds;
@@ -50,6 +52,8 @@ public class EntityState implements NetworkMessage {
     this.maxHealth = builder.maxHealth;
     this.curMana = builder.curMana;
     this.maxMana = builder.maxMana;
+    this.curStamina = builder.curStamina;
+    this.maxStamina = builder.maxStamina;
     this.stateName = builder.stateName;
     this.tintColor = builder.tintColor;
     this.sounds = builder.sounds;
@@ -138,6 +142,24 @@ public class EntityState implements NetworkMessage {
   }
 
   /**
+   * Gets the optional current stamina of the entity.
+   *
+   * @return an Optional containing the current stamina if present, otherwise an empty Optional
+   */
+  public Optional<Float> currentStamina() {
+    return Optional.ofNullable(curStamina);
+  }
+
+  /**
+   * Gets the optional maximum stamina of the entity.
+   *
+   * @return an Optional containing the maximum stamina if present, otherwise an empty Optional
+   */
+  public Optional<Float> maxStamina() {
+    return Optional.ofNullable(maxStamina);
+  }
+
+  /**
    * Gets the optional state name of the entity.
    *
    * @return an Optional containing the state name if present, otherwise an empty Optional
@@ -193,6 +215,8 @@ public class EntityState implements NetworkMessage {
     private Integer maxHealth;
     private Float curMana;
     private Float maxMana;
+    private Float curStamina;
+    private Float maxStamina;
     private String stateName;
     private Integer tintColor;
     private List<SoundSpec> sounds;
@@ -305,6 +329,28 @@ public class EntityState implements NetworkMessage {
      */
     public Builder maxMana(Float maxMana) {
       this.maxMana = maxMana;
+      return this;
+    }
+
+    /**
+     * Sets the current stamina of the entity.
+     *
+     * @param stamina the current stamina value
+     * @return the Builder instance
+     */
+    public Builder currentStamina(Float stamina) {
+      this.curStamina = stamina;
+      return this;
+    }
+
+    /**
+     * Sets the maximum stamina of the entity.
+     *
+     * @param maxStamina the maximum stamina value
+     * @return the Builder instance
+     */
+    public Builder maxStamina(Float maxStamina) {
+      this.maxStamina = maxStamina;
       return this;
     }
 
