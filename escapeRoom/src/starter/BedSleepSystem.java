@@ -112,7 +112,7 @@ public class BedSleepSystem extends System {
 
     // Don't sleep if already at full stamina
     if (stamina.currentAmount() >= stamina.maxAmount()) {
-      DialogFactory.showOkDialog("I'm not tired right now.", "Wide Awake", () -> {}, player.id());
+      DialogFactory.showOkDialog("Ich bin gerade nicht müde.", "Hellwach", () -> {}, player.id());
       return;
     }
 
