@@ -124,7 +124,7 @@ public class BedSleepSystem extends System {
                     .fetch(PositionComponent.class)
                     .ifPresent(
                         playerPos ->
-                            playerPos.position(bedPos.position().translate(-0.2f, -0.2f))));
+                            playerPos.position(bedPos.position().translate(-0.2f, -0.25f))));
     PositionSync.syncPosition(player);
 
     // Disable player controls during sleep
