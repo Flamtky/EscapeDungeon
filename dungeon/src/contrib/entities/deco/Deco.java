@@ -2719,31 +2719,31 @@ public enum Deco {
   Vase1Set(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(352, 128, 1, 1, 32, 16)),
-      new Rectangle(2f, 1f, 0f, 0f),
+      new Rectangle(0.5f, 0.25f, 0.75f, 0.15f),
       Category.FURNITURE),
   /** A decoration. */
   Vase1(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(384, 128, 1, 1, 16, 16)),
-      new Rectangle(0.25f, 0.25f, 0f, 0f),
+      new Rectangle(0.15f, 0.15f, 0.5f, 0.25f),
       Category.FURNITURE),
   /** A decoration. */
   Vase2(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(400, 128, 1, 1, 16, 16)),
-      new Rectangle(0.25f, 0.25f, 0f, 0f),
+      new Rectangle(0.15f, 0.15f, 0.5f, 0.25f),
       Category.FURNITURE),
   /** A decoration. */
   Vase3(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 128, 1, 1, 16, 16)),
-      new Rectangle(0.25f, 0.25f, 0f, 0f),
+      new Rectangle(0.15f, 0.15f, 0.5f, 0.25f),
       Category.FURNITURE),
   /** A decoration. */
   Vase4(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 128, 1, 1, 16, 16)),
-      new Rectangle(0.25f, 0.25f, 0f, 0f),
+      new Rectangle(0.15f, 0.15f, 0.5f, 0.25f),
       Category.FURNITURE),
   /** A decoration. */
   Chest1Closed(
@@ -4110,7 +4110,7 @@ public enum Deco {
   Bookshelf3Broken(
       "spritesheets/FD_Dungeon_Free.png",
       new AnimationConfig(new SpritesheetConfig(64, 288, 1, 1, 32, 32)).scaleX(2).scaleY(2),
-      new Rectangle(1f, 1f, 0f, 0f),
+      new Rectangle(2f, 1f, 0f, 0f),
       Category.FURNITURE),
   /** A decoration. */
   Bookshelf4Broken(

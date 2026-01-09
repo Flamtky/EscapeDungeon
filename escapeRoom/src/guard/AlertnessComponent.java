@@ -2,12 +2,8 @@ package guard;
 
 import contrib.components.BarDisplayable;
 import core.Component;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import core.Entity;
+import java.util.*;
 
 /**
  * Component that tracks the alertness level of a guard entity.
@@ -43,6 +39,7 @@ public final class AlertnessComponent implements Component, BarDisplayable {
   private final float decayRate;
   private final float viewConeAngle;
   private final float viewRange;
+  private Entity lastSeenEntity = null;
 
   private final Map<Float, List<Runnable>> thresholdCallbacks;
   private final Set<Float> triggeredThresholds;
@@ -109,12 +106,15 @@ public final class AlertnessComponent implements Component, BarDisplayable {
    * triggered.
    *
    * @param amount the amount to increase alertness by (should be positive)
+   * @param seenEntity the entity that was seen to increase alertness
    */
-  public void increaseAlertness(float amount) {
+  public void increaseAlertness(float amount, Entity seenEntity) {
     if (amount <= 0) return;
 
     float oldAlertness = this.alertness;
     this.alertness = Math.min(this.alertness + amount, maxAlertness);
+
+    this.lastSeenEntity = seenEntity;
 
     // Check for threshold crossings
     for (Map.Entry<Float, List<Runnable>> entry : thresholdCallbacks.entrySet()) {
@@ -222,5 +222,14 @@ public final class AlertnessComponent implements Component, BarDisplayable {
   @Override
   public int barPriority() {
     return BAR_PRIORITY;
+  }
+
+  /**
+   * Returns the last seen entity that increased the alertness.
+   *
+   * @return an Optional containing the last seen entity, or empty if none
+   */
+  public Optional<Entity> lastSeenEntity() {
+    return Optional.ofNullable(lastSeenEntity);
   }
 }

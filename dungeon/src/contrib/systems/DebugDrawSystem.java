@@ -446,7 +446,7 @@ public class DebugDrawSystem extends System {
                     .append("\n\t\t Transition: ")
                     .append(ai.shouldFight().getClass().getSimpleName())
                     .append("\n\t\t Current State: ")
-                    .append(ai.shouldFight().apply(entity) ? "FIGHT" : "IDLE")
+                    .append(ai.shouldFight().apply(entity, Game.player().get()) ? "FIGHT" : "IDLE")
                     .append("\n"));
 
     entity

@@ -5,8 +5,10 @@ import contrib.utils.EntityUtils;
 import contrib.utils.components.ai.AIUtils;
 import core.Entity;
 import core.Game;
+import core.components.VelocityComponent;
 import core.level.Tile;
 import core.level.utils.LevelUtils;
+import core.utils.Direction;
 import core.utils.Point;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,13 +46,30 @@ public final class PatrolWalk implements Consumer<Entity> {
    * @param numberCheckpoints Number of checkpoints to walk to.
    * @param pauseTime Max time in milliseconds to wait on a checkpoint. The actual time is a random
    *     number between 0 and this value.
-   * @param mode WTF? .
+   * @param mode The mode of walking the checkpoints.
    */
   public PatrolWalk(float radius, int numberCheckpoints, int pauseTime, final MODE mode) {
     this.radius = radius;
     this.numberCheckpoints = numberCheckpoints;
     this.pauseFrames = pauseTime / (1000 / Game.frameRate());
     this.mode = mode;
+  }
+
+  /**
+   * Creates a new PatrolWalk AI with a given list of checkpoints.
+   *
+   * @param checkpoints The list of checkpoints to walk to in order.
+   * @param pauseTime Max time in milliseconds to wait on a checkpoint. The actual time is a random
+   *     number between 0 and this value.
+   * @param mode The mode of walking the checkpoints.
+   */
+  public PatrolWalk(List<Tile> checkpoints, int pauseTime, final MODE mode) {
+    this.checkpoints.addAll(checkpoints);
+    this.radius = 0;
+    this.numberCheckpoints = checkpoints.size();
+    this.pauseFrames = pauseTime / (1000 / Game.frameRate());
+    this.mode = mode;
+    this.initialized = true;
   }
 
   private void init(final Entity entity) {
@@ -103,6 +122,16 @@ public final class PatrolWalk implements Consumer<Entity> {
     if (currentPath != null && AIUtils.pathFinished(entity, currentPath)) {
       frameCounter = 0;
       currentPath = null;
+      // randomly change direction after reaching a checkpoint
+      if (RANDOM.nextBoolean()) {
+        entity
+            .fetch(VelocityComponent.class)
+            .ifPresent(
+                vc -> {
+                  vc.clearForces();
+                  vc.applyForce("changeDir", Direction.random().scale(250));
+                });
+      }
       return;
     }
 

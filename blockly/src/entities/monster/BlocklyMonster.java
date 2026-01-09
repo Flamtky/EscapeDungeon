@@ -43,7 +43,7 @@ public enum BlocklyMonster {
               .idleSound(MonsterIdleSound.NONE)
               .fightAI(() -> new StraightRangeAI(6, new InevitableFireballSkill()))
               .idleAI(() -> entity -> {}) // no idle needed
-              .transitionAI(() -> entity -> true) // instant fight
+              .transitionAI(() -> (entity, player) -> true) // instant fight
               .collideDamage(99999) // one hit kill
               .collideCooldown(0)),
   /** A static non-moving guard monster. */
@@ -59,9 +59,9 @@ public enum BlocklyMonster {
               .health(1)
               .deathSound(MonsterDeathSound.LOWER_PITCH)
               .idleSound(MonsterIdleSound.NONE)
-              .fightAI(() -> (entity) -> {}) // static, no fight behavior provided
+              .fightAI(() -> (entity, player) -> {}) // static, no fight behavior provided
               .idleAI(() -> (entity) -> {})
-              .transitionAI(() -> (entity) -> true) // instant fight/contact behavior
+              .transitionAI(() -> (entity, player) -> true) // instant fight/contact behavior
               .collideDamage(99999) // one hit kill
               .collideCooldown(0)),
   /** The Boss of Produs Blockly. */
@@ -77,9 +77,9 @@ public enum BlocklyMonster {
               .health(3)
               .deathSound(MonsterDeathSound.LOWER_PITCH)
               .idleSound(MonsterIdleSound.NONE)
-              .fightAI(() -> (entity) -> {}) // static, provided no fight behavior
+              .fightAI(() -> (entity, player) -> {}) // static, provided no fight behavior
               .idleAI(() -> (entity) -> {})
-              .transitionAI(() -> (entity) -> true) // instant contact
+              .transitionAI(() -> (entity, player) -> true) // instant contact
               .collideDamage(99999) // one hit kill
               .collideCooldown(0));
 
@@ -154,7 +154,8 @@ public enum BlocklyMonster {
       PositionComponent pc = new PositionComponent(spawnPos, viewDirection());
       monster.add(pc);
 
-      AIComponent aic = new AIComponent(fightAISupplier().get(), entity -> {}, entity -> true);
+      AIComponent aic =
+          new AIComponent(fightAISupplier().get(), entity -> {}, (entity, player) -> true);
       monster.add(aic);
       if (aic.fightBehavior() instanceof StraightRangeAI straightRangeAI) {
         if (attackRange() == -1) {

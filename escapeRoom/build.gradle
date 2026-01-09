@@ -28,6 +28,12 @@ tasks.register('runDemoRoom', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 
+tasks.register('runMA', JavaExec) {
+    group 'starter'
+    mainClass = 'starter.MARoom'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 tasks.register('runSpriteTestRoom', JavaExec) {
     group 'starter'
     mainClass = 'starter.SpriteTestRoom'
