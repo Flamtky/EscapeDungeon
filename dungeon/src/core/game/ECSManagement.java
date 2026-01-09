@@ -5,6 +5,7 @@ import contrib.components.CollideComponent;
 import contrib.systems.EventScheduler;
 import contrib.systems.HudSystem;
 import contrib.systems.LevelTickSystem;
+import contrib.systems.PositionSync;
 import core.Component;
 import core.Entity;
 import core.Game;
@@ -327,6 +328,8 @@ public final class ECSManagement {
    * @param entity the entity to add
    */
   private static void addToTileCacheInternal(Entity entity) {
+    // Sync collider position before calculating tile coordinate
+    PositionSync.syncPosition(entity);
     Coordinate coord = getEntityTileCoordinate(entity);
     if (coord == null) {
       return;
@@ -389,8 +392,13 @@ public final class ECSManagement {
   /**
    * Gets all entities at the specified tile coordinate with lazy validation for moving entities.
    *
-   * <p>Entities without VelocityComponent are trusted from cache. Entities with VelocityComponent
-   * are validated and cache is updated if their tile has changed.
+   * <p>Entities without {@link VelocityComponent} are trusted from cache. Entities with {@link
+   * VelocityComponent} are validated on-demand and the cache is updated if their tile has changed.
+   * This lazy validation approach avoids per-frame cache updates for moving entities.
+   *
+   * <p><b>Note:</b> For entities without {@link VelocityComponent} that are teleported or have
+   * their position changed programmatically, call {@link #refreshEntityTileCache(Entity)} after the
+   * position change to update the cache.
    *
    * @param coordinate the tile coordinate to query
    * @return stream of entities at the given tile
@@ -462,6 +470,47 @@ public final class ECSManagement {
       }
     } finally {
       tileCacheWriteLock.unlock();
+    }
+  }
+
+  /**
+   * Refreshes the tile cache for an entity after its position has changed.
+   *
+   * <p>This method compares the cached tile coordinate with the current tile coordinate and updates
+   * the cache if they differ.
+   *
+   * <p><b>Note:</b> This method is automatically called by {@link
+   * contrib.systems.PositionSync#syncPosition} for entities without a {@link VelocityComponent}.
+   * Entities with {@link VelocityComponent} are lazily revalidated when {@link
+   * #getEntitiesAtTile(Coordinate)} is called. You typically don't need to call this method
+   * directly unless you're updating position without going through {@code PositionSync}.
+   *
+   * @param entity the entity whose tile cache should be refreshed
+   */
+  public static void refreshEntityTileCache(Entity entity) {
+    tileCacheReadLock.lock();
+    Coordinate oldCoord;
+    try {
+      oldCoord = ENTITY_TILE_CACHE.get(entity);
+    } finally {
+      tileCacheReadLock.unlock();
+    }
+
+    Coordinate newCoord = getEntityTileCoordinate(entity);
+
+    // Only update if coordinates changed
+    if (oldCoord == null && newCoord != null) {
+      // Entity wasn't in cache, add it
+      tileCacheWriteLock.lock();
+      try {
+        ENTITY_TILE_CACHE.put(entity, newCoord);
+        TILE_ENTITY_CACHE.computeIfAbsent(newCoord, k -> new HashSet<>()).add(entity);
+      } finally {
+        tileCacheWriteLock.unlock();
+      }
+    } else if (oldCoord != null && !oldCoord.equals(newCoord)) {
+      // Entity moved to different tile
+      updateEntityTileCache(entity, oldCoord, newCoord);
     }
   }
 
