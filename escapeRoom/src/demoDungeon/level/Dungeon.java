@@ -5,6 +5,7 @@ import contrib.components.*;
 import contrib.entities.LeverFactory;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
+import contrib.systems.EventScheduler;
 import contrib.utils.ICommand;
 import core.Entity;
 import core.Game;
@@ -14,8 +15,8 @@ import core.components.VelocityComponent;
 import core.level.DungeonLevel;
 import core.level.elements.tile.DoorTile;
 import core.level.utils.*;
-import core.utils.*;
 import core.systems.DrawSystem;
+import core.utils.*;
 import core.utils.Direction;
 import core.utils.Point;
 import core.utils.TriConsumer;
@@ -24,14 +25,17 @@ import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
 import java.util.*;
 import mushRoom.Sounds;
+import mushRoom.shaders.TorchPostProcessing;
 
 /**
- * The Demolevel.
+ * The Demolevel. intel 13
  *
  * <p>The player has to craft a Healpotion.
  */
 public class Dungeon extends DungeonLevel {
 
+  private boolean torchShaderInitialized = false;
+  private TorchPostProcessing torchShader;
   private final List<Entity> puzzlePushEntities = new ArrayList<>();
   private final Color[] stoneColors = {
     Color.WHITE,
@@ -110,6 +114,10 @@ public class Dungeon extends DungeonLevel {
         getPoint("grey12").toCoordinate(),
         DesignLabel.GREYCASTLE);
     changeTileDesignLabel(
+        getPoint("grey21").toCoordinate(),
+        getPoint("grey22").toCoordinate(),
+        DesignLabel.GREYCASTLE);
+    changeTileDesignLabel(
         getPoint("grass11").toCoordinate(), getPoint("grass12").toCoordinate(), DesignLabel.FOREST);
     changeTileDesignLabel(
         getPoint("fire11").toCoordinate(), getPoint("fire12").toCoordinate(), DesignLabel.FIRE);
@@ -151,11 +159,16 @@ public class Dungeon extends DungeonLevel {
     Game.system(
         DrawSystem.class,
         (ds) -> {
-          // TODO: Enable me later
-          // ds.sceneShaders().add("pp", new MushroomPostProcessing(new
-          // Rectangle(0,0)).viewDistance(0.75f));
-          // ((MushroomPostProcessing) ds.sceneShaders().get("pp")).viewDistance(0.75f); // new view
-          // distance
+          // Create global torch shader once
+          torchShader = (TorchPostProcessing) new TorchPostProcessing().upscaling(4);
+          torchShader.addArea(new Rectangle(getPoint("grass11"), getPoint("grass12")));
+          torchShader.addArea(new Rectangle(getPoint("temple11"), getPoint("temple12")));
+          torchShader.addArea(new Rectangle(getPoint("fire11"), getPoint("fire12")));
+          torchShader.addArea(new Rectangle(getPoint("forest11"), getPoint("forest12")));
+          torchShader.addArea(new Rectangle(getPoint("forest21"), getPoint("forest22")));
+          torchShader.addArea(new Rectangle(getPoint("forest21"), getPoint("forest23")));
+          torchShader.addArea(new Rectangle(getPoint("forest23"), getPoint("forest24")));
+          ds.sceneShaders().add("torches", torchShader);
         });
   }
 
@@ -320,7 +333,76 @@ public class Dungeon extends DungeonLevel {
   }
 
   @Override
-  protected void onTick() {}
+  protected void onTick() {
+    if (Game.allEntities().count() > 9000 && !torchShaderInitialized) {
+      if (torchShader != null) {
+        Game.levelEntities()
+            .filter(e -> e.name().contains("Torch"))
+            .forEach(
+                torch -> {
+                  torch
+                      .fetch(PositionComponent.class)
+                      .ifPresent(
+                          pos -> {
+                            torchShader.addLight(
+                                new TorchPostProcessing.Light(
+                                    pos.position().x() + 0.5f, pos.position().y(), 5.0f));
+                          });
+                });
+        Game.levelEntities()
+            .filter(e -> e.name().contains("Firebox"))
+            .forEach(
+                torch -> {
+                  torch
+                      .fetch(PositionComponent.class)
+                      .ifPresent(
+                          pos -> {
+                            torchShader.addLight(
+                                new TorchPostProcessing.Light(
+                                    pos.position().x() + 0.5f, pos.position().y(), 7.0f));
+                          });
+                });
+      }
+      torchShaderInitialized = true;
+    }
+    Game.player()
+        .get()
+        .fetch(PositionComponent.class)
+        .ifPresent(
+            pc -> {
+              Rectangle labyrinth1 =
+                  new Rectangle(getPoint("labyrinth11"), getPoint("labyrinth12"));
+              Rectangle labyrinth12 =
+                  new Rectangle(getPoint("labyrinth21"), getPoint("labyrinth22"));
+              if (labyrinth1.contains(pc.position()) || labyrinth12.contains(pc.position())) {
+                if (!dimed) {
+                  dimed = true;
+                  for (int i = 1; i <= 15; i++) {
+                    float dimness = 0.15f - (i * 0.01f);
+                    EventScheduler.scheduleAction(
+                        () -> {
+                          torchShader.baseDimness(dimness);
+                        },
+                        i * 100);
+                  }
+                }
+              } else {
+                if (dimed) {
+                  dimed = false;
+                  for (int i = 1; i <= 15; i++) {
+                    float dimness = 0f + (i * 0.01f);
+                    EventScheduler.scheduleAction(
+                        () -> {
+                          torchShader.baseDimness(dimness);
+                        },
+                        i * 100);
+                  }
+                }
+              }
+            });
+  }
+
+  private boolean dimed = false;
 
   private void changeTileDesignLabel(Coordinate a, Coordinate b, DesignLabel newDesignLabel) {
     int minX = Math.min(a.x(), b.x());

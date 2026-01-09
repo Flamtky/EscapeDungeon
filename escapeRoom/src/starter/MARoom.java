@@ -73,7 +73,7 @@ public class MARoom {
     Game.add(new LevelHideSystem());
     Game.add(new CollisionSystem());
     Game.add(new ManaRestoreSystem());
-    Game.add(new StaminaDrainSystem());
+    if (!DEBUG_MODE) Game.add(new StaminaDrainSystem());
     Game.add(new StaminaExhaustionSystem());
     Game.add(new DebugSleepSystem());
     Game.add(new AISystem());

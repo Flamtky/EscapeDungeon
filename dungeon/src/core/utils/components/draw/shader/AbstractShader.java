@@ -334,7 +334,7 @@ public abstract class AbstractShader implements Disposable, Serializable {
     @Override
     public void bind(ShaderProgram program) {
       // Activate this texture in OpenGL
-      Gdx.gl.glActiveTexture(unit);
+      Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0 + unit);
       texture.bind(unit);
       program.setUniformi(name, unit);
 
