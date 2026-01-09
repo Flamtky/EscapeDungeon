@@ -50,8 +50,11 @@ public class GuardDetectionSystem extends System {
    */
   public GuardDetectionSystem() {
     super(AlertnessComponent.class, PositionComponent.class);
-    // Register debug renderer for visualization
-    GuardDebugRenderer.ensureRegistered();
+
+    if (!Game.isHeadless()) {
+      // Register debug renderer for visualization
+      GuardDebugRenderer.ensureRegistered();
+    }
   }
 
   @Override

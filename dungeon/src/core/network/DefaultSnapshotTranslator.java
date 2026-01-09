@@ -1,17 +1,18 @@
 package core.network;
 
-import contrib.components.HealthComponent;
-import contrib.components.InventoryComponent;
-import contrib.components.ManaComponent;
-import contrib.components.UIComponent;
+import contrib.components.*;
 import contrib.systems.PositionSync;
 import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
 import core.components.SoundComponent;
+import core.level.Tile;
+import core.level.elements.tile.DoorTile;
+import core.level.utils.DesignLabel;
 import core.network.messages.c2s.RequestEntitySpawn;
 import core.network.messages.s2c.EntityState;
+import core.network.messages.s2c.LevelState;
 import core.network.messages.s2c.SnapshotMessage;
 import core.utils.Direction;
 import core.utils.logging.DungeonLogger;
@@ -34,7 +35,10 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
   private static final DungeonLogger LOGGER =
       DungeonLogger.getLogger(DefaultSnapshotTranslator.class);
 
+  private static final long SPAWN_REQUEST_COOLDOWN_MS = 5000L;
+
   private long latestServerTick = -1;
+  private final Map<Integer, Long> lastSpawnRequestTimes = new HashMap<>();
 
   /**
    * Checks if the server tick is valid. A server tick is valid if it is non-negative and greater
@@ -50,16 +54,23 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
   private boolean isServerTickValid(int serverTick) {
     final int MAX_TICK_THRESHOLD = 1000; // Threshold to reset latestServerTick
     if (serverTick < 0) {
+      LOGGER.warn("Received negative server tick: {}", serverTick);
       return false; // Server tick must be non-negative
     }
 
     if (serverTick > Integer.MAX_VALUE - MAX_TICK_THRESHOLD) {
       // If server tick is near Long.MAX_VALUE, reset latestServerTick
+      LOGGER.info(
+          "Server tick near max value ({}), resetting latestServerTick from {} to -1",
+          serverTick,
+          latestServerTick);
       latestServerTick = -1;
       return true; // Allow lower ticks to be valid
     }
 
     if (serverTick <= latestServerTick) {
+      LOGGER.warn(
+          "Received out-of-order server tick: {}, latest: {}", serverTick, latestServerTick);
       return false; // Server tick must be greater than the latest received tick
     }
 
@@ -111,6 +122,14 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
                         builder.maxMana(mc.maxAmount());
                       });
 
+              // Stamina
+              e.fetch(contrib.components.StaminaComponent.class)
+                  .ifPresent(
+                      sc -> {
+                        builder.currentStamina(sc.currentAmount());
+                        builder.maxStamina(sc.maxAmount());
+                      });
+
               // Animation
               e.fetch(DrawComponent.class)
                   .ifPresent(
@@ -133,7 +152,7 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
 
               list.add(builder.build());
             });
-    return Optional.of(new SnapshotMessage(serverTick, list));
+    return Optional.of(new SnapshotMessage(serverTick, list, LevelState.currentLevelState()));
   }
 
   private boolean isClientRelevant(Entity entity) {
@@ -170,14 +189,23 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
                 Optional<Entity> targetEntity = Game.findEntityById(entityId);
 
                 if (targetEntity.isEmpty()) {
-                  LOGGER.warn(
-                      "No entity found for snapshot with id: {}. Requesting spawn.", entityId);
-                  Game.network().send((short) 0, new RequestEntitySpawn(entityId), true);
+                  long now = System.currentTimeMillis();
+                  long lastSent = lastSpawnRequestTimes.getOrDefault(entityId, 0L);
+                  if (now - lastSent >= SPAWN_REQUEST_COOLDOWN_MS) {
+                    Game.network().send((short) 0, new RequestEntitySpawn(entityId), true);
+                    lastSpawnRequestTimes.put(entityId, now);
+                    LOGGER.warn(
+                        "No entity found for snapshot with id: {}. Requesting spawn.", entityId);
+                  } else {
+                    LOGGER.debug(
+                        "Skipping spawn request for entity {} (cooldown active).", entityId);
+                  }
                   return;
                 }
 
                 Entity entity = targetEntity.get();
                 snap.entityName().ifPresent(entity::name);
+                lastSpawnRequestTimes.remove(entityId);
 
                 entity
                     .fetch(PositionComponent.class)
@@ -234,6 +262,19 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
                                       ManaComponent mc = new ManaComponent(maxMana, maxMana, 0);
                                       entity.add(mc);
                                       snap.currentMana().ifPresent(mc::currentAmount);
+                                    }));
+                entity
+                    .fetch(StaminaComponent.class)
+                    .ifPresentOrElse(
+                        sc -> snap.currentStamina().ifPresent(sc::currentAmount),
+                        () ->
+                            snap.maxStamina()
+                                .ifPresent(
+                                    maxStamina -> {
+                                      StaminaComponent sc =
+                                          new StaminaComponent(maxStamina, maxStamina, 0);
+                                      entity.add(sc);
+                                      snap.currentStamina().ifPresent(sc::currentAmount);
                                     }));
 
                 // Sounds
@@ -292,5 +333,47 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
                     e);
               }
             });
+
+    applyLevelState(snapshot.levelState());
+  }
+
+  private void applyLevelState(LevelState levelState) {
+    // Doors
+    levelState
+        .doorStates()
+        .forEach(
+            (coordinate, isOpen) -> {
+              var doorTileOpt =
+                  Game.currentLevel()
+                      .flatMap(level -> level.tileAt(coordinate))
+                      .filter(tile -> tile instanceof DoorTile)
+                      .map(tile -> (DoorTile) tile);
+              doorTileOpt.ifPresent(
+                  doorTile -> {
+                    if (isOpen) {
+                      doorTile.open();
+                    } else {
+                      doorTile.close();
+                    }
+                  });
+            });
+
+    // Design Labels
+    DesignLabel[][] designLabels = levelState.designLabels();
+    int width = designLabels.length;
+    int height = designLabels[0].length;
+    Tile[][] levelLayout = Game.currentLevel().get().layout();
+    boolean updateNeeded = false;
+    for (int x = 0; x < width; x++) {
+      for (int y = 0; y < height; y++) {
+        Tile tile = levelLayout[x][y];
+        if (tile.designLabel() != designLabels[x][y]) {
+          updateNeeded = true;
+          tile.designLabel(designLabels[x][y]);
+        }
+      }
+    }
+
+    if (updateNeeded) Game.currentLevel().get().refreshLevelTextures();
   }
 }

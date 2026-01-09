@@ -264,6 +264,7 @@ public final class AudioApi {
     Entity hub = new Entity("SoundHub");
     hub.persistent(true);
     hub.add(new SoundComponent());
+    hub.add(new PositionComponent(0, 0));
     Game.add(hub);
     currentSoundHubId = hub.id();
     LOGGER.info("Created SoundHub entity with ID {}", currentSoundHubId);

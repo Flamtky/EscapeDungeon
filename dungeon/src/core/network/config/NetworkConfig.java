@@ -74,14 +74,14 @@ public final class NetworkConfig {
    *
    * <p>This defines how many times per second the server updates the game state.
    */
-  public static final int SERVER_TICK_HZ = 60;
+  public static final int SERVER_TICK_HZ = 90;
 
   /**
    * Server snapshot rate, in Hertz (Hz).
    *
    * <p>This defines how many times per second the server sends game state snapshots to clients.
    */
-  public static final int SERVER_SNAPSHOT_HZ = 60;
+  public static final int SERVER_SNAPSHOT_HZ = 90;
 
   /**
    * Maximum allowed sequence gap for network packets.

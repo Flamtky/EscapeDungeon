@@ -56,7 +56,7 @@ public class DebugSleepSystem extends System {
    * StaminaComponent}.
    */
   public DebugSleepSystem() {
-    super(PlayerComponent.class, StaminaComponent.class);
+    super(AuthoritativeSide.CLIENT, PlayerComponent.class, StaminaComponent.class);
 
     // Clean up when entities are removed
     onEntityRemove =

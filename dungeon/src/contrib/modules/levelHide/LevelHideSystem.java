@@ -30,7 +30,7 @@ public class LevelHideSystem extends System {
 
   /** Constructs new LevelHideSystem. */
   public LevelHideSystem() {
-    super(LevelHideComponent.class, PositionComponent.class);
+    super(AuthoritativeSide.CLIENT, LevelHideComponent.class, PositionComponent.class);
     onEntityAdd = this::onEntityAdd;
     onEntityRemove = this::onEntityRemove;
   }
