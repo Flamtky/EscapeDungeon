@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class TorchPostProcessing extends AbstractShader {
 
   private static final String VERT_PATH = "shaders/passthrough.vert";
-  private static final String FRAG_PATH = "shaders/torch_easy_pp.frag";
+  private static final String FRAG_PATH = "shaders/torch_optimized_pp.frag";
   private static final int MAX_LIGHTS = 128;
   private static final int MAX_AREAS = 32;
 
