@@ -2,20 +2,15 @@ package demoDungeon.level;
 
 import com.badlogic.gdx.graphics.Color;
 import contrib.components.*;
+import contrib.components.CollideComponent;
+import contrib.components.FlyComponent;
+import contrib.components.InventoryComponent;
 import contrib.entities.LeverFactory;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
 import contrib.systems.EventScheduler;
-import contrib.utils.ICommand;
-import core.Entity;
-import core.Game;
-import core.components.DrawComponent;
-import core.components.PositionComponent;
-import core.components.VelocityComponent;
-import contrib.components.CollideComponent;
-import contrib.components.FlyComponent;
-import contrib.components.InventoryComponent;
 import contrib.utils.EntityUtils;
+import contrib.utils.ICommand;
 import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
@@ -27,16 +22,13 @@ import core.level.DungeonLevel;
 import core.level.Tile;
 import core.level.elements.tile.DoorTile;
 import core.level.utils.*;
+import core.network.messages.c2s.InputMessage;
 import core.systems.DrawSystem;
 import core.utils.*;
 import core.utils.Direction;
 import core.utils.Point;
 import core.utils.TriConsumer;
 import core.utils.Vector2;
-import core.utils.components.draw.DepthLayer;
-import core.utils.components.path.SimpleIPath;
-import core.network.messages.c2s.InputMessage;
-import core.utils.*;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
 import escapeDungeon.components.IceMovementComponent;
@@ -425,8 +417,6 @@ public class Dungeon extends DungeonLevel {
               }
             });
 
-
-
     Game.allPlayers()
         .forEach(
             hero -> {
@@ -545,7 +535,6 @@ public class Dungeon extends DungeonLevel {
       for (int x = minX; x <= maxX; x++) {
         layout[y][x].designLabel(newDesignLabel);
         layout[y][x].tintColor(-1);
-        updatedTiles.add(layout[y][x]);
       }
     }
   }
