@@ -19,8 +19,6 @@ import core.level.elements.tile.DoorTile;
 import core.level.utils.*;
 import core.systems.DrawSystem;
 import core.utils.*;
-import core.systems.DrawSystem;
-import core.utils.*;
 import core.utils.Direction;
 import core.utils.Point;
 import core.utils.TriConsumer;
@@ -32,7 +30,6 @@ import java.util.*;
 import mobs.EscapeRoomMonsterBuilder;
 import mushRoom.Sounds;
 import mushRoom.shaders.TorchPostProcessing;
-import mobs.EscapeRoomMonsterBuilder;
 
 /**
  * The Demolevel. intel 13
