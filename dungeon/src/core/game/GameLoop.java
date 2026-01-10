@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.SharedLibraryLoader;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
+import contrib.components.SkillComponent;
 import contrib.components.UIComponent;
 import contrib.crafting.Crafting;
 import contrib.entities.CharacterClass;
@@ -386,6 +387,14 @@ public final class GameLoop extends ScreenAdapter {
           newEntity.add(event.positionComponent());
           if (event.drawComponent() != null) newEntity.add(event.drawComponent());
           newEntity.persistent(event.isPersistent());
+
+          // Apply skill data if present
+          if (event.skillData() != null) {
+            SkillComponent sc = new SkillComponent();
+            sc.applySyncData(event.skillData());
+            newEntity.add(sc);
+          }
+
           Game.add(newEntity);
         });
 

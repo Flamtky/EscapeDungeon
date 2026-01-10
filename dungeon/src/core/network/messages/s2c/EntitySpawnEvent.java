@@ -1,6 +1,8 @@
 package core.network.messages.s2c;
 
 import contrib.components.CharacterClassComponent;
+import contrib.components.SkillComponent;
+import contrib.components.SkillComponentData;
 import core.Entity;
 import core.components.DrawComponent;
 import core.components.PlayerComponent;
@@ -22,6 +24,7 @@ import core.network.messages.c2s.RequestEntitySpawn;
  * @param isPersistent whether the entity should be saved to the map
  * @param playerComponent the entity's player component, if it has one (null if not)
  * @param characterClassId the entity's character class ID, if it has one (0 if not)
+ * @param skillData the entity's skill component data, if it has one (null if not)
  * @see CharacterClassComponent CharacterClassComponent for mapping characterClassId to
  *     CharacterClass
  */
@@ -32,7 +35,9 @@ public record EntitySpawnEvent(
     boolean isPersistent,
     // For Player entities (Hero):
     PlayerComponent playerComponent,
-    byte characterClassId)
+    byte characterClassId,
+    // For entities with skills:
+    SkillComponentData skillData)
     implements NetworkMessage {
 
   /**
@@ -53,6 +58,7 @@ public record EntitySpawnEvent(
         entity
             .fetch(CharacterClassComponent.class)
             .map(ccc -> (byte) ccc.characterClass().ordinal())
-            .orElse((byte) 0));
+            .orElse((byte) 0),
+        entity.fetch(SkillComponent.class).map(SkillComponent::toSyncData).orElse(null));
   }
 }

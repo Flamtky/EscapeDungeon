@@ -25,6 +25,12 @@ public class SkillComponent implements Component {
   private int activeSkill = -1;
 
   /**
+   * Cached sync data received from the server. Used on clients to display skill state without
+   * having the actual Skill objects.
+   */
+  private SkillComponentData cachedSyncData;
+
+  /**
    * Creates a new {@code SkillComponent} with the given skills.
    *
    * <p>If at least one skill is provided, the first skill will be marked as active.
@@ -141,5 +147,86 @@ public class SkillComponent implements Component {
    */
   public List<Skill> getSkills() {
     return List.copyOf(skills);
+  }
+
+  /**
+   * Exports the current skill state as sync data for network transmission.
+   *
+   * <p>This extracts the display-relevant information from all skills.
+   *
+   * @return a SkillComponentData representing the current state
+   */
+  public SkillComponentData toSyncData() {
+    return SkillComponentData.from(this);
+  }
+
+  /**
+   * Applies sync data received from the server.
+   *
+   * <p>This stores the data for client-side display. The actual Skill objects are not modified.
+   *
+   * @param data the sync data to apply
+   */
+  public void applySyncData(SkillComponentData data) {
+    this.cachedSyncData = data;
+    if (data != null) {
+      this.activeSkill = data.activeSkillIndex();
+    }
+  }
+
+  /**
+   * Returns the cached sync data, if available.
+   *
+   * @return the cached SkillComponentData, or null if not set
+   */
+  public SkillComponentData cachedSyncData() {
+    return cachedSyncData;
+  }
+
+  /**
+   * Returns the active skill's display data.
+   *
+   * <p>On the server (or when skills are available locally), this extracts data from the actual
+   * Skill object. On clients, this returns data from the cached sync data.
+   *
+   * @return the active skill's display data, or null if no skill is active
+   */
+  public SkillData activeSkillData() {
+    // If we have actual skills, use them (server-side or local)
+    if (!skills.isEmpty() && activeSkill >= 0 && activeSkill < skills.size()) {
+      Skill skill = skills.get(activeSkill);
+      return new SkillData(skill.name(), skill.cooldown(), skill.remainingCooldownMillis());
+    }
+    // Otherwise, use cached sync data (client-side)
+    if (cachedSyncData != null) {
+      return cachedSyncData.activeSkillData();
+    }
+    return null;
+  }
+
+  /**
+   * Returns the number of skills.
+   *
+   * <p>Uses actual skills if available, otherwise falls back to cached sync data.
+   *
+   * @return the number of skills
+   */
+  public int skillCount() {
+    if (!skills.isEmpty()) {
+      return skills.size();
+    }
+    if (cachedSyncData != null) {
+      return cachedSyncData.skillCount();
+    }
+    return 0;
+  }
+
+  /**
+   * Returns the index of the currently active skill.
+   *
+   * @return the active skill index, or -1 if no skill is active
+   */
+  public int activeSkillIndex() {
+    return activeSkill;
   }
 }

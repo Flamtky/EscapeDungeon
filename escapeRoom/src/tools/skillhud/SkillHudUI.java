@@ -7,12 +7,11 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import contrib.components.SkillComponent;
-import contrib.utils.components.skill.Skill;
+import contrib.components.SkillData;
 import core.Entity;
 import core.Game;
 import core.utils.FontHelper;
 import core.utils.logging.DungeonLogger;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -167,17 +166,17 @@ public class SkillHudUI extends Group {
     }
 
     SkillComponent skillComp = skillCompOpt.get();
-    List<Skill> skills = skillComp.getSkills();
-    Optional<Skill> activeSkillOpt = skillComp.activeSkill();
+    int currentSkillCount = skillComp.skillCount();
+    SkillData activeSkillData = skillComp.activeSkillData();
 
     // Detect skill count changes (add/remove)
-    if (skills.size() != lastSkillCount) {
-      lastSkillCount = skills.size();
+    if (currentSkillCount != lastSkillCount) {
+      lastSkillCount = currentSkillCount;
       highlightTimer = HIGHLIGHT_DURATION;
     }
 
     // Detect active skill changes
-    String currentSkillName = activeSkillOpt.map(Skill::name).orElse(null);
+    String currentSkillName = activeSkillData != null ? activeSkillData.name() : null;
     if ((currentSkillName == null && lastSkillName != null)
         || (currentSkillName != null && !currentSkillName.equals(lastSkillName))) {
       lastSkillName = currentSkillName;
@@ -220,18 +219,16 @@ public class SkillHudUI extends Group {
       drawNoSkillState(batch, boxX, boxY);
     } else {
       SkillComponent skillComp = skillCompOpt.get();
-      List<Skill> skills = skillComp.getSkills();
-      Optional<Skill> activeSkillOpt = skillComp.activeSkill();
+      SkillData activeSkillData = skillComp.activeSkillData();
+      int totalSkills = skillComp.skillCount();
 
-      if (skills.isEmpty() || activeSkillOpt.isEmpty()) {
+      if (totalSkills == 0 || activeSkillData == null) {
         drawNoSkillState(batch, boxX, boxY);
       } else {
-        Skill activeSkill = activeSkillOpt.get();
-        int activeIndex = skills.indexOf(activeSkill) + 1;
-        int totalSkills = skills.size();
+        int activeIndex = skillComp.activeSkillIndex() + 1;
 
         // Draw skill content
-        drawSkillContent(batch, boxX, boxY, activeSkill, activeIndex, totalSkills);
+        drawSkillContent(batch, boxX, boxY, activeSkillData, activeIndex, totalSkills);
       }
     }
   }
@@ -287,18 +284,18 @@ public class SkillHudUI extends Group {
   }
 
   private void drawSkillContent(
-      Batch batch, float boxX, float boxY, Skill skill, int activeIndex, int totalSkills) {
+      Batch batch, float boxX, float boxY, SkillData skillData, int activeIndex, int totalSkills) {
 
     float centerX = boxX + BOX_WIDTH / 2;
     float arcCenterY = boxY + BOX_HEIGHT / 2 + 5;
 
     // Draw cooldown arc (behind text)
     batch.end();
-    drawCooldownArc(centerX, arcCenterY, skill);
+    drawCooldownArc(centerX, arcCenterY, skillData);
     batch.begin();
 
     // Draw skill name at top
-    String skillName = skill.name() != null ? skill.name() : "Unknown";
+    String skillName = skillData.name() != null ? skillData.name() : "Unknown";
     if (skillName.length() > 12) {
       skillName = skillName.substring(0, 10) + "..";
     }
@@ -308,7 +305,7 @@ public class SkillHudUI extends Group {
     skillNameFont.draw(batch, skillName, nameX, nameY);
 
     // Draw status text (READY or cooldown)
-    drawStatusText(batch, boxX, boxY, skill);
+    drawStatusText(batch, boxX, boxY, skillData);
 
     // Draw slot indicator if multiple skills
     if (totalSkills > 1) {
@@ -316,8 +313,8 @@ public class SkillHudUI extends Group {
     }
   }
 
-  private void drawCooldownArc(float centerX, float centerY, Skill skill) {
-    float progress = skill.cooldownProgress();
+  private void drawCooldownArc(float centerX, float centerY, SkillData skillData) {
+    float progress = skillData.cooldownProgress();
 
     shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
@@ -361,15 +358,15 @@ public class SkillHudUI extends Group {
     }
   }
 
-  private void drawStatusText(Batch batch, float boxX, float boxY, Skill skill) {
+  private void drawStatusText(Batch batch, float boxX, float boxY, SkillData skillData) {
     String statusText;
     Color statusColor;
 
-    if (skill.canBeUsedAgain()) {
+    if (skillData.canBeUsed()) {
       statusText = READY_TEXT;
       statusColor = READY_COLOR;
     } else {
-      long remainingMs = skill.remainingCooldownMillis();
+      long remainingMs = skillData.remainingCooldownMs();
       float remainingSec = remainingMs / 1000f;
 
       if (remainingSec >= 1.0f) {

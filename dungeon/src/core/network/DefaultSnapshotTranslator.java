@@ -150,6 +150,9 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
               // Inventory
               e.fetch(InventoryComponent.class).ifPresent(ic -> builder.inventory(ic.items()));
 
+              // Skills
+              e.fetch(SkillComponent.class).ifPresent(sc -> builder.skillData(sc.toSyncData()));
+
               list.add(builder.build());
             });
     return Optional.of(new SnapshotMessage(serverTick, list, LevelState.currentLevelState()));
@@ -324,6 +327,22 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
                               .fetch(InventoryComponent.class)
                               .ifPresent(InventoryComponent::clear);
                           entity.remove(InventoryComponent.class);
+                        });
+
+                // Skills
+                snap.skillData()
+                    .ifPresent(
+                        skillData -> {
+                          SkillComponent sc =
+                              entity
+                                  .fetch(SkillComponent.class)
+                                  .orElseGet(
+                                      () -> {
+                                        SkillComponent newSc = new SkillComponent();
+                                        entity.add(newSc);
+                                        return newSc;
+                                      });
+                          sc.applySyncData(skillData);
                         });
               } catch (Exception e) {
                 LOGGER.error(
