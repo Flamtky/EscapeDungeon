@@ -11,12 +11,14 @@ import contrib.utils.components.Debugger;
 import core.Entity;
 import core.Game;
 import core.level.loader.DungeonLoader;
+import core.network.config.NetworkConfig;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.Dungeon;
 import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
 import java.io.IOException;
+import network.EscapeRoomSnapshotTranslator;
 
 /**
  * Starter for the Demo Escaperoom Dungeon.
@@ -37,6 +39,8 @@ public class MARoom {
   public static void main(String[] args) throws IOException {
     configGame();
     onSetup();
+
+    NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
 
     Game.windowTitle("Demo-Room");
     Game.run();

@@ -16,9 +16,14 @@ import java.util.Optional;
  * <p>This message is used to convey the current state of an entity from the server to the client.
  * It can include various information such as position, health, mana, and other relevant attributes.
  *
+ * <p>Subclasses can extend this class and the {@link Builder} to add custom fields for
+ * subproject-specific components.
+ *
  * @see SnapshotMessage
  * @see core.network.SnapshotTranslator
  */
+// TODO: Refactor Builder to use a self-referencing generic pattern (Builder<T extends Builder<T>>)
+//       for cleaner inheritance and method chaining in subclasses.
 public class EntityState implements NetworkMessage {
   @Serial private static final long serialVersionUID = 1L;
 
@@ -44,7 +49,7 @@ public class EntityState implements NetworkMessage {
    *
    * @param builder the Builder containing the entity's state data
    */
-  private EntityState(Builder builder) {
+  protected EntityState(Builder builder) {
     this.entityId = builder.entityId;
     this.entityName = builder.entityName;
     this.position = builder.position;
@@ -218,22 +223,22 @@ public class EntityState implements NetworkMessage {
 
   /** Builder class for constructing EntityState objects. */
   public static class Builder {
-    private int entityId;
-    private String entityName;
-    private Point position;
-    private String viewDirection;
-    private Float rotation;
-    private Integer curHealth;
-    private Integer maxHealth;
-    private Float curMana;
-    private Float maxMana;
-    private Float curStamina;
-    private Float maxStamina;
-    private String stateName;
-    private Integer tintColor;
-    private List<SoundSpec> sounds;
-    private Item[] inventory;
-    private SkillComponentData skillData;
+    protected int entityId;
+    protected String entityName;
+    protected Point position;
+    protected String viewDirection;
+    protected Float rotation;
+    protected Integer curHealth;
+    protected Integer maxHealth;
+    protected Float curMana;
+    protected Float maxMana;
+    protected Float curStamina;
+    protected Float maxStamina;
+    protected String stateName;
+    protected Integer tintColor;
+    protected List<SoundSpec> sounds;
+    protected Item[] inventory;
+    protected SkillComponentData skillData;
 
     /**
      * Sets the unique identifier for the entity.
