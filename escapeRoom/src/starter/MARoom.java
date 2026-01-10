@@ -17,7 +17,6 @@ import demoDungeon.level.Dungeon;
 import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
 import java.io.IOException;
-import tools.skillhud.SkillHudSystem;
 
 /**
  * Starter for the Demo Escaperoom Dungeon.
@@ -92,7 +91,6 @@ public class MARoom {
     Game.add(new AttachmentSystem());
     Game.add(new IllegalSystem());
     Game.add(new BedSleepSystem());
-    Game.add(new SkillHudSystem());
     if (DEBUG_MODE) Game.add(new Debugger());
   }
 

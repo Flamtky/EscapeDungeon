@@ -34,7 +34,7 @@ public record SkillComponentData(int activeSkillIndex, List<SkillData> skills)
 
     for (Skill skill : skillList) {
       skillDataList.add(
-          new SkillData(skill.name(), skill.cooldown(), skill.remainingCooldownMillis()));
+          SkillData.now(skill.name(), skill.cooldown(), skill.remainingCooldownMillis()));
     }
 
     // Find active skill index

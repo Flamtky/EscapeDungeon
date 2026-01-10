@@ -1,6 +1,7 @@
-package tools.skillhud;
+package contrib.systems;
 
 import contrib.components.SkillComponent;
+import contrib.hud.skill.SkillHudUI;
 import core.Entity;
 import core.Game;
 import core.System;

@@ -1,5 +1,6 @@
-package tools.skillhud;
+package contrib.hud.skill;
 
+import contrib.systems.SkillHudSystem;
 import core.Game;
 import core.utils.logging.DungeonLogger;
 

@@ -1,4 +1,4 @@
-package tools.skillhud;
+package contrib.hud.skill;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -366,7 +366,7 @@ public class SkillHudUI extends Group {
       statusText = READY_TEXT;
       statusColor = READY_COLOR;
     } else {
-      long remainingMs = skillData.remainingCooldownMs();
+      long remainingMs = skillData.predictedRemainingCooldownMs();
       float remainingSec = remainingMs / 1000f;
 
       if (remainingSec >= 1.0f) {

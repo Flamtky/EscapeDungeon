@@ -186,20 +186,20 @@ public class SkillComponent implements Component {
   /**
    * Returns the active skill's display data.
    *
-   * <p>On the server (or when skills are available locally), this extracts data from the actual
-   * Skill object. On clients, this returns data from the cached sync data.
+   * <p>Prefers cached sync data when available for unified single-player/multiplayer behavior. Only
+   * falls back to local skill objects when no sync data exists.
    *
    * @return the active skill's display data, or null if no skill is active
    */
   public SkillData activeSkillData() {
-    // If we have actual skills, use them (server-side or local)
-    if (!skills.isEmpty() && activeSkill >= 0 && activeSkill < skills.size()) {
-      Skill skill = skills.get(activeSkill);
-      return new SkillData(skill.name(), skill.cooldown(), skill.remainingCooldownMillis());
-    }
-    // Otherwise, use cached sync data (client-side)
+    // Prefer cached sync data for unified SP/MP behavior
     if (cachedSyncData != null) {
       return cachedSyncData.activeSkillData();
+    }
+    // Fall back to local skills if no sync data (e.g., server-side before first sync)
+    if (!skills.isEmpty() && activeSkill >= 0 && activeSkill < skills.size()) {
+      Skill skill = skills.get(activeSkill);
+      return SkillData.now(skill.name(), skill.cooldown(), skill.remainingCooldownMillis());
     }
     return null;
   }

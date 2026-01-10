@@ -25,6 +25,7 @@ import contrib.hud.dialogs.DialogFactory;
 import contrib.systems.AttributeBarSystem;
 import contrib.systems.DebugDrawSystem;
 import contrib.systems.EventScheduler;
+import contrib.systems.SkillHudSystem;
 import contrib.utils.CheckPatternPainter;
 import core.Entity;
 import core.Game;
@@ -373,13 +374,20 @@ public final class GameLoop extends ScreenAdapter {
               }
             }
 
-            Game.add(
+            Entity hero =
                 HeroBuilder.builder()
                     .id(event.entityId())
                     .characterClass(CharacterClass.fromByteId(event.characterClassId()))
                     .isLocalPlayer(isLocal)
                     .username(pc.playerName())
-                    .build());
+                    .build();
+
+            // Apply skill sync data from spawn event for proper cooldown display
+            if (event.skillData() != null) {
+              hero.fetch(SkillComponent.class).ifPresent(sc -> sc.applySyncData(event.skillData()));
+            }
+
+            Game.add(hero);
             return;
           }
 
@@ -560,5 +568,6 @@ public final class GameLoop extends ScreenAdapter {
     ECSManagement.add(new InputSystem());
     ECSManagement.add(new DebugDrawSystem());
     ECSManagement.add(new AttributeBarSystem());
+    ECSManagement.add(new SkillHudSystem());
   }
 }
