@@ -65,7 +65,12 @@ public class LevelHideSystem extends System {
 
   @Override
   public void execute() {
-    Point currentPos = EntityUtils.getPlayerPosition();
+    Point currentPos;
+    try {
+      currentPos = EntityUtils.getPlayerPosition();
+    } catch (IllegalStateException e) {
+      return; // No player entity found
+    }
     getDrawSystem()
         .ifPresent(
             ds -> {

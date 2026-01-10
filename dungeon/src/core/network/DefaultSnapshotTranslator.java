@@ -399,8 +399,8 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
   /**
    * Applies additional entity state from the snapshot to the entity.
    *
-   * <p>Subclasses can override this method to apply custom component data from extended
-   * EntityState subclasses. The base implementation does nothing.
+   * <p>Subclasses can override this method to apply custom component data from extended EntityState
+   * subclasses. The base implementation does nothing.
    *
    * @param entity the entity to apply state to
    * @param state the entity state from the snapshot
