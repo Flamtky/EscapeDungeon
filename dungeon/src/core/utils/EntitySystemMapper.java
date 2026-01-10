@@ -47,7 +47,7 @@ public final class EntitySystemMapper {
   private final Lock readLock = lock.readLock();
   private final Lock writeLock = lock.writeLock();
 
-  /** Cached hash code of filterRules for faster lookups */
+  /** Cached hash code of filterRules for faster lookups. */
   private final int filterRulesHashCode;
 
   /**

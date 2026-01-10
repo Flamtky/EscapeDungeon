@@ -4,6 +4,12 @@ import contrib.entities.MonsterBuilder;
 import guard.GuardBuilder;
 import java.util.function.Supplier;
 
+/**
+ * Enum representing different types of monsters that can be created in the Escape Room game.
+ *
+ * <p>Each enum constant is associated with a specific {@link Builder} class that defines how to
+ * construct that type of monster.
+ */
 public enum EscapeRoomMonsterBuilder {
   /** A static non-moving guard and shooting monster. */
   GUARD(GuardBuilder::new);

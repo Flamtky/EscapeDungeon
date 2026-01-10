@@ -11,6 +11,10 @@ import core.level.utils.LevelElement;
 import core.utils.Point;
 import core.utils.Tuple;
 
+/**
+ * A skill that allows the caster to create a bridge over water tiles or convert certain entities
+ * into bridge tiles.
+ */
 public class BridgeSkill extends CursorSkill {
 
   /**
