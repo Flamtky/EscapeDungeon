@@ -1,0 +1,28 @@
+{
+    "ordered": false,
+    "ingredients": [
+        {
+            "type": "item",
+            "item": {
+                "id": "RingSilverItem",
+                "count": 1
+            }
+        },
+        {
+            "type": "item",
+            "item": {
+                "id": "BlueGemItem",
+                "count": 1
+            }
+        }
+    ],
+    "results": [
+        {
+            "type": "item",
+            "item": {
+                "id": "IceWallPlacer",
+                "count": 1
+            }
+        }
+    ]
+}
