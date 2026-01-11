@@ -34,6 +34,12 @@ tasks.register('runMA', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 
+tasks.register('runMAClient', JavaExec) {
+    group 'starter'
+    mainClass = 'starter.MultiplayerClient'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 tasks.register('runSpriteTestRoom', JavaExec) {
     group 'starter'
     mainClass = 'starter.SpriteTestRoom'
