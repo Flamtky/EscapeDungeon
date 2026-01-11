@@ -6,7 +6,9 @@ import core.systems.CameraSystem;
 import core.utils.Rectangle;
 import core.utils.components.draw.shader.AbstractShader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /** TorchPostProcessing shader that applies dynamic torch lighting with configurable vignette. */
@@ -17,7 +19,7 @@ public class TorchPostProcessing extends AbstractShader {
   private static final int MAX_LIGHTS = 128;
   private static final int MAX_AREAS = 32;
 
-  private List<Light> lights;
+  private Set<Light> lights;
   private List<Rectangle> illuminatedAreas;
   private float viewDistance = 0.75f;
   private float vignetteRadius = 0.35f;
@@ -84,12 +86,26 @@ public class TorchPostProcessing extends AbstractShader {
       this.radius = radius;
       return this;
     }
+
+    /**
+     * Checks equality based on position.
+     *
+     * @param obj The object to compare
+     * @return True if positions are equal, false otherwise
+     */
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null || getClass() != obj.getClass()) return false;
+      Light other = (Light) obj;
+      return Float.compare(other.x, x) == 0 && Float.compare(other.y, y) == 0;
+    }
   }
 
   /** Constructs a TorchPostProcessing shader with an empty light list. */
   public TorchPostProcessing() {
     super(VERT_PATH, FRAG_PATH);
-    this.lights = new ArrayList<>();
+    this.lights = new HashSet<>();
     this.illuminatedAreas = new ArrayList<>();
   }
 
@@ -100,10 +116,10 @@ public class TorchPostProcessing extends AbstractShader {
     // Filter lights to only include those visible in the camera view
     List<Light> visibleLights = getVisibleLights();
 
-    uniforms.add(new IntUniform("u_lightCount", Math.min(visibleLights.size(), MAX_LIGHTS)));
+    uniforms.add(new IntUniform("u_lightCount", visibleLights.size()));
 
     // Add light positions and radii
-    for (int i = 0; i < Math.min(visibleLights.size(), MAX_LIGHTS); i++) {
+    for (int i = 0; i < visibleLights.size(); i++) {
       Light light = visibleLights.get(i);
       uniforms.add(
           new Vector3Uniform("u_lights[" + i + "]", new Vector3(light.x, light.y, light.radius)));
@@ -130,7 +146,7 @@ public class TorchPostProcessing extends AbstractShader {
   /**
    * Filters lights to only include those within the camera view + a margin for smooth transitions.
    *
-   * @return List of visible lights
+   * @return List of visible lights (limited to MAX_LIGHTS)
    */
   private List<Light> getVisibleLights() {
     Rectangle cameraBounds = CameraSystem.getCameraWorldBounds();
@@ -146,6 +162,7 @@ public class TorchPostProcessing extends AbstractShader {
 
     return lights.stream()
         .filter(light -> isLightInBounds(light, expandedBounds))
+        .limit(MAX_LIGHTS)
         .collect(Collectors.toList());
   }
 
@@ -242,9 +259,7 @@ public class TorchPostProcessing extends AbstractShader {
    * @return The updated TorchPostProcessing instance
    */
   public TorchPostProcessing addLight(Light light) {
-    if (lights.size() < MAX_LIGHTS) {
-      lights.add(light);
-    }
+    lights.add(light);
     return this;
   }
 
@@ -285,7 +300,7 @@ public class TorchPostProcessing extends AbstractShader {
    * @return The updated TorchPostProcessing instance
    */
   public TorchPostProcessing lights(List<Light> lights) {
-    this.lights = new ArrayList<>(lights);
+    this.lights = new HashSet<>(lights);
     return this;
   }
 

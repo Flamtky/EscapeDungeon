@@ -47,8 +47,6 @@ import mushRoom.shaders.TorchPostProcessing;
  */
 public class Dungeon extends DungeonLevel {
 
-  private boolean dimed = false;
-  private boolean torchShaderInitialized = false;
   private TorchPostProcessing torchShader;
   private final List<Entity> puzzlePushEntities = new ArrayList<>();
   private final Color[] stoneColors = {
@@ -472,73 +470,7 @@ public class Dungeon extends DungeonLevel {
 
   @Override
   protected void onTick() {
-    if (Game.allEntities().count() > 9000 && !torchShaderInitialized) {
-      if (torchShader != null) {
-        Game.levelEntities()
-            .filter(e -> e.name().contains("Torch"))
-            .forEach(
-                torch -> {
-                  torch
-                      .fetch(PositionComponent.class)
-                      .ifPresent(
-                          pos -> {
-                            torchShader.addLight(
-                                new TorchPostProcessing.Light(
-                                    pos.position().x() + 0.5f, pos.position().y(), 5.0f));
-                          });
-                });
-        Game.levelEntities()
-            .filter(e -> e.name().contains("Firebox"))
-            .forEach(
-                torch -> {
-                  torch
-                      .fetch(PositionComponent.class)
-                      .ifPresent(
-                          pos -> {
-                            torchShader.addLight(
-                                new TorchPostProcessing.Light(
-                                    pos.position().x() + 0.5f, pos.position().y(), 7.0f));
-                          });
-                });
-      }
-      torchShaderInitialized = true;
-    }
-    Game.player()
-        .get()
-        .fetch(PositionComponent.class)
-        .ifPresent(
-            pc -> {
-              Rectangle labyrinth1 =
-                  new Rectangle(getPoint("labyrinth11"), getPoint("labyrinth12"));
-              Rectangle labyrinth12 =
-                  new Rectangle(getPoint("labyrinth21"), getPoint("labyrinth22"));
-              if (labyrinth1.contains(pc.position()) || labyrinth12.contains(pc.position())) {
-                if (!dimed) {
-                  dimed = true;
-                  for (int i = 1; i <= 15; i++) {
-                    float dimness = 0.15f - (i * 0.01f);
-                    EventScheduler.scheduleAction(
-                        () -> {
-                          torchShader.baseDimness(dimness);
-                        },
-                        i * 100);
-                  }
-                }
-              } else {
-                if (dimed) {
-                  dimed = false;
-                  for (int i = 1; i <= 15; i++) {
-                    float dimness = 0f + (i * 0.01f);
-                    EventScheduler.scheduleAction(
-                        () -> {
-                          torchShader.baseDimness(dimness);
-                        },
-                        i * 100);
-                  }
-                }
-              }
-            });
-
+    updateTorchShader();
     Game.allPlayers()
         .forEach(
             hero -> {
@@ -548,6 +480,7 @@ public class Dungeon extends DungeonLevel {
             });
   }
 
+  private final Set<Integer> initLightEntityIds = new HashSet<>();
   private void createIcePuzzleEntities() {
     listPointsIndexed("snow_Wall")
         .forEach(
@@ -570,6 +503,21 @@ public class Dungeon extends DungeonLevel {
               snowWall.add(dc);
               snowWall.add(cc);
               Game.add(snowWall);
+            });
+  }
+
+  private void updateTorchShader() {
+    Game.levelEntities()
+        .filter(e -> !initLightEntityIds.contains(e.id()))
+        .filter(e -> (e.name().contains("Torch") || e.name().contains("Firebox")))
+        .forEach(
+            e -> {
+              float radius = e.name().contains("Torch") ? 5.0f : 7.0f;
+              PositionComponent pos = e.fetch(PositionComponent.class).orElseThrow();
+              torchShader.addLight(
+                  new TorchPostProcessing.Light(
+                      pos.position().x() + 0.5f, pos.position().y(), radius));
+              initLightEntityIds.add(e.id());
             });
   }
 

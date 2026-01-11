@@ -84,6 +84,8 @@ public final class GameLoop extends ScreenAdapter {
       () -> {
         if (!PreRunConfiguration.isNetworkServer()) return; // no authority
 
+        Game.currentLevel().ifPresent(level -> level.finishedLoading(false));
+
         List<Entity> allPlayers = ECSManagement.allPlayers().toList();
         boolean firstLoad = !ECSManagement.levelStorageMap().containsKey(Game.currentLevel().get());
         allPlayers.forEach(ECSManagement::remove);
@@ -118,7 +120,7 @@ public final class GameLoop extends ScreenAdapter {
                           .flatMap(e -> e.fetch(PositionComponent.class))
                           .map(PositionComponent::position)
                           .orElse(new Point(0, 0));
-                  int batch_size = 25;
+                  final int batch_size = 25;
 
                   List<Tuple<Deco, Point>> sortedDecos =
                       level.decorations().stream()
@@ -130,11 +132,16 @@ public final class GameLoop extends ScreenAdapter {
                   for (int i = 0; i < batches; i++) {
                     final int skip = i * batch_size;
                     final int limit = Math.min(batch_size, sortedDecos.size() - skip);
+                    int finalI = i;
                     EventScheduler.scheduleAction(
-                        () ->
-                            sortedDecos
-                                .subList(skip, skip + limit)
-                                .forEach(t -> Game.add(DecoFactory.createDeco(t.b(), t.a()))),
+                        () -> {
+                          sortedDecos
+                              .subList(skip, skip + limit)
+                              .forEach(t -> Game.add(DecoFactory.createDeco(t.b(), t.a())));
+                          if (finalI == batches - 1) {
+                            level.finishedLoading(true);
+                          }
+                        },
                         15L * i);
                   }
                 });

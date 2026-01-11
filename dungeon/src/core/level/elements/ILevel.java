@@ -422,4 +422,18 @@ public interface ILevel extends IndexedGraph<Tile> {
    * @return A list of tuples containing decorations and their positions.
    */
   List<Tuple<Deco, Point>> decorations();
+
+  /**
+   * Returns whether the level is fully loaded.
+   *
+   * @return true if the level is loaded, false otherwise.
+   */
+  boolean finishedLoading();
+
+  /**
+   * Sets the loading status of the level.
+   *
+   * @param finishedLoading true if the level is loaded, false otherwise.
+   */
+  void finishedLoading(boolean finishedLoading);
 }

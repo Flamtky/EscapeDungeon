@@ -33,6 +33,8 @@ public class DungeonLevel implements ILevel, ITickable {
   protected final Map<String, Point> namedPoints = new HashMap<>();
   protected final List<Tuple<Deco, Point>> decorations = new ArrayList<>();
 
+  private boolean finishedLoading = true;
+
   private static int levelNameSuffix = 1;
   protected String levelName;
   private static final Vector2[] CONNECTION_OFFSETS = {
@@ -381,6 +383,16 @@ public class DungeonLevel implements ILevel, ITickable {
   @Override
   public List<Tuple<Deco, Point>> decorations() {
     return decorations;
+  }
+
+  @Override
+  public boolean finishedLoading() {
+    return finishedLoading;
+  }
+
+  @Override
+  public void finishedLoading(boolean finishedLoading) {
+    this.finishedLoading = finishedLoading;
   }
 
   /**
