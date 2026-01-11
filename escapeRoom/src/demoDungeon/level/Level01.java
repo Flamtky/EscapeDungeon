@@ -232,7 +232,7 @@ public class Level01 extends DungeonLevel {
     Point goal = getPoint(6);
     npc.add(
         new AIComponent(
-            entity -> {},
+            (entity, player) -> {},
             entity -> {
               Optional<Tile> entityTile = Game.tileAtEntity(entity);
               Optional<Tile> goalTile = Game.tileAt(goal);
@@ -246,7 +246,7 @@ public class Level01 extends DungeonLevel {
                         entity.fetch(PositionComponent.class).get().position(), goal));
               }
             },
-            entity -> false));
+            (entity, player) -> false));
   }
 
   private void crafting() {

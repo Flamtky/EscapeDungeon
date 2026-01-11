@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class TorchPostProcessing extends AbstractShader {
 
   private static final String VERT_PATH = "shaders/passthrough.vert";
-  private static final String FRAG_PATH = "shaders/torch_easy_pp.frag";
+  private static final String FRAG_PATH = "shaders/torch_optimized_pp.frag";
   private static final int MAX_LIGHTS = 128;
   private static final int MAX_AREAS = 32;
 
@@ -23,7 +23,13 @@ public class TorchPostProcessing extends AbstractShader {
   private float vignetteRadius = 0.35f;
   private float baseDimness = 0.15f;
 
-  /** Custom UniformBinding for int values */
+  /**
+   * Custom UniformBinding for int values.
+   *
+   * @param name The name of the uniform variable in the shader
+   * @param value The integer value to bind
+   * @see UniformBinding
+   */
   private record IntUniform(String name, int value) implements UniformBinding {
     @Override
     public void bind(ShaderProgram program) {
@@ -33,22 +39,47 @@ public class TorchPostProcessing extends AbstractShader {
 
   /** Represents a light source with position and radius. */
   public static class Light {
+    /** Light position X coordinate. */
     public float x;
+
+    /** Light position Y coordinate. */
     public float y;
+
+    /** Light radius. */
     public float radius;
 
+    /**
+     * Constructs a Light with specified position and radius.
+     *
+     * @param x The X coordinate of the light position
+     * @param y The Y coordinate of the light position
+     * @param radius The radius of the light
+     */
     public Light(float x, float y, float radius) {
       this.x = x;
       this.y = y;
       this.radius = radius;
     }
 
+    /**
+     * Sets the position of the light.
+     *
+     * @param x The X coordinate of the light position
+     * @param y The Y coordinate of the light position
+     * @return The updated Light instance
+     */
     public Light setPosition(float x, float y) {
       this.x = x;
       this.y = y;
       return this;
     }
 
+    /**
+     * Sets the radius of the light.
+     *
+     * @param radius The radius of the light
+     * @return The updated Light instance
+     */
     public Light setRadius(float radius) {
       this.radius = radius;
       return this;
@@ -118,7 +149,13 @@ public class TorchPostProcessing extends AbstractShader {
         .collect(Collectors.toList());
   }
 
-  /** Checks if a light is within the expanded camera bounds. */
+  /**
+   * Checks if a light is within the expanded camera bounds.
+   *
+   * @param light The light source to check
+   * @param bounds The expanded camera bounds
+   * @return True if the light is within bounds, false otherwise
+   */
   private boolean isLightInBounds(Light light, Rectangle bounds) {
     float minX = bounds.x();
     float maxX = bounds.x() + bounds.width();
@@ -138,34 +175,72 @@ public class TorchPostProcessing extends AbstractShader {
     return null;
   }
 
+  /**
+   * Gets the current view distance.
+   *
+   * @return The view distance
+   */
   public float viewDistance() {
     return viewDistance;
   }
 
+  /**
+   * Sets the view distance.
+   *
+   * @param viewDistance The view distance
+   * @return The updated TorchPostProcessing instance
+   */
   public TorchPostProcessing viewDistance(float viewDistance) {
     this.viewDistance = viewDistance;
     return this;
   }
 
+  /**
+   * Gets the vignette radius.
+   *
+   * @return The vignette radius
+   */
   public float vignetteRadius() {
     return vignetteRadius;
   }
 
+  /**
+   * Sets the vignette radius.
+   *
+   * @param vignetteRadius The vignette radius
+   * @return The updated TorchPostProcessing instance
+   */
   public TorchPostProcessing vignetteRadius(float vignetteRadius) {
     this.vignetteRadius = vignetteRadius;
     return this;
   }
 
+  /**
+   * Gets the base dimness level.
+   *
+   * @return The base dimness level
+   */
   public float baseDimness() {
     return baseDimness;
   }
 
+  /**
+   * Sets the base dimness level (0.0 to 1.0).
+   *
+   * @param baseDimness The base dimness level
+   * @return The updated TorchPostProcessing instance
+   */
   public TorchPostProcessing baseDimness(float baseDimness) {
     this.baseDimness = Math.max(0.0f, Math.min(1.0f, baseDimness));
     return this;
   }
 
-  /** Adds a light source to the shader. */
+  /**
+   * Adds a light source to the shader.
+   *
+   * @param light The light source to add
+   * @return The updated TorchPostProcessing instance
+   */
   public TorchPostProcessing addLight(Light light) {
     if (lights.size() < MAX_LIGHTS) {
       lights.add(light);
@@ -173,24 +248,42 @@ public class TorchPostProcessing extends AbstractShader {
     return this;
   }
 
-  /** Removes a light source from the shader. */
+  /**
+   * Removes a light source from the shader.
+   *
+   * @param light The light source to remove
+   * @return The updated TorchPostProcessing instance
+   */
   public TorchPostProcessing removeLight(Light light) {
     lights.remove(light);
     return this;
   }
 
-  /** Clears all light sources. */
+  /**
+   * Clears all light sources.
+   *
+   * @return The updated TorchPostProcessing instance
+   */
   public TorchPostProcessing clearLights() {
     lights.clear();
     return this;
   }
 
-  /** Gets the list of all light sources. */
+  /**
+   * Gets the list of all light sources.
+   *
+   * @return The list of light sources
+   */
   public List<Light> lights() {
     return new ArrayList<>(lights);
   }
 
-  /** Sets all light sources at once. */
+  /**
+   * Sets all light sources at once.
+   *
+   * @param lights The list of light sources to set
+   * @return The updated TorchPostProcessing instance
+   */
   public TorchPostProcessing lights(List<Light> lights) {
     this.lights = new ArrayList<>(lights);
     return this;
@@ -209,24 +302,42 @@ public class TorchPostProcessing extends AbstractShader {
     return this;
   }
 
-  /** Removes an illuminated area. */
+  /**
+   * Removes an illuminated area.
+   *
+   * @param area The rectangle area to remove
+   * @return The updated TorchPostProcessing instance
+   */
   public TorchPostProcessing removeArea(Rectangle area) {
     illuminatedAreas.remove(area);
     return this;
   }
 
-  /** Clears all illuminated areas. */
+  /**
+   * Clears all illuminated areas.
+   *
+   * @return The updated TorchPostProcessing instance
+   */
   public TorchPostProcessing clearAreas() {
     illuminatedAreas.clear();
     return this;
   }
 
-  /** Gets the list of all illuminated areas. */
+  /**
+   * Gets the list of all illuminated areas.
+   *
+   * @return The list of illuminated areas
+   */
   public List<Rectangle> areas() {
     return new ArrayList<>(illuminatedAreas);
   }
 
-  /** Sets all illuminated areas at once. */
+  /**
+   * Sets all illuminated areas at once.
+   *
+   * @param areas The list of illuminated areas to set
+   * @return The updated TorchPostProcessing instance
+   */
   public TorchPostProcessing areas(List<Rectangle> areas) {
     this.illuminatedAreas = new ArrayList<>(areas);
     return this;

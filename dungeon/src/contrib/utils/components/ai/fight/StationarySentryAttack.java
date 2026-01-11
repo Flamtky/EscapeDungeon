@@ -7,14 +7,14 @@ import core.Entity;
 import core.level.utils.LevelUtils;
 import core.utils.Direction;
 import core.utils.Point;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * A simple attack behaviour for a sentry entity.
  *
  * <p>The entity stands still on a fixed Point and shoots in a fixed direction.
  */
-public final class StationarySentryAttack implements Consumer<Entity>, ISkillUser {
+public final class StationarySentryAttack implements BiConsumer<Entity, Entity>, ISkillUser {
   private final Point spawnPoint;
   private final boolean canEnterWalls;
 
@@ -54,14 +54,14 @@ public final class StationarySentryAttack implements Consumer<Entity>, ISkillUse
   }
 
   @Override
-  public void accept(Entity entity) {
-    tryAttack(entity);
+  public void accept(Entity entity, Entity player) {
+    tryAttack(entity, player);
   }
 
-  private void tryAttack(Entity entity) {
+  private void tryAttack(Entity entity, Entity player) {
     if (fightSkill == null) return;
 
-    if (LevelUtils.playerInRange(entity, attackRange)) {
+    if (LevelUtils.entityInRange(entity, player, attackRange)) {
       long now = System.currentTimeMillis();
       if (now - lastAttackTime >= fightSkill.cooldown()) {
         useSkill(fightSkill, entity);

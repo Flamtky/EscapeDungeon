@@ -148,6 +148,7 @@ public class V2FormatParser extends LevelFormatParser {
    */
   public static String serializeNamedPoints(Map<String, Point> namedPoints) {
     return namedPoints.entrySet().stream()
+        .sorted(Map.Entry.comparingByKey())
         .map(entry -> entry.getKey() + ":" + entry.getValue().x() + "," + entry.getValue().y())
         .collect(Collectors.joining(";"));
   }

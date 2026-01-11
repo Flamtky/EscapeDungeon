@@ -8,7 +8,6 @@ varying vec2 uv;
 varying vec2 worldPos;
 
 uniform sampler2D u_texture;
-uniform sampler2D u_noiseTexture; // New: A small tiling noise texture
 
 uniform vec2 u_resolution;
 uniform float u_time;
@@ -32,6 +31,12 @@ const int MAX_AREAS = 32;
 uniform vec4 u_areas[MAX_AREAS];
 
 // --- OPTIMIZED LIGHTING ---
+
+// Simple hash function for pseudo-random values
+float hash(float n) {
+    return fract(sin(n) * 43758.5453);
+}
+
 float calculateLightIllumination(vec2 pos, vec3 light) {
     vec2 diff = pos - light.xy;
     float distSq = dot(diff, diff); // Use dot product for squared distance (no sqrt)
@@ -42,12 +47,18 @@ float calculateLightIllumination(vec2 pos, vec3 light) {
     // Early exit if pixel is way outside the light radius
     if (distSq > radiusSq * 1.5) return 0.0;
 
-    // OPTIMIZED FLICKER: Use a noise texture instead of procedural Perlin
-    // This replaces ~50+ math operations with 1 texture fetch
-    vec2 noiseCoord = (light.xy * 0.1) + vec2(u_time * 0.05);
-    float flicker = texture2D(u_noiseTexture, noiseCoord).r;
+    // Compute unique seed per light using position hash
+    float lightSeed = hash(dot(light.xy, vec2(12.9898, 78.233)));
 
-    // Remap flicker to 0.7 - 1.0 range
+    // Simple procedural flicker using sine waves at different frequencies
+    float flicker1 = sin(u_time * 0.5 + lightSeed * 100.0) * 0.5 + 0.5;
+    float flicker2 = sin(u_time * 1.2 + lightSeed * 50.0) * 0.5 + 0.5;
+    float flicker3 = sin(u_time * 2.0 + lightSeed * 25.0) * 0.5 + 0.5;
+
+    // Combine flickers with different weights
+    float flicker = flicker1 * 0.5 + flicker2 * 0.3 + flicker3 * 0.2;
+
+    // Remap to 0.7 - 1.0 range (30% variation)
     flicker = 0.7 + (flicker * 0.3);
     float flickerRadiusSq = radiusSq * (flicker * flicker);
 
@@ -88,22 +99,22 @@ float checkIlluminatedAreas(vec2 pos) {
     return maxArea;
 }
 
-// --- REMAINDER OF SHADER (checkIlluminatedAreas, etc) ---
-// ... keep your checkIlluminatedAreas as is ...
-
 void main() {
     vec4 color = unPma(texture2D(u_texture, uv));
 
     float totalIllumination = 0.0;
 
-    // Optimization: Step through lights
+    // Optimization: Step through lights with soft-light blending
+    // Soft-light: 1 - (1 - total) * (1 - light) smoothly combines overlapping lights
     for (int i = 0; i < MAX_LIGHTS; i++) {
         if (i >= u_lightCount) break;
-        totalIllumination = max(totalIllumination, calculateLightIllumination(worldPos, u_lights[i]));
+        float lightContrib = calculateLightIllumination(worldPos, u_lights[i]);
+        totalIllumination = 1.0 - (1.0 - totalIllumination) * (1.0 - lightContrib);
     }
 
+    // Apply soft-light blending for area illumination (smooth transition with torches)
     float areaIllumination = checkIlluminatedAreas(worldPos);
-    totalIllumination = max(totalIllumination, areaIllumination);
+    totalIllumination = 1.0 - (1.0 - totalIllumination) * (1.0 - areaIllumination);
 
     // Vignette math stays the same as it's based on screen UVs
     vec2 aspectUv = uv / u_aspect + vec2(0.5) * (1.0 - 1.0 / u_aspect);

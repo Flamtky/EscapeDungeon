@@ -209,7 +209,6 @@ public final class HeroBuilder {
     hero.persistent(persistent);
     PlayerComponent pc = new PlayerComponent(isLocal, playerName);
     hero.add(pc);
-    hero.add(new CharacterClassComponent(characterClass));
     CameraComponent cc = new CameraComponent();
     hero.add(new CharacterClassComponent(characterClass));
     if (isLocal) {
@@ -279,7 +278,7 @@ public final class HeroBuilder {
     hc.currentHealthpoints(characterClass.hp());
     hero.add(hc);
     CollideComponent col =
-        new CollideComponent(Vector2.of(dc.getWidth() / 2 - 0.4f, 0.1f), Vector2.of(0.8f, 0.8f));
+        new CollideComponent(Vector2.of(dc.getWidth() / 2 - 0.4f, 0.4f), Vector2.of(0.8f, 0.8f));
     col.onHold(
         (you, other, direction) ->
             other

@@ -347,6 +347,7 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder {
     if (this.dragAndDrop().isDragging()) return;
 
     int hoveredSlot = this.getSlotByCoordinates(relMousePos.x(), relMousePos.y());
+    if (hoveredSlot < 0 || hoveredSlot >= this.inventoryComponent.items().length) return;
     Optional<Item> item = InventoryGUI.this.inventoryComponent.get(hoveredSlot);
     if (item.isEmpty()) return;
     Item itemToShow = item.get();

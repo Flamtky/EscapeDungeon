@@ -14,13 +14,14 @@ import core.level.loader.DungeonLoader;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.Dungeon;
+import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
 import java.io.IOException;
 
 /**
  * Starter for the Demo Escaperoom Dungeon.
  *
- * <p>Usage: run with the Gradle task {@code runDemoRoom}.
+ * <p>Usage: run with the Gradle task {@code runMA}.
  */
 public class MARoom {
   private static final boolean DEBUG_MODE = true;
@@ -86,6 +87,10 @@ public class MARoom {
     Game.add(new LeverSystem());
     Game.add(new PressurePlateSystem());
     Game.add(new IdleSoundSystem());
+    Game.add(new GuardDetectionSystem());
+    Game.add(new AttachmentSystem());
+    Game.add(new IllegalSystem());
+    Game.add(new BedSleepSystem());
     if (DEBUG_MODE) Game.add(new Debugger());
   }
 

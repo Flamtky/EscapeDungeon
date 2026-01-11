@@ -8,6 +8,7 @@ import core.utils.Point;
 import core.utils.Vector2;
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Store the position of the associated entity in the level.
@@ -53,6 +54,8 @@ public final class PositionComponent implements Component, Serializable {
    * @param viewDirection Direction the entity is looking to.
    */
   public PositionComponent(final Point position, final Direction viewDirection) {
+    Objects.requireNonNull(position, "position must not be null");
+    Objects.requireNonNull(viewDirection, "viewDirection must not be null");
     this.position = position;
     this.viewDirection = viewDirection;
   }

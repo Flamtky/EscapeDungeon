@@ -39,7 +39,7 @@ public record EntitySpawnEvent(
    * Constructor from Entity object.
    *
    * <p>This will throw {@link java.util.NoSuchElementException} if the entity does not have {@link
-   * PositionComponent} or {@link DrawComponent}.
+   * PositionComponent}.
    *
    * @param entity the entity to create the event from
    */
@@ -47,7 +47,7 @@ public record EntitySpawnEvent(
     this(
         entity.id(),
         entity.fetch(PositionComponent.class).orElseThrow(),
-        entity.fetch(DrawComponent.class).orElseThrow(),
+        entity.fetch(DrawComponent.class).orElse(null),
         entity.isPersistent(),
         entity.fetch(PlayerComponent.class).orElse(null),
         entity

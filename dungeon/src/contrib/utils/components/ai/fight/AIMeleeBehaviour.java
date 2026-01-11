@@ -4,7 +4,7 @@ import contrib.utils.components.ai.ISkillUser;
 import contrib.utils.components.skill.Skill;
 import core.Entity;
 import core.level.utils.LevelUtils;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * Implements a fight AI. The entity attacks the player if he is in a given range. When the entity
@@ -12,7 +12,8 @@ import java.util.function.Consumer;
  *
  * @see ISkillUser
  */
-public class AIMeleeBehaviour extends AIChaseBehaviour implements Consumer<Entity>, ISkillUser {
+public class AIMeleeBehaviour extends AIChaseBehaviour
+    implements BiConsumer<Entity, Entity>, ISkillUser {
   private final float attackRange;
   private Skill fightSkill;
 
@@ -29,11 +30,11 @@ public class AIMeleeBehaviour extends AIChaseBehaviour implements Consumer<Entit
   }
 
   @Override
-  public void accept(Entity entity) {
-    if (LevelUtils.playerInRange(entity, attackRange)) {
+  public void accept(Entity entity, Entity player) {
+    if (LevelUtils.entityInRange(entity, player, attackRange)) {
       useSkill(fightSkill, entity);
     } else {
-      super.accept(entity);
+      super.accept(entity, player);
     }
   }
 

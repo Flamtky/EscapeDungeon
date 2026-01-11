@@ -12,6 +12,7 @@ import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
+import core.components.SoundComponent;
 import core.network.MessageDispatcher;
 import core.network.config.NetworkConfig;
 import core.network.messages.NetworkMessage;
@@ -53,6 +54,7 @@ import java.util.function.Consumer;
 public final class ServerTransport {
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(ServerTransport.class);
   private static final short SERVER_PROTOCOL_VERSION = 1;
+  private static final long SPAWN_REQUEST_COOLDOWN_MS = 5000L;
 
   private final Queue<Tuple<Session, NetworkMessage>> inboundQueue = new ConcurrentLinkedQueue<>();
 
@@ -72,6 +74,10 @@ public final class ServerTransport {
   private EventLoopGroup workerGroup;
   private Channel tcpServer;
   private Channel udpChannel;
+
+  // per-client spawn request cooldown tracking
+  private final ConcurrentHashMap<Short, Map<Integer, Long>> spawnRequestTimes =
+      new ConcurrentHashMap<>();
 
   /**
    * Starts the server transport on the specified port, initializing TCP and UDP channels.
@@ -334,6 +340,7 @@ public final class ServerTransport {
 
         // Remove Player Entity on disconnect
         session.clientState().flatMap(ClientState::playerEntity).ifPresent(Game::remove);
+        spawnRequestTimes.remove(session.clientId());
 
         LOGGER.info("TCP Session closed for {}", session);
       }
@@ -690,16 +697,33 @@ public final class ServerTransport {
   }
 
   private void onRequestEntitySpawn(Session session, RequestEntitySpawn req) {
+    if (!isSessionValid(session)) {
+      LOGGER.warn("Ignoring RequestEntitySpawn from invalid session: {}", session);
+      return;
+    }
+    short clientId = session.clientId();
     int entityId = req.entityId();
+
+    long now = System.currentTimeMillis();
+    Map<Integer, Long> clientSpawns =
+        spawnRequestTimes.computeIfAbsent(clientId, k -> new ConcurrentHashMap<>());
+    long lastSent = clientSpawns.getOrDefault(entityId, 0L);
+    if (now - lastSent < SPAWN_REQUEST_COOLDOWN_MS) {
+      LOGGER.debug(
+          "Ignoring spawn request for entity {} from client {} (cooldown active)",
+          entityId,
+          clientId);
+      return;
+    }
+
     Optional<Entity> optEntity = Game.levelEntities().filter(e -> e.id() == entityId).findFirst();
     if (optEntity.isEmpty()) {
       LOGGER.warn("Entity id='{}' not found for spawn", entityId);
       return;
     }
     Entity entity = optEntity.get();
-    PositionComponent pc = entity.fetch(PositionComponent.class).orElse(null);
-    DrawComponent dc = entity.fetch(DrawComponent.class).orElse(null);
-    if (pc == null || dc == null) {
+    if (!entity.isPresent(PositionComponent.class)
+        || (!entity.isPresent(DrawComponent.class) && !entity.isPresent(SoundComponent.class))) {
       LOGGER.warn(
           "Entity id='{}' missing components for spawn (entity was: '{}')",
           entityId,
@@ -707,6 +731,7 @@ public final class ServerTransport {
       return;
     }
     session.sendMessage(new EntitySpawnEvent(entity), true);
+    clientSpawns.put(entityId, now);
   }
 
   private void onInputMessage(Session session, InputMessage msg) {
