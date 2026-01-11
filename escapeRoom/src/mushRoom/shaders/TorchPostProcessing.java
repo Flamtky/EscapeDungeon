@@ -100,6 +100,18 @@ public class TorchPostProcessing extends AbstractShader {
       Light other = (Light) obj;
       return Float.compare(other.x, x) == 0 && Float.compare(other.y, y) == 0;
     }
+
+    /**
+     * Generates hash code based on position.
+     *
+     * @return The hash code
+     */
+    @Override
+    public int hashCode() {
+      int result = Float.hashCode(x);
+      result = 31 * result + Float.hashCode(y);
+      return result;
+    }
   }
 
   /** Constructs a TorchPostProcessing shader with an empty light list. */
