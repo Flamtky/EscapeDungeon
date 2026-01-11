@@ -62,6 +62,12 @@ public final class SkillHudSystem extends System {
       return;
     }
 
+    PlayerComponent pc = entity.fetch(PlayerComponent.class).orElseThrow();
+    if (!pc.isLocal()) {
+      LOGGER.info("Entity {} is not the local player, skipping skill HUD creation", entity.id());
+      return; // Only show HUD for local player
+    }
+
     Game.stage()
         .ifPresent(
             stage -> {
