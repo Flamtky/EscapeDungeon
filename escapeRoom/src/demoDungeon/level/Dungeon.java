@@ -8,7 +8,6 @@ import contrib.components.InventoryComponent;
 import contrib.entities.LeverFactory;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
-import contrib.systems.EventScheduler;
 import contrib.utils.EntityUtils;
 import contrib.utils.ICommand;
 import contrib.utils.components.ai.idle.PatrolWalk;
@@ -302,10 +301,8 @@ public class Dungeon extends DungeonLevel {
 
   @Override
   protected void onFirstTick() {
-    changeIceTiles(
-        getPoint("fire11").toCoordinate(), getPoint("fire12").toCoordinate(), DesignLabel.ICE);
+    changeIceTiles(getPoint("fire11").toCoordinate(), getPoint("fire12").toCoordinate());
     refreshLevelTextures();
-    createPushPuzzleEntities();
     Entity hero = Game.allPlayers().findFirst().orElseThrow();
     hero.fetch(InventoryComponent.class).ifPresent((ic) -> ic.add(new IceWallPlacer()));
     createPushPuzzle();
@@ -481,6 +478,7 @@ public class Dungeon extends DungeonLevel {
   }
 
   private final Set<Integer> initLightEntityIds = new HashSet<>();
+
   private void createIcePuzzleEntities() {
     listPointsIndexed("snow_Wall")
         .forEach(
@@ -551,17 +549,17 @@ public class Dungeon extends DungeonLevel {
   }
 
   private void iceControls(Entity hero) {
-    PositionComponent pc = hero.fetch(PositionComponent.class).get();
+    PositionComponent pc = hero.fetch(PositionComponent.class).orElseThrow();
     Point currentPos = EntityUtils.getPosition(hero);
-    VelocityComponent vc = hero.fetch(VelocityComponent.class).get();
-    InputComponent ic = hero.fetch(InputComponent.class).get();
-    Tile currentTile = Game.tileAt(currentPos).get();
+    VelocityComponent vc = hero.fetch(VelocityComponent.class).orElseThrow();
+    InputComponent ic = hero.fetch(InputComponent.class).orElseThrow();
+    Tile currentTile = Game.tileAt(currentPos).orElseThrow();
 
     if (currentTile.designLabel() == DesignLabel.ICE) {
       if (hero.fetch(FlyComponent.class).isEmpty()) {
         hero.add(new FlyComponent());
       }
-      Tile tileInFront = Game.tileAt(currentPos.translate(pc.viewDirection())).get();
+      Tile tileInFront = Game.tileAt(currentPos.translate(pc.viewDirection())).orElseThrow();
 
       vc.onWallHit(
           (self) -> {
@@ -595,7 +593,7 @@ public class Dungeon extends DungeonLevel {
     }
   }
 
-  private void changeIceTiles(Coordinate a, Coordinate b, DesignLabel newDesignLabel) {
+  private void changeIceTiles(Coordinate a, Coordinate b) {
     int minX = Math.min(a.x(), b.x());
     int maxX = Math.max(a.x(), b.x());
     int minY = Math.min(a.y(), b.y());
@@ -603,7 +601,7 @@ public class Dungeon extends DungeonLevel {
 
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
-        layout[y][x].designLabel(newDesignLabel);
+        layout[y][x].designLabel(DesignLabel.ICE);
         layout[y][x].tintColor(-1);
       }
     }
