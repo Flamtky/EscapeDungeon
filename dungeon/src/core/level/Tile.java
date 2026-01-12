@@ -27,7 +27,7 @@ import core.utils.components.path.IPath;
 public abstract class Tile {
   private static final float DEFAULT_FRICTION = 0.8f;
   protected final Coordinate globalPosition;
-  private final float friction;
+  private float friction;
   protected DesignLabel designLabel;
   protected IPath texturePath;
   protected ILevel level;
@@ -183,6 +183,15 @@ public abstract class Tile {
    */
   public float friction() {
     return this.friction;
+  }
+
+  /**
+   * Set the friction of this tile.
+   *
+   * @param friction The friction to set.
+   */
+  public void friction(float friction) {
+    this.friction = friction;
   }
 
   /**

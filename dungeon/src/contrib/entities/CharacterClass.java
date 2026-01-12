@@ -83,9 +83,8 @@ public enum CharacterClass {
       Vector2.of(5.5, 5.5),
       1.2f,
       20,
-      Set.of(
-          new BowSkill(SkillTools::cursorPositionAsPoint),
-          new DashSkill(5, 200, 3000, new Tuple<>(Resource.STAMINA, 20))),
+      Set.of(/*new BowSkill(SkillTools::cursorPositionAsPoint),
+          new DashSkill(5, 200, 3000, new Tuple<>(Resource.STAMINA, 20))*/ ),
       Set.of(
           new ItemWoodenBow(),
           new ItemWoodenArrow(ItemWoodenArrow.MAX_ARROW_STACK_SIZE),
