@@ -459,6 +459,16 @@ public final class GameLoop extends ScreenAdapter {
         });
 
     dispatcher.registerHandler(
+        DeltaSnapshotMessage.class,
+        (ctx, event) -> {
+          try {
+            Game.network().snapshotTranslator().applyDelta(event, dispatcher);
+          } catch (Exception ignored) {
+            LOGGER.warn("Error while applying delta snapshot: {}", ignored.getMessage(), ignored);
+          }
+        });
+
+    dispatcher.registerHandler(
         DialogShowMessage.class,
         (ctx, msg) -> {
           LOGGER.debug("Received DialogShowMessage for dialog: {}", msg.context().dialogId());

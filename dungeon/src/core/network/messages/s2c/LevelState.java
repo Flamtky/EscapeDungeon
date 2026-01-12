@@ -13,9 +13,11 @@ import java.util.Map;
  * Represents the state of a level, including door states and design labels.
  *
  * @param doorStates An array representing the open/closed states of doors in the level.
- * @param designLabelBytes A 2D array representing the design labels of tiles in the level. (can be null)
+ * @param designLabelBytes A 2D array representing the design labels of tiles in the level. (can be
+ *     null)
  */
-public record LevelState(Map<Coordinate, Boolean> doorStates, Map<Coordinate, Byte> designLabelBytes)
+public record LevelState(
+    Map<Coordinate, Boolean> doorStates, Map<Coordinate, Byte> designLabelBytes)
     implements NetworkMessage {
   @Serial private static final long serialVersionUID = 1L;
 
@@ -28,7 +30,37 @@ public record LevelState(Map<Coordinate, Boolean> doorStates, Map<Coordinate, By
     return new LevelState(getDoorStates(), getDesignLabels());
   }
 
-  private static Map<Coordinate, Boolean> generateDoorStateDelta(Map<Coordinate, Boolean> previousDoorStates) {
+  /**
+   * Creates a delta LevelState containing only changes since the previous state.
+   *
+   * @param previous the previous LevelState to compare against, or null for full state
+   * @return a new LevelState containing only changed doors and design labels
+   */
+  public static LevelState createDelta(LevelState previous) {
+    if (previous == null) {
+      return currentLevelStateFull();
+    }
+    Map<Coordinate, Boolean> deltaDoors =
+        generateDoorStateDelta(previous.doorStates() != null ? previous.doorStates() : Map.of());
+    Map<Coordinate, Byte> deltaLabels =
+        generateDesignLabelDelta(
+            previous.designLabelBytes() != null ? previous.designLabelBytes() : Map.of());
+    return new LevelState(deltaDoors, deltaLabels);
+  }
+
+  /**
+   * Returns true if this LevelState has no data.
+   *
+   * @return true if both doorStates and designLabelBytes are empty or null
+   */
+  public boolean isEmpty() {
+    boolean doorsEmpty = doorStates == null || doorStates.isEmpty();
+    boolean labelsEmpty = designLabelBytes == null || designLabelBytes.isEmpty();
+    return doorsEmpty && labelsEmpty;
+  }
+
+  private static Map<Coordinate, Boolean> generateDoorStateDelta(
+      Map<Coordinate, Boolean> previousDoorStates) {
     var currentDoorStates = getDoorStates();
     Map<Coordinate, Boolean> deltaDoorStates = new HashMap<>();
     for (var entry : currentDoorStates.entrySet()) {
@@ -42,7 +74,8 @@ public record LevelState(Map<Coordinate, Boolean> doorStates, Map<Coordinate, By
     return deltaDoorStates;
   }
 
-  private static Map<Coordinate, Byte> generateDesignLabelDelta(Map<Coordinate, Byte> previousDesignLabels) {
+  private static Map<Coordinate, Byte> generateDesignLabelDelta(
+      Map<Coordinate, Byte> previousDesignLabels) {
     var currentDesignLabels = getDesignLabels();
     Map<Coordinate, Byte> deltaDesignLabels = new HashMap<>();
     for (var entry : currentDesignLabels.entrySet()) {

@@ -1,13 +1,14 @@
 package core.network.messages.s2c;
 
 import contrib.components.SkillComponentData;
-import contrib.item.Item;
+import contrib.item.ItemSnapshot;
 import core.network.messages.NetworkMessage;
 import core.sound.SoundSpec;
 import core.utils.Direction;
 import core.utils.Point;
 import java.io.Serial;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -41,7 +42,7 @@ public class EntityState implements NetworkMessage {
   private final String stateName;
   private final Integer tintColor;
   private final List<SoundSpec> sounds;
-  private final Item[] inventory;
+  private final ItemSnapshot[] inventory;
   private final SkillComponentData skillData;
 
   /**
@@ -208,7 +209,7 @@ public class EntityState implements NetworkMessage {
    *
    * @return an Optional containing the inventory if present, otherwise an empty Optional
    */
-  public Optional<Item[]> inventory() {
+  public Optional<ItemSnapshot[]> inventory() {
     return Optional.ofNullable(inventory);
   }
 
@@ -237,7 +238,7 @@ public class EntityState implements NetworkMessage {
     protected String stateName;
     protected Integer tintColor;
     protected List<SoundSpec> sounds;
-    protected Item[] inventory;
+    protected ItemSnapshot[] inventory;
     protected SkillComponentData skillData;
 
     /**
@@ -406,12 +407,12 @@ public class EntityState implements NetworkMessage {
     }
 
     /**
-     * Sets the inventory items for the entity.
+     * Sets the inventory of the entity.
      *
-     * @param inventory the array of Item instances
+     * @param inventory the array of ItemSnapshot instances
      * @return the Builder instance
      */
-    public Builder inventory(Item[] inventory) {
+    public Builder inventory(ItemSnapshot[] inventory) {
       this.inventory = inventory;
       return this;
     }
@@ -436,5 +437,96 @@ public class EntityState implements NetworkMessage {
     public EntityState build() {
       return new EntityState(this);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    EntityState that = (EntityState) o;
+    return entityId == that.entityId
+        && Objects.equals(entityName, that.entityName)
+        && Objects.equals(position, that.position)
+        && Objects.equals(viewDirection, that.viewDirection)
+        && Objects.equals(rotation, that.rotation)
+        && Objects.equals(curHealth, that.curHealth)
+        && Objects.equals(maxHealth, that.maxHealth)
+        && Objects.equals(curMana, that.curMana)
+        && Objects.equals(maxMana, that.maxMana)
+        && Objects.equals(curStamina, that.curStamina)
+        && Objects.equals(maxStamina, that.maxStamina)
+        && Objects.equals(stateName, that.stateName)
+        && Objects.equals(tintColor, that.tintColor)
+        && Objects.equals(sounds, that.sounds)
+        && inventoriesEqual(inventory, that.inventory)
+        && Objects.equals(skillData, that.skillData);
+  }
+
+  /**
+   * Compares two inventory arrays for semantic equality.
+   *
+   * <p>Two ItemSnapshots are considered equal if they have the same item class and stack size.
+   *
+   * @param inv1 first inventory array
+   * @param inv2 second inventory array
+   * @return true if the inventories are semantically equal
+   */
+  private static boolean inventoriesEqual(ItemSnapshot[] inv1, ItemSnapshot[] inv2) {
+    if (inv1 == inv2) return true;
+    if (inv1 == null || inv2 == null) return false;
+    if (inv1.length != inv2.length) return false;
+
+    for (int i = 0; i < inv1.length; i++) {
+      ItemSnapshot a = inv1[i];
+      ItemSnapshot b = inv2[i];
+      if (a == b) continue;
+      if (a == null || b == null) return false;
+      if (!Objects.equals(a.itemClass(), b.itemClass())) return false;
+      if (a.stackSize() != b.stackSize()) return false;
+    }
+    return true;
+  }
+
+  /**
+   * Computes a hash code for an inventory array based on semantic content.
+   *
+   * @param inv the inventory array
+   * @return hash code based on item classes and stack sizes
+   */
+  private static int inventoryHashCode(ItemSnapshot[] inv) {
+    if (inv == null) return 0;
+    int result = 1;
+    for (ItemSnapshot item : inv) {
+      if (item == null) {
+        result = 31 * result;
+      } else {
+        result = 31 * result + (item.itemClass() != null ? item.itemClass().hashCode() : 0);
+        result = 31 * result + item.stackSize();
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public int hashCode() {
+    int result =
+        Objects.hash(
+            entityId,
+            entityName,
+            position,
+            viewDirection,
+            rotation,
+            curHealth,
+            maxHealth,
+            curMana,
+            maxMana,
+            curStamina,
+            maxStamina,
+            stateName,
+            tintColor,
+            sounds,
+            skillData);
+    result = 31 * result + inventoryHashCode(inventory);
+    return result;
   }
 }

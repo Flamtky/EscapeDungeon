@@ -39,6 +39,13 @@ public class Item implements CraftingIngredient, CraftingResult, Serializable {
   @Serial private static final long serialVersionUID = 1L;
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(Item.class);
 
+  /**
+   * The maximum stack size for any item.
+   *
+   * <p>Cannot be higher than 255 due to byte storage.
+   */
+  private static final long MAX_STACK_SIZE = 64;
+
   /** Random object used to generate random numbers for item related things. */
   public static final Random RANDOM = new Random();
 
@@ -73,8 +80,8 @@ public class Item implements CraftingIngredient, CraftingResult, Serializable {
   private String description;
   private Animation inventoryAnimation;
   private Animation worldAnimation;
-  private int stackSize;
-  private int maxStackSize;
+  private byte stackSize;
+  private byte maxStackSize;
 
   /**
    * Determines whether the item uses simple interaction.
@@ -91,8 +98,8 @@ public class Item implements CraftingIngredient, CraftingResult, Serializable {
    * @param description The description of the item.
    * @param inventoryAnimation The inventory animation of the item.
    * @param worldAnimation The world animation of the item.
-   * @param stackSize The stack size of the item.
-   * @param maxStackSize The max stack size of the item.
+   * @param stackSize The stack size of the item (max 64).
+   * @param maxStackSize The max stack size of the item (max 64).
    */
   public Item(
       final String displayName,
@@ -105,8 +112,12 @@ public class Item implements CraftingIngredient, CraftingResult, Serializable {
     this.description = description;
     this.inventoryAnimation = inventoryAnimation;
     this.worldAnimation = worldAnimation;
-    this.stackSize = stackSize;
-    this.maxStackSize = maxStackSize;
+    if (stackSize > MAX_STACK_SIZE || maxStackSize > MAX_STACK_SIZE) {
+      throw new IllegalArgumentException(
+          "Stack size and max stack size cannot be higher than " + MAX_STACK_SIZE);
+    }
+    this.stackSize = (byte) stackSize;
+    this.maxStackSize = (byte) maxStackSize;
 
     // Stupidity check
     if (!Item.isRegistered(this.getClass())) {
@@ -273,16 +284,16 @@ public class Item implements CraftingIngredient, CraftingResult, Serializable {
    *
    * @return The stack size.
    */
-  public int stackSize() {
+  public byte stackSize() {
     return this.stackSize;
   }
 
   /**
    * Set the stack size of this item.
    *
-   * @param stackSize The new stack size.
+   * @param stackSize The new stack size (max 64).
    */
-  public void stackSize(int stackSize) {
+  public void stackSize(byte stackSize) {
     this.stackSize = stackSize;
   }
 
@@ -291,16 +302,16 @@ public class Item implements CraftingIngredient, CraftingResult, Serializable {
    *
    * @return The max stack size.
    */
-  public int maxStackSize() {
+  public byte maxStackSize() {
     return this.maxStackSize;
   }
 
   /**
    * Set the max stack size of this item.
    *
-   * @param maxStackSize The new max stack size.
+   * @param maxStackSize The new max stack size (max 64).
    */
-  public void maxStackSize(int maxStackSize) {
+  public void maxStackSize(byte maxStackSize) {
     this.maxStackSize = maxStackSize;
   }
 

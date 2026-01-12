@@ -20,7 +20,7 @@ public record SkillData(
     String name, long cooldownDurationMs, long remainingCooldownMs, long snapshotTimeMs)
     implements Serializable {
 
-  @Serial private static final long serialVersionUID = 2L;
+  @Serial private static final long serialVersionUID = 1L;
 
   /**
    * Creates a SkillData with the current time as snapshot timestamp.

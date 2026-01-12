@@ -27,7 +27,7 @@ import java.io.Serializable;
 public record DialogResponseMessage(
     String dialogId, ResponseType responseType, String callbackKey, Serializable data)
     implements NetworkMessage {
-  @Serial private static final long serialVersionUID = 2L;
+  @Serial private static final long serialVersionUID = 1L;
 
   /** The type of user response to a dialog. */
   public enum ResponseType {

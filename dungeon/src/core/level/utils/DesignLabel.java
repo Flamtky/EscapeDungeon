@@ -35,9 +35,7 @@ public enum DesignLabel {
   /** A watery theme with blue tones and aquatic elements. */
   WATER;
 
-  /**
-   * Converts the DesignLabel enum constant to its corresponding byte value.
-   */
+  /** Converts the DesignLabel enum constant to its corresponding byte value. */
   public byte toByte() {
     if (values().length > Byte.MAX_VALUE + 1) {
       throw new IllegalStateException(

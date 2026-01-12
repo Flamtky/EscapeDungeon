@@ -93,8 +93,8 @@ public final class InventoryComponent implements Component {
       int spaceLeft = stack.maxStackSize() - stack.stackSize();
       if (spaceLeft > 0) {
         int toTransfer = Math.min(spaceLeft, item.stackSize());
-        stack.stackSize(stack.stackSize() + toTransfer);
-        item.stackSize(item.stackSize() - toTransfer);
+        stack.stackSize((byte) (stack.stackSize() + toTransfer));
+        item.stackSize((byte) (item.stackSize() - toTransfer));
       }
     }
 
@@ -348,7 +348,7 @@ public final class InventoryComponent implements Component {
     for (int i = 0; i < inventory.length; i++) {
       if (inventory[i] != null && inventory[i].equals(itemToRemoveOne)) {
         Item it = inventory[i];
-        it.stackSize(it.stackSize() - 1);
+        it.stackSize((byte) (it.stackSize() - 1));
         if (it.stackSize() <= 0) inventory[i] = null;
         this.onItemRemoved.accept(it);
         return true;
@@ -381,7 +381,7 @@ public final class InventoryComponent implements Component {
         this.remove(item);
         iterator.remove(); // safe removal from Set
       } else {
-        item.stackSize(stack - amount);
+        item.stackSize((byte) (stack - amount));
         amount = 0;
       }
       this.onItemRemoved.accept(item);

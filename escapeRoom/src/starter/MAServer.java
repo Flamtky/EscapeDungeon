@@ -53,27 +53,30 @@ public class MAServer {
 
     NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
 
+    // Enable snapshot debugging to analyze network payload sizes
+    // SnapshotDebugger.enable();
+
     Game.windowTitle("Demo-Room");
     Game.run();
   }
 
   private static void onSetup() {
     Game.userOnSetup(
-      () -> {
-        DungeonLoader.addLevel(Tuple.of("dungeon", Dungeon.class));
-        createSystems();
-        // createHero();
-        Crafting.loadRecipes();
+        () -> {
+          DungeonLoader.addLevel(Tuple.of("dungeon", Dungeon.class));
+          createSystems();
+          // createHero();
+          Crafting.loadRecipes();
 
-        ECSManagement.system(
-          LevelSystem.class,
-          levelSystem ->
-            levelSystem.onLevelLoad(
-              () -> {
-                GameLoop.onLevelLoad.execute();
-                Game.network().broadcast(LevelChangeEvent.currentLevel(), true);
-              }));
-      });
+          ECSManagement.system(
+              LevelSystem.class,
+              levelSystem ->
+                  levelSystem.onLevelLoad(
+                      () -> {
+                        GameLoop.onLevelLoad.execute();
+                        Game.network().broadcast(LevelChangeEvent.currentLevel(), true);
+                      }));
+        });
   }
 
   private static void createHero() {
@@ -84,9 +87,9 @@ public class MAServer {
 
   private static void configGame() throws IOException {
     Game.loadConfig(
-      new SimpleIPath("dungeon_config.json"),
-      contrib.configuration.KeyboardConfig.class,
-      core.configuration.KeyboardConfig.class);
+        new SimpleIPath("dungeon_config.json"),
+        contrib.configuration.KeyboardConfig.class,
+        core.configuration.KeyboardConfig.class);
     Game.disableAudio(false);
     Game.frameRate(90);
   }
