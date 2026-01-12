@@ -40,13 +40,7 @@ public class IllegalSystem extends System {
 
   @Override
   public void render(float delta) {
-    filteredEntityStream()
-        .forEach(
-            player -> {
-              IllegalComponent illegalComponent =
-                  player.fetch(IllegalComponent.class).orElse(new IllegalComponent());
-              outlineIfIllegal(player, illegalComponent);
-            });
+    filteredEntityStream().forEach(IllegalSystem::outlineIfIllegal);
   }
 
   private void handlePlayer(final Entity player) {
@@ -69,21 +63,27 @@ public class IllegalSystem extends System {
     }
   }
 
-  private static void outlineIfIllegal(Entity player, IllegalComponent illegalComponent) {
+  private static void outlineIfIllegal(Entity player) {
     if (!Game.isHeadless()) { // won't work in mp
       player
           .fetch(DrawComponent.class)
           .ifPresent(
               drawComponent -> {
-                if (illegalComponent.isIllegal()) {
-                  drawComponent
-                      .shaders()
-                      .add(
-                          ILLEGAL_SHADER_KEY,
-                          new OutlineShader(ILLEGAL_OUTLINE_WIDTH, ILLEGAL_OUTLINE_COLOR));
-                } else {
-                  drawComponent.shaders().remove(ILLEGAL_SHADER_KEY);
-                }
+                player
+                    .fetch(IllegalComponent.class)
+                    .ifPresent(
+                        ic -> {
+                          if (ic.isIllegal()) {
+                            drawComponent
+                                .shaders()
+                                .add(
+                                    ILLEGAL_SHADER_KEY,
+                                    new OutlineShader(
+                                        ILLEGAL_OUTLINE_WIDTH, ILLEGAL_OUTLINE_COLOR));
+                          } else {
+                            drawComponent.shaders().remove(ILLEGAL_SHADER_KEY);
+                          }
+                        });
               });
     }
   }

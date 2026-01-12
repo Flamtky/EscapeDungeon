@@ -2,8 +2,8 @@ package starter;
 
 import core.Component;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Marks the player as being illegal in the escape room prison game.
@@ -14,11 +14,11 @@ import java.util.List;
  * @param reasons The list of reasons why the player is considered illegal.
  * @see guard.GuardDetectionSystem
  */
-public record IllegalComponent(ArrayList<Reason> reasons) implements Component, Serializable {
+public record IllegalComponent(Set<Reason> reasons) implements Component, Serializable {
 
   /** Constructs an IllegalComponent with a single reason. */
   public IllegalComponent(Reason... reasons) {
-    this(new ArrayList<>(List.of(reasons)));
+    this(new HashSet<>(Set.of(reasons)));
   }
 
   /**
