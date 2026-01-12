@@ -20,6 +20,7 @@ import core.Game;
 import core.components.InputComponent;
 import core.components.PlayerComponent;
 import core.components.VelocityComponent;
+import core.configuration.KeyboardConfig;
 import core.level.utils.LevelUtils;
 import core.network.messages.c2s.InputMessage;
 import core.network.messages.c2s.InventoryUIMessage;
@@ -27,6 +28,7 @@ import core.network.server.ClientState;
 import core.utils.*;
 import core.utils.components.MissingComponentException;
 import core.utils.logging.DungeonLogger;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -66,6 +68,30 @@ public class HeroController {
     if (hero.fetch(InputComponent.class).map(InputComponent::deactivateControls).orElse(false)) {
       LOGGER.debug("Hero {} controls are deactivated, cannot move.", hero.id());
       return;
+    }
+
+    if (hero.isPresent(InputComponent.class)) {
+      InputComponent ic =
+          hero.fetch(InputComponent.class)
+              .orElseThrow(() -> MissingComponentException.build(hero, InputComponent.class));
+      final Map<Integer, Direction> movementBindings =
+          Map.of(
+              KeyboardConfig.MOVEMENT_UP.value(), Direction.UP,
+              KeyboardConfig.MOVEMENT_DOWN.value(), Direction.DOWN,
+              KeyboardConfig.MOVEMENT_LEFT.value(), Direction.LEFT,
+              KeyboardConfig.MOVEMENT_RIGHT.value(), Direction.RIGHT);
+
+      for (Integer key : movementBindings.keySet()) {
+        Direction dir = movementBindings.get(key);
+        if (!ic.callbacks().containsKey(key) && direction == dir) {
+          LOGGER.debug(
+              "Hero {} movement {} is disabled in InputComponent, cannot move {}.",
+              hero.id(),
+              dir,
+              dir);
+          return;
+        }
+      }
     }
 
     VelocityComponent vc =

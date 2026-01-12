@@ -1,6 +1,5 @@
 package starter;
 
-import contrib.systems.*;
 import contrib.utils.components.Debugger;
 import core.Game;
 import core.configuration.KeyboardConfig;
@@ -11,7 +10,7 @@ import java.io.IOException;
 import network.EscapeRoomSnapshotTranslator;
 
 /** The main class for the Multiplayer Client for development and testing purposes. */
-public final class MultiplayerClient {
+public final class MAClient {
 
   private static final boolean DEBUG_MODE = true;
 
@@ -31,7 +30,7 @@ public final class MultiplayerClient {
     NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
 
     // PreRunConfiguration.username("APPRENTICE");
-    PreRunConfiguration.username("ROUGE");
+    PreRunConfiguration.username("APPRENTICE");
 
     // Game Settings
     Game.loadConfig(new SimpleIPath("dungeon_config.json"), KeyboardConfig.class);

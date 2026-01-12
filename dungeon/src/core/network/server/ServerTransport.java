@@ -270,6 +270,7 @@ public final class ServerTransport {
     ServerBootstrap sb = new ServerBootstrap();
     sb.group(bossGroup, workerGroup)
         .channel(NioServerSocketChannel.class)
+        .childOption(ChannelOption.TCP_NODELAY, true)
         .childHandler(
             new ChannelInitializer<SocketChannel>() {
               @Override

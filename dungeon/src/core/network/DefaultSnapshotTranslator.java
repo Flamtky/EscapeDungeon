@@ -8,7 +8,9 @@ import core.components.DrawComponent;
 import core.components.PositionComponent;
 import core.components.SoundComponent;
 import core.level.Tile;
+import core.level.elements.ILevel;
 import core.level.elements.tile.DoorTile;
+import core.level.utils.Coordinate;
 import core.level.utils.DesignLabel;
 import core.network.messages.c2s.RequestEntitySpawn;
 import core.network.messages.s2c.EntityState;
@@ -17,6 +19,7 @@ import core.network.messages.s2c.SnapshotMessage;
 import core.utils.Direction;
 import core.utils.logging.DungeonLogger;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The default implementation of {@link SnapshotTranslator}.
@@ -97,7 +100,7 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
               populateBuilder(e, builder);
               list.add(builder.build());
             });
-    return Optional.of(new SnapshotMessage(serverTick, list, LevelState.currentLevelState()));
+    return Optional.of(new SnapshotMessage(serverTick, list, LevelState.currentLevelStateFull()));
   }
 
   /**
@@ -147,7 +150,7 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
 
     // Mana
     entity
-        .fetch(contrib.components.ManaComponent.class)
+        .fetch(ManaComponent.class)
         .ifPresent(
             mc -> {
               builder.currentMana(mc.currentAmount());
@@ -156,7 +159,7 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
 
     // Stamina
     entity
-        .fetch(contrib.components.StaminaComponent.class)
+        .fetch(StaminaComponent.class)
         .ifPresent(
             sc -> {
               builder.currentStamina(sc.currentAmount());
@@ -436,21 +439,26 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
             });
 
     // Design Labels
-    DesignLabel[][] designLabels = levelState.designLabels();
-    int width = designLabels.length;
-    int height = designLabels[0].length;
-    Tile[][] levelLayout = Game.currentLevel().get().layout();
-    boolean updateNeeded = false;
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height; y++) {
-        Tile tile = levelLayout[x][y];
-        if (tile.designLabel() != designLabels[x][y]) {
-          updateNeeded = true;
-          tile.designLabel(designLabels[x][y]);
-        }
-      }
+    Map<Coordinate, Byte> designLabelBytes = levelState.designLabelBytes();
+    if (designLabelBytes == null) {
+      return;
     }
-
-    if (updateNeeded) Game.currentLevel().get().refreshLevelTextures();
+    AtomicBoolean updateNeeded = new AtomicBoolean(false);
+    for (Map.Entry<Coordinate, Byte> entry : designLabelBytes.entrySet()) {
+      Coordinate coord = entry.getKey();
+      Byte labelByte = entry.getValue();
+      var tileOpt =
+          Game.currentLevel()
+              .flatMap(level -> level.tileAt(coord));
+      tileOpt.ifPresent(
+          tile -> {
+            DesignLabel label = DesignLabel.fromByte(labelByte);
+            if (tile.designLabel() != label) {
+              tile.designLabel(label);
+              updateNeeded.set(true);
+            }
+          });
+    }
+    if (updateNeeded.get()) Game.currentLevel().ifPresent(ILevel::refreshLevelTextures);
   }
 }

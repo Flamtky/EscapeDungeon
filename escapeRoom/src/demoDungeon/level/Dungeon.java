@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Color;
 import contrib.components.*;
 import contrib.components.CollideComponent;
 import contrib.components.FlyComponent;
-import contrib.components.InventoryComponent;
 import contrib.entities.LeverFactory;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
@@ -32,7 +31,6 @@ import core.utils.Vector2;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
 import escapeDungeon.components.IceMovementComponent;
-import escapeDungeon.items.IceWallPlacer;
 import guard.GuardBuilder;
 import java.util.*;
 import mobs.EscapeRoomMonsterBuilder;
@@ -303,8 +301,8 @@ public class Dungeon extends DungeonLevel {
   protected void onFirstTick() {
     changeIceTiles(getPoint("fire11").toCoordinate(), getPoint("fire12").toCoordinate());
     refreshLevelTextures();
-    Entity hero = Game.allPlayers().findFirst().orElseThrow();
-    hero.fetch(InventoryComponent.class).ifPresent((ic) -> ic.add(new IceWallPlacer()));
+    // Entity hero = Game.allPlayers().findFirst().orElseThrow();
+    // hero.fetch(InventoryComponent.class).ifPresent((ic) -> ic.add(new IceWallPlacer()));
     createPushPuzzle();
     createIcePuzzleEntities();
     initGuards();
