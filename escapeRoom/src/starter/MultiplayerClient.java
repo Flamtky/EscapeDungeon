@@ -1,14 +1,19 @@
 package starter;
 
+import contrib.systems.*;
 import contrib.utils.components.Debugger;
 import core.Game;
 import core.configuration.KeyboardConfig;
 import core.game.PreRunConfiguration;
+import core.network.config.NetworkConfig;
 import core.utils.components.path.SimpleIPath;
 import java.io.IOException;
+import network.EscapeRoomSnapshotTranslator;
 
 /** The main class for the Multiplayer Client for development and testing purposes. */
 public final class MultiplayerClient {
+
+  private static final boolean DEBUG_MODE = true;
 
   /**
    * Main method to start the dev client.
@@ -22,6 +27,8 @@ public final class MultiplayerClient {
     PreRunConfiguration.isNetworkServer(false);
     PreRunConfiguration.networkServerAddress("127.0.0.1");
     PreRunConfiguration.networkPort(7777);
+
+    NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
 
     // PreRunConfiguration.username("APPRENTICE");
     PreRunConfiguration.username("ROUGE");
