@@ -6,8 +6,11 @@ import contrib.components.CollideComponent;
 import contrib.components.FlyComponent;
 import contrib.components.InventoryComponent;
 import contrib.entities.LeverFactory;
+import contrib.entities.MiscFactory;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
+import contrib.item.Item;
+import contrib.item.concreteItem.ItemPotionWater;
 import contrib.systems.EventScheduler;
 import contrib.utils.EntityUtils;
 import contrib.utils.ICommand;
@@ -32,8 +35,10 @@ import core.utils.Vector2;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
 import escapeDungeon.components.IceMovementComponent;
-import escapeDungeon.items.IceWallPlacer;
+import escapeDungeon.items.*;
+
 import java.util.*;
+
 import mushRoom.Sounds;
 import mushRoom.shaders.TorchPostProcessing;
 
@@ -179,6 +184,8 @@ public class Dungeon extends DungeonLevel {
           torchShader.addArea(new Rectangle(getPoint("forest23"), getPoint("forest24")));
           ds.sceneShaders().add("torches", torchShader);
         });
+
+
   }
 
   @Override
@@ -191,7 +198,13 @@ public class Dungeon extends DungeonLevel {
     hero.fetch(InventoryComponent.class).ifPresent((ic) -> ic.add(new IceWallPlacer()));
     createPushPuzzle();
     createIcePuzzleEntities();
+    createChests();
   }
+
+  private void createChests() {
+    Game.add(MiscFactory.newChest(Set.of(new ItemPotionWater()), getPoint("chest0")));
+  }
+
 
   private void createPushPuzzle() {
     createPushPuzzleEntities();
@@ -350,7 +363,7 @@ public class Dungeon extends DungeonLevel {
 
   @Override
   protected void onTick() {
-    if (Game.allEntities().count() > 9000 && !torchShaderInitialized) {
+    if (Game.allEntities().count() > 9600 && !torchShaderInitialized) {
       if (torchShader != null) {
         Game.levelEntities()
             .filter(e -> e.name().contains("Torch"))

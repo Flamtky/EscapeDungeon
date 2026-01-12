@@ -4,15 +4,8 @@
         {
             "type": "item",
             "item": {
-                "id": "RedGemItem",
-                "count": 1
-            }
-        },
-        {
-            "type": "item",
-            "item": {
-                "id": "RingGoldItem",
-                "count": 1
+                "id": "LogItem",
+                "count": 3
             }
         }
     ],
@@ -20,7 +13,7 @@
         {
             "type": "item",
             "item": {
-                "id": "StrengthRingItem",
+                "id": "WoodenBridgeItem",
                 "count": 1
             }
         }

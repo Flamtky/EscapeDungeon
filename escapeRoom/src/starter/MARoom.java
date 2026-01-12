@@ -5,6 +5,7 @@ import com.badlogic.gdx.audio.Music;
 import contrib.crafting.Crafting;
 import contrib.entities.CharacterClass;
 import contrib.entities.EntityFactory;
+import contrib.item.Item;
 import contrib.modules.levelHide.LevelHideSystem;
 import contrib.systems.*;
 import contrib.utils.components.Debugger;
@@ -14,6 +15,7 @@ import core.level.loader.DungeonLoader;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.Dungeon;
+import escapeDungeon.items.*;
 import hint.HintLogComponent;
 import java.io.IOException;
 
@@ -48,6 +50,7 @@ public class MARoom {
           DungeonLoader.addLevel(Tuple.of("dungeon", Dungeon.class));
           createSystems();
           createHero();
+          registerItems();
           Crafting.loadRecipes();
           DungeonLoader.loadLevel(START_LEVEL);
         });
@@ -57,6 +60,28 @@ public class MARoom {
     Entity hero = EntityFactory.newHero(CharacterClass.ROGUE);
     hero.add(new HintLogComponent());
     Game.add(hero);
+  }
+
+  private static void registerItems() {
+    Item.registerItem(AxeItem.class);
+    Item.registerItem(BlueGemItem.class);
+    Item.registerItem(CoalItem.class);
+    Item.registerItem(EnvelopeItem.class);
+    Item.registerItem(GoldItem.class);
+    Item.registerItem(IceWallPlacer.class);
+    Item.registerItem(LeafItem.class);
+    Item.registerItem(LogItem.class);
+    Item.registerItem(MetalItem.class);
+    Item.registerItem(PickaxeItem.class);
+    Item.registerItem(RedGemItem.class);
+    Item.registerItem(RingGoldItem.class);
+    Item.registerItem(RingSilverItem.class);
+    Item.registerItem(StaminaPotionItem.class);
+    Item.registerItem(StickItem.class);
+    Item.registerItem(StrengthRingItem.class);
+    Item.registerItem(TorchItem.class);
+    Item.registerItem(WaterPotionItem.class);
+    Item.registerItem(WoodenBridgeItem.class);
   }
 
   private static void configGame() throws IOException {

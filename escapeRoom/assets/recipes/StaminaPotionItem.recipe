@@ -4,14 +4,14 @@
         {
             "type": "item",
             "item": {
-                "id": "RedGemItem",
+                "id": "LeafItem",
                 "count": 1
             }
         },
         {
             "type": "item",
             "item": {
-                "id": "RingGoldItem",
+                "id": "WaterPotionItem",
                 "count": 1
             }
         }
@@ -20,7 +20,7 @@
         {
             "type": "item",
             "item": {
-                "id": "StrengthRingItem",
+                "id": "StaminaPotionItem",
                 "count": 1
             }
         }

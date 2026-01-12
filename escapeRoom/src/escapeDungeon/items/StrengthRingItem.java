@@ -14,13 +14,13 @@ import mushRoom.Sounds;
 
 import java.util.Optional;
 
-public class StrenghRingItem extends Item {
+public class StrengthRingItem extends Item {
 
   private static final String PATH = "items/rpg/item_ring_gold_gem_red.png";
 
   private static Entity itemHolder;
 
-  public StrenghRingItem() {
+  public StrengthRingItem() {
     super(
         "ein magischer Eisring",
         "",
