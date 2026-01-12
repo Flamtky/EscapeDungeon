@@ -48,8 +48,8 @@ public class MARoom {
           setupMusic();
           DungeonLoader.addLevel(Tuple.of("dungeon", Dungeon.class));
           createSystems();
-          createHero();
           Crafting.loadRecipes();
+          createHero();
           DungeonLoader.loadLevel(START_LEVEL);
         });
   }

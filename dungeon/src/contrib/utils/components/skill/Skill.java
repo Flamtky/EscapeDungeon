@@ -179,6 +179,37 @@ public abstract class Skill {
     return cooldown;
   }
 
+  /**
+   * Returns the remaining cooldown time in milliseconds.
+   *
+   * <p>If the skill is ready to use (cooldown has elapsed), this returns 0.
+   *
+   * @return the remaining cooldown time in milliseconds, or 0 if the skill is ready
+   */
+  public long remainingCooldownMillis() {
+    long remaining = Duration.between(Instant.now(), nextUsableAt).toMillis();
+    return Math.max(0, remaining);
+  }
+
+  /**
+   * Returns the cooldown progress as a value between 0.0 and 1.0.
+   *
+   * <p>A value of 0.0 means the skill was just used and the full cooldown remains. A value of 1.0
+   * means the cooldown has fully elapsed and the skill is ready.
+   *
+   * @return the cooldown progress ratio (0.0 = just used, 1.0 = ready)
+   */
+  public float cooldownProgress() {
+    if (cooldown <= 0) {
+      return 1.0f;
+    }
+    long remaining = remainingCooldownMillis();
+    if (remaining <= 0) {
+      return 1.0f;
+    }
+    return 1.0f - (float) remaining / cooldown;
+  }
+
   /** Activates the cooldown timer by setting the next usable time based on the last usage. */
   private void activateCoolDown() {
     nextUsableAt = lastUsed.plusMillis(cooldown);

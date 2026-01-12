@@ -1,5 +1,6 @@
 package core.network.messages.s2c;
 
+import contrib.components.SkillComponentData;
 import contrib.item.Item;
 import core.network.messages.NetworkMessage;
 import core.sound.SoundSpec;
@@ -36,6 +37,7 @@ public class EntityState implements NetworkMessage {
   private final Integer tintColor;
   private final List<SoundSpec> sounds;
   private final Item[] inventory;
+  private final SkillComponentData skillData;
 
   /**
    * Constructs an EntityState object using the provided Builder.
@@ -58,6 +60,7 @@ public class EntityState implements NetworkMessage {
     this.tintColor = builder.tintColor;
     this.sounds = builder.sounds;
     this.inventory = builder.inventory;
+    this.skillData = builder.skillData;
   }
 
   /**
@@ -204,6 +207,15 @@ public class EntityState implements NetworkMessage {
     return Optional.ofNullable(inventory);
   }
 
+  /**
+   * Gets the optional skill component data of the entity.
+   *
+   * @return an Optional containing the skill data if present, otherwise an empty Optional
+   */
+  public Optional<SkillComponentData> skillData() {
+    return Optional.ofNullable(skillData);
+  }
+
   /** Builder class for constructing EntityState objects. */
   public static class Builder {
     private int entityId;
@@ -221,6 +233,7 @@ public class EntityState implements NetworkMessage {
     private Integer tintColor;
     private List<SoundSpec> sounds;
     private Item[] inventory;
+    private SkillComponentData skillData;
 
     /**
      * Sets the unique identifier for the entity.
@@ -395,6 +408,17 @@ public class EntityState implements NetworkMessage {
      */
     public Builder inventory(Item[] inventory) {
       this.inventory = inventory;
+      return this;
+    }
+
+    /**
+     * Sets the skill component data for the entity.
+     *
+     * @param skillData the skill component data
+     * @return the Builder instance
+     */
+    public Builder skillData(SkillComponentData skillData) {
+      this.skillData = skillData;
       return this;
     }
 
