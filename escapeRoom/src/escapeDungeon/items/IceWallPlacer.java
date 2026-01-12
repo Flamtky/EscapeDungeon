@@ -13,12 +13,14 @@ import escapeDungeon.skill.IceWallSkill;
 import java.util.Optional;
 import mushRoom.Sounds;
 
+/** Item that grants the ability to place ice walls when collected. */
 public class IceWallPlacer extends Item {
 
   private static final String PATH = "items/rpg/item_ring_silver_gem_blue.png";
 
   private static Entity itemHolder;
 
+  /** Constructs a new IceWallPlacer item. */
   public IceWallPlacer() {
     super(
         "ein magischer Eisring",

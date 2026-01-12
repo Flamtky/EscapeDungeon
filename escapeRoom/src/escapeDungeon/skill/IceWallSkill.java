@@ -9,6 +9,7 @@ import core.level.utils.LevelElement;
 import core.utils.Point;
 import core.utils.Tuple;
 
+/** A skill that allows the caster to create or remove ice walls on ice-designated tiles. */
 public class IceWallSkill extends CursorSkill {
 
   private final int maxWallAmount;
@@ -18,6 +19,7 @@ public class IceWallSkill extends CursorSkill {
    *
    * @param name The name of the skill.
    * @param cooldown The cooldown in milliseconds before the skill can be used again.
+   * @param maxWallAmount The maximum amount of walls that can be placed.
    * @param resourceCost Optional resource costs (e.g., mana, energy) required to use this skill.
    */
   public IceWallSkill(
