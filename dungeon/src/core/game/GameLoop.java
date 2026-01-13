@@ -342,12 +342,13 @@ public final class GameLoop extends ScreenAdapter {
       Gdx.files = new HeadlessFiles();
     }
 
+    Crafting.loadRecipes();
+
     PreRunConfiguration.userOnSetup().execute();
     Game.network().start();
 
-    Crafting.loadRecipes();
-
-    Game.system(LevelSystem.class, LevelSystem::execute); // load initial level
+    if (!DungeonLoader.levelOrder().isEmpty()) DungeonLoader.loadLevel(0); // load the first level
+    else LOGGER.warn("No levels found to load!");
   }
 
   private void setupMessageHandlers() {

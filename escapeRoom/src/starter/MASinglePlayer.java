@@ -14,7 +14,7 @@ import core.level.loader.DungeonLoader;
 import core.network.config.NetworkConfig;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
-import demoDungeon.level.Dungeon;
+import demoDungeon.level.MADungeonRoom;
 import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
 import java.io.IOException;
@@ -50,7 +50,7 @@ public class MASinglePlayer {
     Game.userOnSetup(
         () -> {
           setupMusic();
-          DungeonLoader.addLevel(Tuple.of("dungeon", Dungeon.class));
+          DungeonLoader.addLevel(Tuple.of("maroom", MADungeonRoom.class));
           createSystems();
           Crafting.loadRecipes();
           createHero();

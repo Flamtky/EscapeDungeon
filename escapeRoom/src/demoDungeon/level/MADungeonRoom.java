@@ -7,6 +7,7 @@ import contrib.components.FlyComponent;
 import contrib.entities.LeverFactory;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
+import contrib.systems.EventScheduler;
 import contrib.utils.EntityUtils;
 import contrib.utils.ICommand;
 import contrib.utils.components.ai.idle.PatrolWalk;
@@ -37,13 +38,10 @@ import mobs.EscapeRoomMonsterBuilder;
 import mushRoom.Sounds;
 import mushRoom.shaders.TorchPostProcessing;
 
-/**
- * The Demolevel.
- *
- * <p>The player has to craft a Healpotion.
- */
-public class Dungeon extends DungeonLevel {
+/** The MADungeonRoom level. */
+public class MADungeonRoom extends DungeonLevel {
 
+  private boolean dimed = false;
   private TorchPostProcessing torchShader;
   private final List<Entity> puzzlePushEntities = new ArrayList<>();
   private final Color[] stoneColors = {
@@ -115,8 +113,9 @@ public class Dungeon extends DungeonLevel {
    * @param namedPoints The custom points of the level.
    */
   @SuppressWarnings("unchecked")
-  public Dungeon(LevelElement[][] layout, DesignLabel designLabel, Map<String, Point> namedPoints) {
-    super(layout, designLabel, namedPoints, "Demo");
+  public MADungeonRoom(
+      LevelElement[][] layout, DesignLabel designLabel, Map<String, Point> namedPoints) {
+    super(layout, designLabel, namedPoints, "MARoom");
     changeTileDesignLabel(
         getPoint("beige11").toCoordinate(),
         getPoint("beige12").toCoordinate(),
@@ -465,7 +464,9 @@ public class Dungeon extends DungeonLevel {
 
   @Override
   protected void onTick() {
-    updateTorchShader();
+    if (!Game.isHeadless()) {
+      updateTorchShader();
+    }
     Game.allPlayers()
         .forEach(
             hero -> {
@@ -514,6 +515,42 @@ public class Dungeon extends DungeonLevel {
                   new TorchPostProcessing.Light(
                       pos.position().x() + 0.5f, pos.position().y(), radius));
               initLightEntityIds.add(e.id());
+            });
+    Game.player()
+        .map(player -> player.fetch(PositionComponent.class))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .ifPresent(
+            pc -> {
+              Rectangle labyrinth1 =
+                  new Rectangle(getPoint("labyrinth11"), getPoint("labyrinth12"));
+              Rectangle labyrinth12 =
+                  new Rectangle(getPoint("labyrinth21"), getPoint("labyrinth22"));
+              if (labyrinth1.contains(pc.position()) || labyrinth12.contains(pc.position())) {
+                if (!dimed) {
+                  dimed = true;
+                  for (int i = 1; i <= 15; i++) {
+                    float dimness = 0.15f - (i * 0.01f);
+                    EventScheduler.scheduleAction(
+                        () -> {
+                          torchShader.baseDimness(dimness);
+                        },
+                        i * 100);
+                  }
+                }
+              } else {
+                if (dimed) {
+                  dimed = false;
+                  for (int i = 1; i <= 15; i++) {
+                    float dimness = 0f + (i * 0.01f);
+                    EventScheduler.scheduleAction(
+                        () -> {
+                          torchShader.baseDimness(dimness);
+                        },
+                        i * 100);
+                  }
+                }
+              }
             });
   }
 

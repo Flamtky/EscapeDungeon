@@ -75,7 +75,6 @@ public final class AuthoritativeServerLoop {
    */
   public void start() {
     PreRunConfiguration.frameRate(SERVER_TICK_HZ);
-    PreRunConfiguration.userOnSetup().execute();
 
     try {
       DungeonLoader.afterAllLevels(
@@ -83,7 +82,6 @@ public final class AuthoritativeServerLoop {
             Game.network().broadcast(new GameOverEvent("All levels completed"), true);
             Game.exit("Game Over");
           });
-      DungeonLoader.loadLevel(0);
     } catch (Exception e) {
       LOGGER.warn("Failed to load initial level on server", e);
     }

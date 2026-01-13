@@ -4,15 +4,18 @@ import contrib.utils.components.Debugger;
 import core.Game;
 import core.configuration.KeyboardConfig;
 import core.game.PreRunConfiguration;
+import core.level.loader.DungeonLoader;
 import core.network.config.NetworkConfig;
+import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
+import demoDungeon.level.MADungeonRoomClient;
 import java.io.IOException;
 import network.EscapeRoomSnapshotTranslator;
 
 /** The main class for the Multiplayer Client for development and testing purposes. */
 public final class MAClient {
 
-  private static final boolean DEBUG_MODE = true;
+  private static boolean firstTick = true;
 
   /**
    * Main method to start the dev client.
@@ -36,11 +39,18 @@ public final class MAClient {
     Game.loadConfig(new SimpleIPath("dungeon_config.json"), KeyboardConfig.class);
     Game.disableAudio(false);
     Game.frameRate(90);
-    Game.windowTitle("Dev Client - " + PreRunConfiguration.username());
+    Game.windowTitle("Prison Escape - " + PreRunConfiguration.username());
     Game.userOnSetup(
         () -> {
           Game.add(new Debugger());
-          System.out.println("DevClient started");
+        });
+
+    Game.userOnFrame(
+        () -> {
+          if (firstTick) {
+            DungeonLoader.addLevel(Tuple.of("maroom", MADungeonRoomClient.class));
+            firstTick = false;
+          }
         });
 
     // Start the game

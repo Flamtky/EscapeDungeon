@@ -20,7 +20,7 @@ import core.network.messages.s2c.LevelChangeEvent;
 import core.systems.*;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
-import demoDungeon.level.Dungeon;
+import demoDungeon.level.MADungeonRoom;
 import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
 import java.io.IOException;
@@ -63,7 +63,7 @@ public class MAServer {
   private static void onSetup() {
     Game.userOnSetup(
         () -> {
-          DungeonLoader.addLevel(Tuple.of("dungeon", Dungeon.class));
+          DungeonLoader.addLevel(Tuple.of("maroom", MADungeonRoom.class));
           createSystems();
           // createHero();
           Crafting.loadRecipes();
