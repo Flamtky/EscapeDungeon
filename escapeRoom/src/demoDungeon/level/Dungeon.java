@@ -9,7 +9,6 @@ import contrib.entities.LeverFactory;
 import contrib.entities.MiscFactory;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
-import contrib.item.Item;
 import contrib.item.concreteItem.ItemPotionWater;
 import contrib.systems.EventScheduler;
 import contrib.utils.EntityUtils;
@@ -325,7 +324,7 @@ public class Dungeon extends DungeonLevel {
   }
 
   private void createChests() {
-    Game.add(MiscFactory.newChest(Set.of(new ItemPotionWater()), getPoint("chest0")));
+    Game.add(MiscFactory.newChest(Set.of(new ItemPotionWater()), getPoint("fire11")));
   }
 
 
@@ -356,10 +355,10 @@ public class Dungeon extends DungeonLevel {
               dc.depth(DepthLayer.Player.depth());
               Color tintColor = index < stoneColors.length ? stoneColors[index] : Color.WHITE;
               dc.tintColor(Color.rgba8888(tintColor));
-              // dc.shaders().add("outline", new OutlineShader(20));
               pushStone.add(dc);
               pushStone.add(new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f)));
               pushStone.add(new VelocityComponent(5.0f));
+              // pushStone.add(new VelocityComponent(5.0f, 10f, e -> {}, false));
               Game.add(pushStone);
               puzzlePushEntities.add(pushStone);
             });
