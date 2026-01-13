@@ -185,6 +185,18 @@ public final class CameraSystem extends System {
   }
 
   /**
+   * Instantly focuses the camera on the given point, without any smooth transition.
+   *
+   * @param point The point to focus on.
+   */
+  public void instantFocus(Point point) {
+    focusPoint = point;
+    actualPosition = point;
+    CAMERA.position.set(actualPosition.x(), actualPosition.y(), 0);
+    CAMERA.update();
+  }
+
+  /**
    * Gets the world bounds of the camera.
    *
    * @return The world bounds of the camera as a Rectangle.

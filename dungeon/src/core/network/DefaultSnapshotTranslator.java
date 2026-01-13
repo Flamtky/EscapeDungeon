@@ -8,7 +8,6 @@ import core.Game;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
 import core.components.SoundComponent;
-import core.components.VelocityComponent;
 import core.level.elements.ILevel;
 import core.level.elements.tile.DoorTile;
 import core.level.utils.Coordinate;
@@ -226,32 +225,6 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
     return false;
   }
 
-  /**
-   * Determines if an entity is mobile (can move) and should be tracked for delta updates.
-   *
-   * <p>Mobile entities are:
-   *
-   * <ul>
-   *   <li>Entities with SoundComponent (transient, always send)
-   *   <li>Entities with UIComponent (transient, always send)
-   *   <li>Entities with VelocityComponent where maxSpeed > 0 (can move)
-   * </ul>
-   *
-   * <p>Static entities (deco, items on ground, etc.) are only sent in full snapshots and don't need
-   * delta updates or removal tracking since they never move.
-   *
-   * @param entity the entity to check
-   * @return true if the entity is mobile and should be included in delta snapshots
-   */
-  protected boolean isMobileEntity(Entity entity) {
-    // Sound entities are transient - always treat as mobile
-    if (entity.isPresent(SoundComponent.class)) return true;
-    // UI entities are transient - always treat as mobile
-    if (entity.isPresent(UIComponent.class)) return true;
-    // Entities with velocity that can move
-    return entity.fetch(VelocityComponent.class).map(vc -> vc.maxSpeed() > 0).orElse(false);
-  }
-
   // Server-side delta generation
   @Override
   public Optional<DeltaSnapshotMessage> translateToDelta(int serverTick, ClientState client) {
@@ -281,10 +254,10 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
         .forEach(
             e -> {
               int entityId = e.id();
-              boolean isMobile = isMobileEntity(e);
+              boolean isDeltaRelevant = SnapshotTranslator.relevantForDelta(e);
 
               // Static entities: skip if already sent, they never change
-              if (!isMobile) {
+              if (!isDeltaRelevant) {
                 if (sentStaticIds.contains(entityId)) {
                   return; // Already sent in full snapshot, skip
                 }

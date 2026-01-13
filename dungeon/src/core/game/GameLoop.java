@@ -436,7 +436,16 @@ public final class GameLoop extends ScreenAdapter {
           LOGGER.info("Received LevelChangeEvent event: {}", event.levelName());
           try {
             Game.currentLevel(LevelParser.parseLevel(event.levelData(), event.levelName()));
-            Game.player().ifPresent(GameLoop::placeOnLevelStart);
+            Game.player()
+                .ifPresent(
+                    entity -> {
+                      placeOnLevelStart(entity);
+                      Game.system(
+                          CameraSystem.class,
+                          cs -> {
+                            Game.positionOf(entity).ifPresent(cs::instantFocus);
+                          });
+                    });
           } catch (Exception e) {
             LOGGER.error("Failed to handle LevelChangeEvent: {}", e.getMessage(), e);
           }

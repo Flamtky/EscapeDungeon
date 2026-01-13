@@ -4,19 +4,17 @@ import static core.network.config.NetworkConfig.FULL_SNAPSHOT_INTERVAL_TICKS;
 import static core.network.config.NetworkConfig.SERVER_SNAPSHOT_HZ;
 import static core.network.config.NetworkConfig.SERVER_TICK_HZ;
 
-import contrib.components.UIComponent;
 import contrib.entities.CharacterClass;
 import contrib.entities.HeroBuilder;
 import contrib.entities.HeroController;
 import core.Entity;
 import core.Game;
 import core.components.PositionComponent;
-import core.components.SoundComponent;
-import core.components.VelocityComponent;
 import core.game.ECSManagement;
 import core.game.PreRunConfiguration;
 import core.level.Tile;
 import core.level.loader.DungeonLoader;
+import core.network.SnapshotTranslator;
 import core.network.debug.SnapshotDebugger;
 import core.network.messages.s2c.EntitySpawnEvent;
 import core.network.messages.s2c.GameOverEvent;
@@ -195,7 +193,7 @@ public final class AuthoritativeServerLoop {
                   Game.findEntityById(entityId)
                       .ifPresent(
                           entity -> {
-                            if (isMobileEntity(entity)) {
+                            if (SnapshotTranslator.relevantForDelta(entity)) {
                               clientState.lastVisibleEntityIds().add(entityId);
                             } else {
                               clientState.sentStaticEntityIds().add(entityId);
@@ -214,21 +212,6 @@ public final class AuthoritativeServerLoop {
                 Game.network().send(clientState.clientId(), delta, false);
               });
     }
-  }
-
-  /**
-   * Determines if an entity is mobile (can move) and should be tracked for delta updates.
-   *
-   * @param entity the entity to check
-   * @return true if the entity is mobile
-   */
-  private boolean isMobileEntity(Entity entity) {
-    // Sound entities are transient - always treat as mobile
-    if (entity.isPresent(SoundComponent.class)) return true;
-    // UI entities are transient - always treat as mobile
-    if (entity.isPresent(UIComponent.class)) return true;
-    // Entities with velocity that can move
-    return entity.fetch(VelocityComponent.class).map(vc -> vc.maxSpeed() > 0).orElse(false);
   }
 
   private void syncClientsToEntities() {

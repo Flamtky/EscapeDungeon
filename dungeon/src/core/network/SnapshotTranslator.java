@@ -1,5 +1,10 @@
 package core.network;
 
+import contrib.components.UIComponent;
+import core.Entity;
+import core.components.PlayerComponent;
+import core.components.SoundComponent;
+import core.components.VelocityComponent;
 import core.network.messages.s2c.DeltaSnapshotMessage;
 import core.network.messages.s2c.SnapshotMessage;
 import core.network.server.ClientState;
@@ -54,4 +59,31 @@ public interface SnapshotTranslator {
    * @param dispatcher the message dispatcher to handle granular updates
    */
   void applyDelta(DeltaSnapshotMessage delta, MessageDispatcher dispatcher);
+
+  /**
+   * Determines if an entity is relevant for delta snapshots.
+   *
+   * <p>Relevant entities include:
+   *
+   * <ul>
+   *   <li>Entities with SoundComponent (transient, always send)
+   *   <li>Entities with UIComponent (transient, always send)
+   *   <li>Player entities (always send)
+   *   <li>Entities with VelocityComponent where maxSpeed > 0 (can move)
+   * </ul>
+   *
+   * <p>Static entities (deco, items on ground, etc.) are only sent in full snapshots and don't need
+   * delta updates or removal tracking since they never move.
+   *
+   * @param entity the entity to check
+   * @return true if the entity is relevant for delta snapshots, false otherwise
+   */
+  static boolean relevantForDelta(Entity entity) {
+    // Sound and UI entities are always relevant
+    if (entity.isPresent(SoundComponent.class)) return true;
+    if (entity.isPresent(UIComponent.class)) return true;
+    if (entity.isPresent(PlayerComponent.class)) return true;
+    // Entities with velocity that can move
+    return entity.fetch(VelocityComponent.class).map(vc -> vc.maxSpeed() > 0).orElse(false);
+  }
 }

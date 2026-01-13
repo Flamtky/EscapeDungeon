@@ -5,7 +5,9 @@ import core.Entity;
 import core.System;
 import core.components.PositionComponent;
 import core.utils.components.MissingComponentException;
+import core.utils.logging.DungeonLogger;
 import java.util.HashMap;
+import java.util.Optional;
 
 /**
  * This system takes 2 PositionComponents and attaches them in a way where one PositionComponent
@@ -16,6 +18,8 @@ import java.util.HashMap;
  * between these two can be scaled with the scale of the {@link AttachmentComponent}.
  */
 public class AttachmentSystem extends System {
+
+  private static final DungeonLogger LOGGER = DungeonLogger.getLogger(AttachmentSystem.class);
 
   /** Map where the key is the copied component and the value is the origin component. */
   private static HashMap<PositionComponent, PositionComponent> attachmentMap = new HashMap<>();
@@ -43,7 +47,10 @@ public class AttachmentSystem extends System {
   /** Updates the position of all attached PositionComponents. */
   @Override
   public void execute() {
-    filteredEntityStream().map(this::buildDataObject).forEach(this::applyAttachment);
+    filteredEntityStream()
+        .map(this::buildDataObject)
+        .flatMap(Optional::stream)
+        .forEach(this::applyAttachment);
   }
 
   /**
@@ -69,9 +76,10 @@ public class AttachmentSystem extends System {
    * Builds a data object for better handling in the system.
    *
    * @param e The entity that has the {@link AttachmentComponent}.
-   * @return A {@link ASData} object with all relevant data.
+   * @return A {@link Optional} containing the {@link ASData} or an empty Optional if no origin
+   *     {@link PositionComponent} was found.
    */
-  private ASData buildDataObject(Entity e) {
+  private Optional<ASData> buildDataObject(Entity e) {
     PositionComponent copypc =
         e.fetch(PositionComponent.class)
             .orElseThrow(() -> MissingComponentException.build(e, PositionComponent.class));
@@ -81,8 +89,15 @@ public class AttachmentSystem extends System {
             .orElseThrow(() -> MissingComponentException.build(e, AttachmentComponent.class));
 
     PositionComponent originpc = attachmentMap.get(copypc);
+    if (originpc == null) {
+      LOGGER.warn(
+          "No origin PositionComponent found for attached entity {}. Removing AttachmentComponent.",
+          e.id());
+      e.remove(AttachmentComponent.class);
+      return Optional.empty();
+    }
 
-    return new ASData(e, ac, copypc, originpc);
+    return Optional.of(new ASData(e, ac, copypc, originpc));
   }
 
   /**
