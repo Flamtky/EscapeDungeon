@@ -8,8 +8,9 @@ import contrib.utils.components.ai.transition.RangeTransition;
 import core.Component;
 import core.Entity;
 import core.utils.Vector2;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Define the behavior of AI-controlled entities.
@@ -33,9 +34,9 @@ import java.util.function.Function;
 public final class AIComponent implements Component {
 
   private static final Vector2 DEFAULT_SPEED = Vector2.of(5, 5);
-  private final Consumer<Entity> fightBehavior;
+  private final BiConsumer<Entity, Entity> fightBehavior;
   private final Consumer<Entity> idleBehavior;
-  private final Function<Entity, Boolean> shouldFight;
+  private final BiFunction<Entity, Entity, Boolean> shouldFight;
 
   private Vector2 movementForce;
   private boolean active = true;
@@ -49,9 +50,9 @@ public final class AIComponent implements Component {
    * @param movementForce Force to apply on the Ai-Entity for movement.
    */
   public AIComponent(
-      final Consumer<Entity> fightBehavior,
+      final BiConsumer<Entity, Entity> fightBehavior,
       final Consumer<Entity> idleBehavior,
-      final Function<Entity, Boolean> shouldFight,
+      final BiFunction<Entity, Entity, Boolean> shouldFight,
       Vector2 movementForce) {
     this.fightBehavior = fightBehavior;
     this.idleBehavior = idleBehavior;
@@ -67,9 +68,9 @@ public final class AIComponent implements Component {
    * @param shouldFight Determines when to fight.
    */
   public AIComponent(
-      final Consumer<Entity> fightBehavior,
+      final BiConsumer<Entity, Entity> fightBehavior,
       final Consumer<Entity> idleBehavior,
-      final Function<Entity, Boolean> shouldFight) {
+      final BiFunction<Entity, Entity, Boolean> shouldFight) {
     this(fightBehavior, idleBehavior, shouldFight, DEFAULT_SPEED);
   }
 
@@ -88,9 +89,9 @@ public final class AIComponent implements Component {
    *
    * @return Transition function between idle and fight behavior.
    */
-  public Function<Entity, Boolean> shouldFight() {
+  public BiFunction<Entity, Entity, Boolean> shouldFight() {
     if (!this.active) {
-      return (entity) -> false;
+      return (entity, player) -> false;
     }
     return this.shouldFight;
   }
@@ -100,7 +101,7 @@ public final class AIComponent implements Component {
    *
    * @return Function that implements the fight behavior.
    */
-  public Consumer<Entity> fightBehavior() {
+  public BiConsumer<Entity, Entity> fightBehavior() {
     return this.fightBehavior;
   }
 

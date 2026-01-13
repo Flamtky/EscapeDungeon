@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.ai.pfa.GraphPath;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import contrib.utils.EntityUtils;
 import core.components.PlayerComponent;
 import core.components.PositionComponent;
 import core.game.ECSManagement;
@@ -642,17 +641,10 @@ public final class Game {
    * @return Stream of all entities on the given tile
    */
   public static Stream<Entity> entityAtTile(final Tile check) {
-    return Game.tileAt(check.position())
-        .map(
-            target ->
-                ECSManagement.levelEntities()
-                    .filter(e -> e.isPresent(PositionComponent.class))
-                    .filter(
-                        e ->
-                            Game.tileAt(EntityUtils.getPosition(e))
-                                .map(target::equals)
-                                .orElse(false)))
-        .orElseGet(Stream::empty);
+    if (check == null) {
+      return Stream.empty();
+    }
+    return ECSManagement.getEntitiesAtTile(check.coordinate());
   }
 
   /**

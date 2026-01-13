@@ -18,7 +18,7 @@ public final class NetworkConfig {
    * Translator for converting game state snapshots to/from byte arrays. Used by both client and
    * server.
    */
-  public static final SnapshotTranslator SNAPSHOT_TRANSLATOR = new DefaultSnapshotTranslator();
+  public static SnapshotTranslator SNAPSHOT_TRANSLATOR = new DefaultSnapshotTranslator();
 
   /** Maximum size of serialized payload for TCP communication, in bytes. */
   public static final int MAX_TCP_OBJECT_SIZE = 1 << 20; // 1 MiB
@@ -74,14 +74,14 @@ public final class NetworkConfig {
    *
    * <p>This defines how many times per second the server updates the game state.
    */
-  public static final int SERVER_TICK_HZ = 60;
+  public static final int SERVER_TICK_HZ = 90;
 
   /**
    * Server snapshot rate, in Hertz (Hz).
    *
    * <p>This defines how many times per second the server sends game state snapshots to clients.
    */
-  public static final int SERVER_SNAPSHOT_HZ = 60;
+  public static final int SERVER_SNAPSHOT_HZ = 90;
 
   /**
    * Maximum allowed sequence gap for network packets.

@@ -1,5 +1,6 @@
 package guard;
 
+import contrib.components.AttachmentComponent;
 import contrib.components.CollideComponent;
 import contrib.utils.EntityUtils;
 import contrib.utils.RaycastUtil;
@@ -7,11 +8,12 @@ import core.Entity;
 import core.Game;
 import core.System;
 import core.components.PositionComponent;
-import core.utils.Direction;
 import core.utils.Point;
 import core.utils.Vector2;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
+import starter.IllegalComponent;
 
 /**
  * System that handles guard detection of player entities.
@@ -48,8 +50,11 @@ public class GuardDetectionSystem extends System {
    */
   public GuardDetectionSystem() {
     super(AlertnessComponent.class, PositionComponent.class);
-    // Register debug renderer for visualization
-    GuardDebugRenderer.ensureRegistered();
+
+    if (!Game.isHeadless()) {
+      // Register debug renderer for visualization
+      GuardDebugRenderer.ensureRegistered();
+    }
   }
 
   @Override
@@ -72,46 +77,84 @@ public class GuardDetectionSystem extends System {
    * @param deltaTime the time elapsed since the last frame in seconds
    */
   private void processGuard(Entity guard, float deltaTime) {
-    AlertnessComponent alertness =
+    var alertness =
         guard
             .fetch(AlertnessComponent.class)
             .orElseThrow(() -> new IllegalStateException("Guard missing AlertnessComponent"));
 
-    PositionComponent guardPosComp =
+    var guardPosComp =
         guard
             .fetch(PositionComponent.class)
             .orElseThrow(() -> new IllegalStateException("Guard missing PositionComponent"));
 
-    // Use EntityUtils.getPosition for accurate center position
     Point guardPosition = EntityUtils.getPosition(guard);
-    Direction viewDir = guardPosComp.viewDirection();
-    Vector2 viewDirection = Vector2.of(viewDir.x(), viewDir.y());
+    Vector2 viewDirection =
+        Vector2.of(guardPosComp.viewDirection().x(), guardPosComp.viewDirection().y());
 
-    // Register view cone for debug rendering
     GuardDebugRenderer.registerViewCone(
         guardPosition, viewDirection, alertness.viewConeAngle(), alertness.viewRange());
 
-    // Find all players and calculate detection
-    float totalDetection =
+    var result =
         Game.allPlayers()
-            .map(
+            .filter(
+                player -> !player.isPresent(AttachmentComponent.class)) // Ignore attached players
+            .filter(
                 player ->
-                    calculatePlayerDetection(
-                        guard,
-                        guardPosition,
-                        viewDirection,
-                        alertness,
-                        player)) // detection from this player
-            .reduce(0f, Float::sum); // sum detection from all players
+                    player
+                        .fetch(IllegalComponent.class)
+                        .map(IllegalComponent::isIllegal)
+                        .orElse(false))
+            .collect(
+                Collector.of(
+                    Accumulator::new,
+                    (acc, player) -> {
+                      float detection =
+                          calculatePlayerDetection(
+                              guard, guardPosition, viewDirection, alertness, player);
+                      acc.add(detection, player);
+                    },
+                    Accumulator::merge,
+                    Accumulator::toResult));
 
-    // Apply detection or decay
+    float totalDetection = result.total();
+    Entity mostSeenPlayer = result.mostSeen();
+
     if (totalDetection > 0f) {
-      float cappedDetection = Math.min(totalDetection * deltaTime, MAX_DETECTION_PER_FRAME);
-      alertness.increaseAlertness(cappedDetection);
+      float capped = Math.min(totalDetection * deltaTime, MAX_DETECTION_PER_FRAME);
+      alertness.increaseAlertness(capped, mostSeenPlayer);
     } else {
       alertness.decayAlertness(deltaTime);
     }
   }
+
+  private static final class Accumulator {
+    float total = 0f;
+    Entity mostSeen = null;
+    float maxDetection = -1f;
+
+    void add(float detection, Entity player) {
+      total += detection;
+      if (detection > maxDetection) {
+        maxDetection = detection;
+        mostSeen = player;
+      }
+    }
+
+    Accumulator merge(Accumulator other) {
+      total += other.total;
+      if (other.maxDetection > maxDetection) {
+        maxDetection = other.maxDetection;
+        mostSeen = other.mostSeen;
+      }
+      return this;
+    }
+
+    DetectionResult toResult() {
+      return new DetectionResult(total, mostSeen);
+    }
+  }
+
+  private record DetectionResult(float total, Entity mostSeen) {}
 
   /**
    * Calculates the detection strength for a single player.

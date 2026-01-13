@@ -9,6 +9,7 @@ import contrib.configuration.KeyboardConfig;
 import contrib.hud.dialogs.DialogFactory;
 import contrib.systems.DebugDrawSystem;
 import contrib.systems.LevelEditorSystem;
+import contrib.utils.EntityUtils;
 import contrib.utils.components.ai.fight.AIChaseBehaviour;
 import contrib.utils.components.ai.idle.RadiusWalk;
 import contrib.utils.components.ai.transition.SelfDefendTransition;
@@ -67,7 +68,31 @@ public class Debugger extends System {
   /** Teleports the Player to the current position of the cursor. */
   public static void TELEPORT_TO_CURSOR() {
     LOGGER.info("TELEPORT TO CURSOR");
-    TELEPORT(SkillTools.cursorPositionAsPoint());
+    Point cursorPos = SkillTools.cursorPositionAsPoint();
+    Game.player()
+        .ifPresent(
+            player -> {
+              Point offset = getCenterOffset(player);
+              Point targetPos = cursorPos.translate(-offset.x(), -offset.y());
+              TELEPORT(targetPos);
+            });
+  }
+
+  /**
+   * Calculates the offset between the entity's center position (from EntityUtils.getPosition) and
+   * the raw position from PositionComponent.
+   *
+   * @param entity The entity to calculate the offset for.
+   * @return The offset as a Point (centerPosition - rawPosition).
+   */
+  private static Point getCenterOffset(Entity entity) {
+    PositionComponent pc =
+        entity
+            .fetch(PositionComponent.class)
+            .orElseThrow(() -> MissingComponentException.build(entity, PositionComponent.class));
+    Point rawPos = pc.position();
+    Point centerPos = EntityUtils.getPosition(entity);
+    return new Point(centerPos.x() - rawPos.x(), centerPos.y() - rawPos.y());
   }
 
   /** Teleports the Player to the end of the level, on a neighboring accessible tile if possible. */

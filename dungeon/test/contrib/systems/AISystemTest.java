@@ -6,23 +6,24 @@ import static org.mockito.Mockito.*;
 import contrib.components.AIComponent;
 import core.Entity;
 import core.Game;
+import core.components.PlayerComponent;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-/** WTF? . */
-public class AISystemTest {
+class AISystemTest {
 
   private int updateCounter;
   private AISystem system;
   private Entity entity;
+  private Entity player;
 
-  /** WTF? . */
   @BeforeEach
-  public void setup() {
+  void setup() {
     Game.removeAllEntities();
     Game.removeAllSystems();
     system = new AISystem();
@@ -31,56 +32,56 @@ public class AISystemTest {
         new AIComponent(
             null,
             e -> {},
-            entity -> {
+            (entity, player) -> {
               updateCounter++;
               return false;
             }));
     Game.add(entity);
     updateCounter = 0;
+    player = new Entity();
+    player.add(new PlayerComponent());
+    Game.add(player);
   }
 
-  /** WTF? . */
   @AfterEach
-  public void cleanup() {
+  void cleanup() {
     Game.removeAllEntities();
     Game.currentLevel(null);
     Game.removeAllSystems();
   }
 
-  /** WTF? . */
   @Test
-  public void update() {
+  void update() {
     system.execute();
     assertEquals(1, updateCounter);
   }
 
-  /** WTF? . */
   @Test
-  public void update_executeFight() {
-    Function<Entity, Boolean> transition = Mockito.mock(Function.class);
-    Consumer<Entity> fight = Mockito.mock(Consumer.class);
+  void update_executeFight() {
+
+    BiFunction<Entity, Entity, Boolean> transition = Mockito.mock(BiFunction.class);
+    BiConsumer<Entity, Entity> fight = Mockito.mock(BiConsumer.class);
     Consumer<Entity> idle = Mockito.mock(Consumer.class);
-    when(transition.apply(entity)).thenReturn(true);
+    when(transition.apply(entity, player)).thenReturn(true);
 
     AIComponent component = new AIComponent(fight, idle, transition);
     entity.add(component);
     system.execute();
-    verify(fight, times(1)).accept(entity);
+    verify(fight, times(1)).accept(entity, player);
     verify(idle, never()).accept(entity);
   }
 
-  /** WTF? . */
   @Test
-  public void update_executeIdle() {
-    Function<Entity, Boolean> transition = Mockito.mock(Function.class);
-    Consumer<Entity> fight = Mockito.mock(Consumer.class);
+  void update_executeIdle() {
+    BiFunction<Entity, Entity, Boolean> transition = Mockito.mock(BiFunction.class);
+    BiConsumer<Entity, Entity> fight = Mockito.mock(BiConsumer.class);
     Consumer<Entity> idle = Mockito.mock(Consumer.class);
-    when(transition.apply(entity)).thenReturn(false);
+    when(transition.apply(entity, player)).thenReturn(false);
 
     AIComponent component = new AIComponent(fight, idle, transition);
     entity.add(component);
     system.execute();
     verify(idle, times(1)).accept(entity);
-    verify(fight, never()).accept(entity);
+    verify(fight, never()).accept(entity, player);
   }
 }

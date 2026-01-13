@@ -238,4 +238,17 @@ public class AIUtils {
         .findFirst()
         .orElse(null);
   }
+
+  /**
+   * Calculates the distance between two entities based on their positions.
+   *
+   * @param guard The first entity.
+   * @param player The second entity.
+   * @return The distance between the two entities.
+   */
+  public static float distanceBetweenEntities(Entity guard, Entity player) {
+    Point guardPos = EntityUtils.getPosition(guard);
+    Point playerPos = EntityUtils.getPosition(player);
+    return Point.calculateDistance(guardPos, playerPos);
+  }
 }

@@ -408,8 +408,12 @@ public class DungeonLevel implements ILevel, ITickable {
    *
    * @param name the name of the point
    * @return the point associated with the given name, or null if not found
+   * @throws IllegalArgumentException if no point with the given name exists
    */
   public Point getPoint(String name) {
+    if (!namedPoints.containsKey(name)) {
+      throw new IllegalArgumentException("No point found with name: " + name);
+    }
     return namedPoints.get(name);
   }
 

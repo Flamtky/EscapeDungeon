@@ -6,11 +6,11 @@ import contrib.components.HealthComponent;
 import contrib.utils.components.ai.transition.SelfDefendTransition;
 import core.Entity;
 import core.utils.components.MissingComponentException;
-import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 
-/** WTF? . */
-public class SelfDefendTransitionTest {
+class SelfDefendTransitionTest {
+
+  private final Entity player = new Entity();
 
   /**
    * Tests if the isInFight method returns false when the current HealthPoints of an entity are
@@ -23,9 +23,9 @@ public class SelfDefendTransitionTest {
     entity.add(hc);
     hc.maximalHealthpoints(10);
     hc.currentHealthpoints(10);
-    Function<Entity, Boolean> defend = new SelfDefendTransition();
+    var defend = new SelfDefendTransition();
 
-    assertFalse(defend.apply(entity));
+    assertFalse(defend.apply(entity, player));
   }
 
   /**
@@ -39,10 +39,10 @@ public class SelfDefendTransitionTest {
     entity.add(hc);
     hc.maximalHealthpoints(10);
     hc.currentHealthpoints(10);
-    Function<Entity, Boolean> defend = new SelfDefendTransition();
-    assertFalse(defend.apply(entity));
+    var defend = new SelfDefendTransition();
+    assertFalse(defend.apply(entity, player));
     hc.currentHealthpoints(9);
-    assertTrue(defend.apply(entity));
+    assertTrue(defend.apply(entity, player));
   }
 
   /**
@@ -52,9 +52,9 @@ public class SelfDefendTransitionTest {
   @Test
   public void isInFightModeHealthComponentMissing() {
     Entity entity = new Entity();
-    Function<Entity, Boolean> defend = new SelfDefendTransition();
+    var defend = new SelfDefendTransition();
     MissingComponentException exception =
-        assertThrows(MissingComponentException.class, () -> defend.apply(entity));
+        assertThrows(MissingComponentException.class, () -> defend.apply(entity, player));
     assertTrue(exception.getMessage().contains(HealthComponent.class.getName()));
   }
 }

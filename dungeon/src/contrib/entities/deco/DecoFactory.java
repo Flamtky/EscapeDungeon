@@ -2,7 +2,6 @@ package contrib.entities.deco;
 
 import contrib.components.CollideComponent;
 import contrib.components.DecoComponent;
-import contrib.modules.interaction.InteractionComponent;
 import core.Entity;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
@@ -10,7 +9,6 @@ import core.utils.Point;
 import core.utils.Rectangle;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.draw.animation.AnimationConfig;
-import java.util.List;
 
 /**
  * A factory class for creating decorative {@link Entity} instances.
@@ -20,9 +18,6 @@ import java.util.List;
  * overloads to simplify creation with default or custom parameters.
  */
 public class DecoFactory {
-
-  private static final List<String> NON_INTERACTIVE_DECO_NAMES =
-      List.of("WallEmpty", "FloorTile.*");
 
   /**
    * Creates a decorative entity with full control over all parameters.
@@ -47,8 +42,6 @@ public class DecoFactory {
       CollideComponent cc = new CollideComponent(solidCollider);
       entity.add(cc);
     }
-    if (NON_INTERACTIVE_DECO_NAMES.stream().noneMatch(deco.name()::matches))
-      entity.add(new InteractionComponent());
     return entity;
   }
 

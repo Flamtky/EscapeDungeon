@@ -12,17 +12,20 @@ import contrib.utils.components.Debugger;
 import core.Entity;
 import core.Game;
 import core.level.loader.DungeonLoader;
+import core.network.config.NetworkConfig;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.Dungeon;
 import escapeDungeon.items.*;
+import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
 import java.io.IOException;
+import network.EscapeRoomSnapshotTranslator;
 
 /**
  * Starter for the Demo Escaperoom Dungeon.
  *
- * <p>Usage: run with the Gradle task {@code runDemoRoom}.
+ * <p>Usage: run with the Gradle task {@code runMA}.
  */
 public class MARoom {
   private static final boolean DEBUG_MODE = true;
@@ -39,6 +42,8 @@ public class MARoom {
     configGame();
     onSetup();
 
+    NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
+
     Game.windowTitle("Demo-Room");
     Game.run();
   }
@@ -52,6 +57,7 @@ public class MARoom {
           createHero();
           registerItems();
           Crafting.loadRecipes();
+          createHero();
           DungeonLoader.loadLevel(START_LEVEL);
         });
   }
@@ -111,6 +117,10 @@ public class MARoom {
     Game.add(new LeverSystem());
     Game.add(new PressurePlateSystem());
     Game.add(new IdleSoundSystem());
+    Game.add(new GuardDetectionSystem());
+    Game.add(new AttachmentSystem());
+    Game.add(new IllegalSystem());
+    Game.add(new BedSleepSystem());
     if (DEBUG_MODE) Game.add(new Debugger());
   }
 

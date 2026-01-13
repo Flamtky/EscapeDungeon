@@ -3,8 +3,7 @@ package core.network.server;
 import static core.network.config.NetworkConfig.SERVER_SNAPSHOT_HZ;
 import static core.network.config.NetworkConfig.SERVER_TICK_HZ;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.headless.HeadlessFiles;
+import contrib.entities.CharacterClass;
 import contrib.entities.HeroBuilder;
 import contrib.entities.HeroController;
 import core.Entity;
@@ -16,7 +15,7 @@ import core.level.Tile;
 import core.level.loader.DungeonLoader;
 import core.network.messages.s2c.EntitySpawnEvent;
 import core.network.messages.s2c.GameOverEvent;
-import core.utils.Point;
+import core.network.messages.s2c.SnapshotMessage;
 import core.utils.logging.DungeonLogger;
 import java.util.concurrent.*;
 
@@ -71,8 +70,6 @@ public final class AuthoritativeServerLoop {
    * tasks.
    */
   public void start() {
-    Gdx.files = new HeadlessFiles();
-
     PreRunConfiguration.frameRate(SERVER_TICK_HZ);
     PreRunConfiguration.userOnSetup().execute();
 
@@ -154,8 +151,14 @@ public final class AuthoritativeServerLoop {
         .snapshotTranslator()
         .translateToSnapshot(serverTick)
         .ifPresent(
-            snapshot -> {
-              Game.network().broadcast(snapshot, true);
+            (snapshot) -> {
+              net.connectedClients()
+                  .forEach(
+                      clientState -> {
+                        // Filter snapshot entities based on proximity to the player's entity
+                        SnapshotMessage filteredSnapshot = snapshot.filterForRecipient(clientState);
+                        Game.network().send(clientState.clientId(), filteredSnapshot, true);
+                      });
             });
   }
 
@@ -169,9 +172,25 @@ public final class AuthoritativeServerLoop {
   }
 
   private Entity spawnHeroForClient(ClientState state) {
-    Entity hero = HeroBuilder.builder().username(state.username()).isLocalPlayer(true).build();
+    CharacterClass charClass;
+    try {
+      charClass = CharacterClass.valueOf(state.username().toUpperCase()); // TODO: Only workaround
+    } catch (IllegalArgumentException e) {
+      charClass = CharacterClass.ROGUE;
+    }
+    Entity hero =
+        HeroBuilder.builder()
+            .username(state.username())
+            .characterClass(charClass)
+            .isLocalPlayer(true)
+            .build();
     hero.fetch(PositionComponent.class)
-        .ifPresent(pc -> pc.position(Game.startTile().map(Tile::position).orElse(new Point(0, 0))));
+        .ifPresent(
+            pc ->
+                pc.position(
+                    Game.startTile()
+                        .map(Tile::position)
+                        .orElse(PositionComponent.ILLEGAL_POSITION)));
     // Add the hero to the game, after the client knows the id.
     Game.network()
         .send(state.clientId(), new EntitySpawnEvent(hero), true)

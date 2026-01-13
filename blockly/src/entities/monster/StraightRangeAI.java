@@ -4,10 +4,9 @@ import coderunner.BlocklyCommands;
 import contrib.utils.components.ai.ISkillUser;
 import contrib.utils.components.skill.Skill;
 import core.Entity;
-import core.Game;
 import core.components.PositionComponent;
 import entities.EntityUtils;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /**
  * Attacks the player if he is the view range of the entity. The entity will only shoot in its view
@@ -15,7 +14,7 @@ import java.util.function.Consumer;
  *
  * <p>This AI is used for ranged entities that can only attack in a straight line.
  */
-public class StraightRangeAI implements Consumer<Entity>, ISkillUser {
+public class StraightRangeAI implements BiConsumer<Entity, Entity>, ISkillUser {
   private int range;
   private Skill skill;
 
@@ -49,14 +48,14 @@ public class StraightRangeAI implements Consumer<Entity>, ISkillUser {
   }
 
   @Override
-  public void accept(final Entity entity) {
+  public void accept(final Entity entity, final Entity player) {
     if (BlocklyCommands.DISABLE_SHOOT_ON_HERO) {
       return;
     }
 
     boolean playerInRange =
-        Game.player()
-            .flatMap(hero -> hero.fetch(PositionComponent.class))
+        player
+            .fetch(PositionComponent.class)
             .map(pc -> pc.position().translate(BlocklyCommands.MAGIC_OFFSET))
             .map(
                 pos -> {

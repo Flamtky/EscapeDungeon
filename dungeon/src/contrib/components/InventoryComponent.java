@@ -291,14 +291,16 @@ public final class InventoryComponent implements Component {
    *
    * @param index Index of item to get.
    * @param item Item to set at index.
+   * @return true if the item was set, false if the index is out of bounds.
    */
-  public void set(int index, final Item item) {
+  public boolean set(int index, final Item item) {
     if (index >= this.inventory.length || index < 0) {
       LOGGER.warn("Tried to set item at invalid inventory index: {}", index);
-      return;
+      return false;
     }
     this.inventory[index % this.inventory.length] = item;
     this.onItemAdded.accept(item);
+    return true;
   }
 
   /**

@@ -3,17 +3,20 @@ package contrib.systems;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import contrib.components.BarDisplayable;
 import contrib.utils.AttributeBarUtil;
-import contrib.utils.EntityUtils;
 import core.Entity;
+import core.Game;
 import core.System;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
+import core.utils.Point;
 import core.utils.logging.DungeonLogger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A system that displays attribute bars above entities.
@@ -23,9 +26,9 @@ import java.util.Map;
  * the maximum. Bars are stacked automatically with configurable gaps, ordered by priority (lower
  * priority = closer to entity).
  *
- * <p>Bars are automatically created when entities are added to the system and removed when entities
- * are removed. The bars are updated each frame to reflect the current attribute values of the
- * entity. entity.
+ * <p>The system dynamically fetches all {@link BarDisplayable} components each frame, creating new
+ * bars for new components and removing bars for removed components. Created progress bars are
+ * cached for performance.
  */
 public final class AttributeBarSystem extends System {
 
@@ -40,9 +43,8 @@ public final class AttributeBarSystem extends System {
   /**
    * Creates a new {@code AttributeBarSystem}.
    *
-   * <p>Registers listeners for entity addition and removal. When an entity with the required
-   * components is added, attribute bars are created and cached. When the entity is removed, the
-   * corresponding bars are removed.
+   * <p>Initializes the system to process entities with {@link DrawComponent} and {@link
+   * PositionComponent}. The system dynamically fetches components each frame.
    */
   public AttributeBarSystem() {
     super(AuthoritativeSide.CLIENT, DrawComponent.class, PositionComponent.class);
@@ -54,46 +56,14 @@ public final class AttributeBarSystem extends System {
             entries.forEach(entry -> entry.progressBar().remove());
           }
         };
-
-    this.onEntityAdd =
-        entity -> {
-          List<BarDisplayable> bars =
-              entity
-                  .componentStream()
-                  .filter(BarDisplayable.class::isInstance)
-                  .map(BarDisplayable.class::cast)
-                  .sorted(Comparator.comparingInt(BarDisplayable::barPriority))
-                  .toList();
-
-          if (bars.isEmpty()) {
-            return;
-          }
-
-          List<BarEntry> entries = new ArrayList<>();
-          Map<Class<? extends BarDisplayable>, ProgressBar> tempMapping = new HashMap<>();
-
-          for (BarDisplayable bar : bars) {
-            int priority = bar.barPriority();
-            float verticalOffset = priority * AttributeBarUtil.BAR_GAP;
-            AttributeBarUtil.addBarToEntity(entity, bar, tempMapping, verticalOffset);
-            ProgressBar progressBar = tempMapping.get(bar.getClass());
-            if (progressBar != null) {
-              entries.add(new BarEntry(bar, progressBar, verticalOffset));
-              LOGGER.debug("Added {} bar for entity {}", bar.barStyleName(), entity.id());
-            }
-          }
-
-          if (!entries.isEmpty()) {
-            barCache.put(entity.id(), entries);
-          }
-        };
   }
 
   /**
    * Updates all attribute bars for the entities managed by this system.
    *
-   * <p>Each cached {@link BarDisplayable} component is queried for current and maximum values, and
-   * the corresponding progress bars are updated accordingly.
+   * <p>Dynamically fetches all {@link BarDisplayable} components for each entity, creating new bars
+   * for new components and removing bars for components that no longer exist. Updates cached bar
+   * values each frame.
    */
   @Override
   public void execute() {
@@ -101,15 +71,66 @@ public final class AttributeBarSystem extends System {
   }
 
   private void updateBarsForEntity(Entity entity) {
-    List<BarEntry> entries = barCache.get(entity.id());
-    if (entries == null || entries.isEmpty()) {
-      return;
+    // Fetch all current BarDisplayable components, sorted by priority
+    List<BarDisplayable> currentBars =
+        entity
+            .componentStream()
+            .filter(BarDisplayable.class::isInstance)
+            .map(BarDisplayable.class::cast)
+            .sorted(Comparator.comparingInt(BarDisplayable::barPriority))
+            .toList();
+
+    List<BarEntry> cachedEntries = barCache.getOrDefault(entity.id(), new ArrayList<>());
+
+    // Find which components are new and which have been removed
+    Set<Class<?>> cachedTypes = new HashSet<>();
+    for (BarEntry entry : cachedEntries) {
+      cachedTypes.add(entry.barDisplayable().getClass());
     }
 
+    Set<Class<?>> currentTypes = new HashSet<>();
+    for (BarDisplayable bar : currentBars) {
+      currentTypes.add(bar.getClass());
+    }
+
+    // Remove bars for components that no longer exist
+    cachedEntries.removeIf(
+        entry -> {
+          if (!currentTypes.contains(entry.barDisplayable().getClass())) {
+            entry.progressBar().remove();
+            LOGGER.debug(
+                "Removed {} bar for entity {}", entry.barDisplayable().barStyleName(), entity.id());
+            return true;
+          }
+          return false;
+        });
+
+    // Add bars for new components
+    Map<Class<? extends BarDisplayable>, ProgressBar> tempMapping = new HashMap<>();
+    for (BarDisplayable bar : currentBars) {
+      if (!cachedTypes.contains(bar.getClass())) {
+        int priority = bar.barPriority();
+        float verticalOffset = priority * AttributeBarUtil.BAR_GAP;
+        AttributeBarUtil.addBarToEntity(entity, bar, tempMapping, verticalOffset);
+        ProgressBar progressBar = tempMapping.get(bar.getClass());
+        if (progressBar != null) {
+          cachedEntries.add(new BarEntry(bar, progressBar, verticalOffset));
+          LOGGER.debug("Added {} bar for entity {}", bar.barStyleName(), entity.id());
+        }
+      }
+    }
+
+    if (!cachedEntries.isEmpty()) {
+      barCache.put(entity.id(), cachedEntries);
+    } else {
+      barCache.remove(entity.id());
+    }
+
+    // Update all remaining bars
     boolean isVisible =
         entity.fetch(DrawComponent.class).map(DrawComponent::isVisible).orElse(false);
 
-    for (BarEntry entry : entries) {
+    for (BarEntry entry : cachedEntries) {
       BarDisplayable bar = entry.barDisplayable();
       ProgressBar progressBar = entry.progressBar();
 
@@ -118,7 +139,9 @@ public final class AttributeBarSystem extends System {
 
       // Update position
       AttributeBarUtil.updatePosition(
-          progressBar, EntityUtils.getPosition(entity), entry.verticalOffset());
+          progressBar,
+          Game.positionOf(entity).orElse(new Point(0, 0)).translate(0.5f, 0),
+          entry.verticalOffset());
 
       // Update value
       progressBar.setValue(bar.current() / bar.max());
