@@ -82,6 +82,10 @@ public final class GameLoop extends ScreenAdapter {
    */
   public static final IVoidFunction onLevelLoad =
       () -> {
+        if (Game.isCheckPatternEnabled())
+          Game.currentLevel()
+            .ifPresent(level -> CheckPatternPainter.paintCheckerPattern(level.layout()));
+
         if (!PreRunConfiguration.isNetworkServer()) return; // no authority
 
         Game.currentLevel().ifPresent(level -> level.finishedLoading(false));
@@ -146,9 +150,6 @@ public final class GameLoop extends ScreenAdapter {
                   }
                 });
 
-        if (firstLoad && Game.isCheckPatternEnabled())
-          Game.currentLevel()
-              .ifPresent(level -> CheckPatternPainter.paintCheckerPattern(level.layout()));
         PreRunConfiguration.userOnLevelLoad().accept(firstLoad);
       };
 

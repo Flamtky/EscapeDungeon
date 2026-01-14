@@ -31,7 +31,7 @@ public final class MAClient {
     PreRunConfiguration.networkPort(7777);
 
     NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
-
+    MASinglePlayer.registerItems();
     // PreRunConfiguration.username("APPRENTICE");
     PreRunConfiguration.username("APPRENTICE");
 

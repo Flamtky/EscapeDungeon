@@ -44,6 +44,8 @@ public class MASinglePlayer {
 
     NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
 
+    registerItems();
+
     Game.windowTitle("Demo-Room");
     Game.run();
   }
@@ -55,9 +57,7 @@ public class MASinglePlayer {
           DungeonLoader.addLevel(Tuple.of("maroom", MADungeonRoom.class));
           createSystems();
           createHero();
-          registerItems();
           Crafting.loadRecipes();
-          createHero();
           DungeonLoader.loadLevel(START_LEVEL);
         });
   }
@@ -68,7 +68,7 @@ public class MASinglePlayer {
     Game.add(hero);
   }
 
-  private static void registerItems() {
+  public static void registerItems() {
     Item.registerItem(AxeItem.class);
     Item.registerItem(BlueGemItem.class);
     Item.registerItem(CoalItem.class);

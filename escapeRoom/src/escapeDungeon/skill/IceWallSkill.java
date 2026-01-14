@@ -1,5 +1,8 @@
 package escapeDungeon.skill;
 
+import contrib.components.DecoComponent;
+import contrib.entities.deco.Deco;
+import contrib.entities.deco.DecoFactory;
 import contrib.utils.components.skill.Resource;
 import contrib.utils.components.skill.cursorSkill.CursorSkill;
 import core.Entity;
@@ -41,6 +44,9 @@ public class IceWallSkill extends CursorSkill {
                 if (tile.levelElement() == LevelElement.HOLE) {
                   tile.levelElement(LevelElement.FLOOR);
                   tile.refreshTexture();
+                  Game.entityAtTile(tile).filter(deco -> deco.fetch(DecoComponent.class).map(
+                      decoComp -> decoComp.type() == Deco.FlagIndia).orElse(false))
+                      .forEach(Game::remove);
                 } else if (tile.levelElement() == LevelElement.FLOOR) {
                   if (Game.allTiles(
                               t ->
@@ -50,6 +56,8 @@ public class IceWallSkill extends CursorSkill {
                       < maxWallAmount) {
                     tile.levelElement(LevelElement.HOLE);
                     tile.refreshTexture();
+                    var iceWallEntity = DecoFactory.createDeco(tile.position(), Deco.FlagIndia);
+                    Game.add(iceWallEntity);
                   }
                 }
               }

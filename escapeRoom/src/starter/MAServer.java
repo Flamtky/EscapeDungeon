@@ -53,6 +53,8 @@ public class MAServer {
 
     NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
 
+    MASinglePlayer.registerItems();
+
     // Enable snapshot debugging to analyze network payload sizes
     // SnapshotDebugger.enable();
 
@@ -78,6 +80,8 @@ public class MAServer {
                       }));
         });
   }
+
+
 
   private static void createHero() {
     Entity hero = EntityFactory.newHero(CharacterClass.ROGUE);
