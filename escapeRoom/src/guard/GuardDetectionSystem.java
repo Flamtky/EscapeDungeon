@@ -34,13 +34,13 @@ import starter.IllegalComponent;
 public class GuardDetectionSystem extends System {
 
   /** Factor applied to detection strength calculation. */
-  private static final float INCREASE_FACTOR = 250f;
+  private static final float INCREASE_FACTOR = 500f;
 
   /** Minimum distance to prevent division issues and extreme detection at close range. */
-  private static final float MIN_DISTANCE = 0.5f;
+  private static final float MIN_DISTANCE = 0.2f;
 
   /** Maximum detection strength per frame to prevent instant alertness. */
-  private static final float MAX_DETECTION_PER_FRAME = 50f;
+  private static final float MAX_DETECTION_PER_FRAME = 66f;
 
   /**
    * Creates a new GuardDetectionSystem.

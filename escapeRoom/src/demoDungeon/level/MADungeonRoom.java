@@ -177,6 +177,7 @@ public class MADungeonRoom extends DungeonLevel {
           torchShader.addArea(new Rectangle(getPoint("forest21"), getPoint("forest22")));
           torchShader.addArea(new Rectangle(getPoint("forest21"), getPoint("forest23")));
           torchShader.addArea(new Rectangle(getPoint("forest23"), getPoint("forest24")));
+          ds.sceneShaders().remove("torches");
           ds.sceneShaders().add("torches", torchShader);
         });
 

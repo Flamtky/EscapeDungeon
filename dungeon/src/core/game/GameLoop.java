@@ -347,8 +347,9 @@ public final class GameLoop extends ScreenAdapter {
     PreRunConfiguration.userOnSetup().execute();
     Game.network().start();
 
-    if (!DungeonLoader.levelOrder().isEmpty()) DungeonLoader.loadLevel(0); // load the first level
-    else LOGGER.warn("No levels found to load!");
+    if (!DungeonLoader.levelOrder().isEmpty()) {
+      if (Game.currentLevel().isEmpty()) DungeonLoader.loadLevel(0); // load the first level
+    } else LOGGER.warn("No levels found to load!");
   }
 
   private void setupMessageHandlers() {
