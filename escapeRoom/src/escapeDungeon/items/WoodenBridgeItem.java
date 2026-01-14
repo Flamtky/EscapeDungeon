@@ -18,8 +18,12 @@ public class WoodenBridgeItem extends Item {
     super(
         "Axt",
         "Damit können bestimmte Bäume gefällt werden.",
-        new Animation(new SimpleIPath(PATH), new AnimationConfig(new SpritesheetConfig(384, 480, 1, 1, 16, 16))),
-        new Animation(new SimpleIPath(PATH), new AnimationConfig(new SpritesheetConfig(384, 480, 1, 1, 16, 16))));
+        new Animation(
+            new SimpleIPath(PATH),
+            new AnimationConfig(new SpritesheetConfig(384, 480, 1, 1, 16, 16))),
+        new Animation(
+            new SimpleIPath(PATH),
+            new AnimationConfig(new SpritesheetConfig(384, 480, 1, 1, 16, 16))));
   }
 
   @Override

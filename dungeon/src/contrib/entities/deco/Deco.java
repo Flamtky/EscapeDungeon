@@ -2105,11 +2105,15 @@ public enum Deco {
   FireboxGrayAnimated(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(0, 432, 1, 4, 16, 16)).framesPerSprite(10),
+      null,
+      DepthLayer.Player.depth(),
       Category.ANIMATED),
   /** A decoration. */
   FireboxBeigeAnimated(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(80, 432, 1, 4, 16, 16)).framesPerSprite(10),
+      null,
+      DepthLayer.Player.depth(),
       Category.ANIMATED),
   /** A decoration. */
   SpikeSingleGrayAnimated(
