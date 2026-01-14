@@ -16,7 +16,7 @@ public class TorchPostProcessing extends AbstractShader {
 
   private static final String VERT_PATH = "shaders/passthrough.vert";
   private static final String FRAG_PATH = "shaders/torch_optimized_pp.frag";
-  private static final int MAX_LIGHTS = 128;
+  private static final int MAX_LIGHTS = 256;
   private static final int MAX_AREAS = 32;
 
   private Set<Light> lights;

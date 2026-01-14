@@ -5,6 +5,7 @@ import contrib.components.*;
 import contrib.components.CollideComponent;
 import contrib.components.FlyComponent;
 import contrib.entities.LeverFactory;
+import contrib.entities.MiscFactory;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
 import contrib.systems.EventScheduler;
@@ -32,6 +33,7 @@ import core.utils.Vector2;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
 import escapeDungeon.components.IceMovementComponent;
+import escapeDungeon.items.*;
 import guard.GuardBuilder;
 import java.util.*;
 import mobs.EscapeRoomMonsterBuilder;
@@ -151,6 +153,10 @@ public class MADungeonRoom extends DungeonLevel {
         getPoint("forest24").toCoordinate(),
         DesignLabel.FOREST);
     changeTileDesignLabel(
+        getPoint("forest25").toCoordinate(),
+        getPoint("forest24").toCoordinate(),
+        DesignLabel.FOREST);
+    changeTileDesignLabel(
         getPoint("outside11").toCoordinate(),
         getPoint("outside12").toCoordinate(),
         DesignLabel.WATER);
@@ -162,9 +168,16 @@ public class MADungeonRoom extends DungeonLevel {
         getPoint("outside13").toCoordinate(),
         getPoint("outside14").toCoordinate(),
         DesignLabel.WATER);
+    changeTileDesignLabel(
+        getPoint("outside15").toCoordinate(),
+        getPoint("outside14").toCoordinate(),
+        DesignLabel.WATER);
 
     refreshLevelTextures();
 
+    //      ds.sceneShaders().remove("torches");
+    //      ds.sceneShaders().add("torches", torchShader);
+    //    });
     Game.system(
         DrawSystem.class,
         (ds) -> {
@@ -177,6 +190,10 @@ public class MADungeonRoom extends DungeonLevel {
           torchShader.addArea(new Rectangle(getPoint("forest21"), getPoint("forest22")));
           torchShader.addArea(new Rectangle(getPoint("forest21"), getPoint("forest23")));
           torchShader.addArea(new Rectangle(getPoint("forest23"), getPoint("forest24")));
+          torchShader.addArea(new Rectangle(getPoint("forest25"), getPoint("forest24")));
+          torchShader.addArea(new Rectangle(getPoint("poi11"), getPoint("poi12")));
+          torchShader.addArea(new Rectangle(getPoint("poi21"), getPoint("poi22")));
+          torchShader.addArea(new Rectangle(getPoint("poi31"), getPoint("poi32")));
           ds.sceneShaders().remove("torches");
           ds.sceneShaders().add("torches", torchShader);
         });
@@ -305,7 +322,24 @@ public class MADungeonRoom extends DungeonLevel {
     // hero.fetch(InventoryComponent.class).ifPresent((ic) -> ic.add(new IceWallPlacer()));
     createPushPuzzle();
     createIcePuzzleEntities();
+    createChests();
     initGuards();
+    Game.add(MiscFactory.newCraftingCauldron(getPoint("crafting0")));
+  }
+
+  private void createChests() {
+    Game.add(MiscFactory.newChest(Set.of(new LeafItem()), getPoint("chest0")));
+    Game.add(MiscFactory.newChest(Set.of(new CoalItem()), getPoint("chest1")));
+    Game.add(MiscFactory.newChest(Set.of(new WaterPotionItem()), getPoint("chest2")));
+    Game.add(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest3")));
+    Game.add(MiscFactory.newChest(Set.of(new WaterPotionItem()), getPoint("chest4")));
+    Game.add(MiscFactory.newChest(Set.of(new MetalItem()), getPoint("chest5")));
+    Game.add(MiscFactory.newChest(Set.of(new LeafItem()), getPoint("chest6")));
+    Game.add(MiscFactory.newChest(Set.of(new RingSilverItem()), getPoint("chest7")));
+    Game.add(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest0")));
+    Game.add(MiscFactory.newChest(Set.of(new BlueGemItem()), getPoint("chest9")));
+    Game.add(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest10")));
+    Game.add(MiscFactory.newChest(Set.of(new StickItem()), getPoint("TreeChest")));
   }
 
   private void createPushPuzzle() {
@@ -335,10 +369,9 @@ public class MADungeonRoom extends DungeonLevel {
               dc.depth(DepthLayer.Player.depth());
               Color tintColor = index < stoneColors.length ? stoneColors[index] : Color.WHITE;
               dc.tintColor(Color.rgba8888(tintColor));
-              // dc.shaders().add("outline", new OutlineShader(20));
               pushStone.add(dc);
               pushStone.add(new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f)));
-              pushStone.add(new VelocityComponent(5.0f));
+              pushStone.add(new VelocityComponent(5.0f, 1.3f, e -> {}, false));
               Game.add(pushStone);
               puzzlePushEntities.add(pushStone);
             });
@@ -351,8 +384,6 @@ public class MADungeonRoom extends DungeonLevel {
               Point doorPos = getPoint("push_door" + index);
               DoorTile doorTile = (DoorTile) tileAt(doorPos).orElseThrow();
               doorTile.close();
-              /*Color tintColor = index < stoneColors.length ? stoneColors[index] : Color.WHITE;
-              doorTile.tintColor(Color.rgba8888(tintColor));*/
 
               Entity pp =
                   LeverFactory.pressurePlate(
@@ -525,9 +556,12 @@ public class MADungeonRoom extends DungeonLevel {
             pc -> {
               Rectangle labyrinth1 =
                   new Rectangle(getPoint("labyrinth11"), getPoint("labyrinth12"));
-              Rectangle labyrinth12 =
+              Rectangle labyrinth2 =
                   new Rectangle(getPoint("labyrinth21"), getPoint("labyrinth22"));
-              if (labyrinth1.contains(pc.position()) || labyrinth12.contains(pc.position())) {
+              Rectangle labyrinth3 = new Rectangle(getPoint("labyrinth22"), getPoint("fire12"));
+              if (labyrinth1.contains(pc.position())
+                  || labyrinth2.contains(pc.position())
+                  || labyrinth3.contains(pc.position())) {
                 if (!dimed) {
                   dimed = true;
                   for (int i = 1; i <= 15; i++) {

@@ -1,0 +1,21 @@
+{
+    "ordered": false,
+    "ingredients": [
+        {
+            "type": "item",
+            "item": {
+                "id": "LogItem",
+                "count": 3
+            }
+        }
+    ],
+    "results": [
+        {
+            "type": "item",
+            "item": {
+                "id": "WoodenBridgeItem",
+                "count": 1
+            }
+        }
+    ]
+}

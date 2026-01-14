@@ -39,6 +39,10 @@ public class MADungeonRoomClient extends DungeonLevel {
           torchShader.addArea(new Rectangle(getPoint("forest21"), getPoint("forest22")));
           torchShader.addArea(new Rectangle(getPoint("forest21"), getPoint("forest23")));
           torchShader.addArea(new Rectangle(getPoint("forest23"), getPoint("forest24")));
+          torchShader.addArea(new Rectangle(getPoint("forest25"), getPoint("forest24")));
+          torchShader.addArea(new Rectangle(getPoint("poi11"), getPoint("poi12")));
+          torchShader.addArea(new Rectangle(getPoint("poi21"), getPoint("poi22")));
+          torchShader.addArea(new Rectangle(getPoint("poi31"), getPoint("poi32")));
           ds.sceneShaders().remove("torches");
           ds.sceneShaders().add("torches", torchShader);
         });
@@ -72,9 +76,12 @@ public class MADungeonRoomClient extends DungeonLevel {
             pc -> {
               Rectangle labyrinth1 =
                   new Rectangle(getPoint("labyrinth11"), getPoint("labyrinth12"));
-              Rectangle labyrinth12 =
+              Rectangle labyrinth2 =
                   new Rectangle(getPoint("labyrinth21"), getPoint("labyrinth22"));
-              if (labyrinth1.contains(pc.position()) || labyrinth12.contains(pc.position())) {
+              Rectangle labyrinth3 = new Rectangle(getPoint("labyrinth22"), getPoint("fire12"));
+              if (labyrinth1.contains(pc.position())
+                  || labyrinth2.contains(pc.position())
+                  || labyrinth3.contains(pc.position())) {
                 if (!dimed) {
                   dimed = true;
                   for (int i = 1; i <= 15; i++) {
