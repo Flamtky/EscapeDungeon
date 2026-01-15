@@ -4,11 +4,13 @@ import static core.network.config.NetworkConfig.FULL_SNAPSHOT_INTERVAL_TICKS;
 import static core.network.config.NetworkConfig.SERVER_SNAPSHOT_HZ;
 import static core.network.config.NetworkConfig.SERVER_TICK_HZ;
 
+import analytics.DungeonAnalyticsAPI;
 import contrib.entities.CharacterClass;
 import contrib.entities.HeroBuilder;
 import contrib.entities.HeroController;
 import core.Entity;
 import core.Game;
+import core.components.AnalyticsComponent;
 import core.components.PositionComponent;
 import core.game.ECSManagement;
 import core.game.PreRunConfiguration;
@@ -234,6 +236,10 @@ public final class AuthoritativeServerLoop {
             .characterClass(charClass)
             .isLocalPlayer(true)
             .build();
+
+    DungeonAnalyticsAPI.upsertPlayer(state, charClass);
+    hero.add(new AnalyticsComponent(state, DungeonAnalyticsAPI.startSession(state, "{}")));
+
     hero.fetch(PositionComponent.class)
         .ifPresent(
             pc ->
