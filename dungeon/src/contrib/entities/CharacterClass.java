@@ -105,7 +105,7 @@ public enum CharacterClass {
   APPRENTICE(
       "character/char03",
       Vector2.of(5.5, 5.5),
-      1.4f,
+      1.2f,
       20,
       Set.of(new BowSkill(SkillTools::cursorPositionAsPoint)),
       Set.of(

@@ -5,6 +5,7 @@ import com.badlogic.gdx.audio.Music;
 import contrib.crafting.Crafting;
 import contrib.entities.CharacterClass;
 import contrib.entities.EntityFactory;
+import contrib.item.Item;
 import contrib.modules.levelHide.LevelHideSystem;
 import contrib.systems.*;
 import contrib.utils.components.Debugger;
@@ -14,7 +15,8 @@ import core.level.loader.DungeonLoader;
 import core.network.config.NetworkConfig;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
-import demoDungeon.level.Dungeon;
+import demoDungeon.level.MADungeonRoom;
+import escapeDungeon.items.*;
 import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
 import java.io.IOException;
@@ -25,7 +27,7 @@ import network.EscapeRoomSnapshotTranslator;
  *
  * <p>Usage: run with the Gradle task {@code runMA}.
  */
-public class MARoom {
+public class MASinglePlayer {
   private static final boolean DEBUG_MODE = true;
   private static final String BACKGROUND_MUSIC = "sounds/background.wav";
   private static final int START_LEVEL = 0;
@@ -42,6 +44,8 @@ public class MARoom {
 
     NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
 
+    registerItems();
+
     Game.windowTitle("Demo-Room");
     Game.run();
   }
@@ -50,10 +54,10 @@ public class MARoom {
     Game.userOnSetup(
         () -> {
           setupMusic();
-          DungeonLoader.addLevel(Tuple.of("dungeon", Dungeon.class));
+          DungeonLoader.addLevel(Tuple.of("maroom", MADungeonRoom.class));
           createSystems();
-          Crafting.loadRecipes();
           createHero();
+          Crafting.loadRecipes();
           DungeonLoader.loadLevel(START_LEVEL);
         });
   }
@@ -62,6 +66,28 @@ public class MARoom {
     Entity hero = EntityFactory.newHero(CharacterClass.ROGUE);
     hero.add(new HintLogComponent());
     Game.add(hero);
+  }
+
+  public static void registerItems() {
+    Item.registerItem(AxeItem.class);
+    Item.registerItem(BlueGemItem.class);
+    Item.registerItem(CoalItem.class);
+    Item.registerItem(EnvelopeItem.class);
+    Item.registerItem(GoldItem.class);
+    Item.registerItem(IceWallPlacer.class);
+    Item.registerItem(LeafItem.class);
+    Item.registerItem(LogItem.class);
+    Item.registerItem(MetalItem.class);
+    Item.registerItem(PickaxeItem.class);
+    Item.registerItem(RedGemItem.class);
+    Item.registerItem(RingGoldItem.class);
+    Item.registerItem(RingSilverItem.class);
+    Item.registerItem(StaminaPotionItem.class);
+    Item.registerItem(StickItem.class);
+    Item.registerItem(StrengthRingItem.class);
+    Item.registerItem(TorchItem.class);
+    Item.registerItem(WaterPotionItem.class);
+    Item.registerItem(WoodenBridgeItem.class);
   }
 
   private static void configGame() throws IOException {
@@ -93,7 +119,7 @@ public class MARoom {
     Game.add(new IdleSoundSystem());
     Game.add(new GuardDetectionSystem());
     Game.add(new AttachmentSystem());
-    Game.add(new IllegalSystem());
+    // Game.add(new IllegalSystem());
     Game.add(new BedSleepSystem());
     if (DEBUG_MODE) Game.add(new Debugger());
   }

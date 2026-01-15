@@ -270,6 +270,7 @@ public final class ServerTransport {
     ServerBootstrap sb = new ServerBootstrap();
     sb.group(bossGroup, workerGroup)
         .channel(NioServerSocketChannel.class)
+        .childOption(ChannelOption.TCP_NODELAY, true)
         .childHandler(
             new ChannelInitializer<SocketChannel>() {
               @Override
@@ -826,6 +827,11 @@ public final class ServerTransport {
   }
 
   private void sendInitialLevel(ChannelHandlerContext ctx, int clientId) {
+    if (Game.currentLevel().isEmpty()) {
+      LOGGER.warn("No current level to send to clientId={}", clientId);
+      return;
+    }
+
     try {
       LevelChangeEvent ev = LevelChangeEvent.currentLevel();
       sendTcpObject(ctx, ev);

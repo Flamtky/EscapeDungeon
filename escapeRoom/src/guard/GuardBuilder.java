@@ -229,12 +229,16 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         grabbedPlayer.remove(AttachmentComponent.class);
         this.grabbedPlayer = null;
         guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
+        guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(3.5f));
         return;
       }
 
       guard
           .fetch(AlertnessComponent.class)
           .ifPresent(ac -> ac.increaseAlertness(999f, grabbedPlayer)); // keep alert
+      guard
+          .fetch(VelocityComponent.class)
+          .ifPresent(vc -> vc.maxSpeed(5f)); // increase speed to cell
       AIUtils.followPath(guard, path);
     }
   }

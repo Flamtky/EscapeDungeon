@@ -19,7 +19,7 @@ uniform vec2 u_aspect;
 uniform float u_viewDistance;
 const float u_viewFalloff = 0.25;
 uniform int u_lightCount;
-const int MAX_LIGHTS = 128;
+const int MAX_LIGHTS = 256;
 uniform vec3 u_lights[MAX_LIGHTS];
 
 uniform float u_vignetteRadius;

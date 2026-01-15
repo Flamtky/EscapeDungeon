@@ -296,6 +296,7 @@ public final class ClientNetwork {
 
   private void startTcp() {
     Bootstrap cb = new Bootstrap();
+    cb.option(ChannelOption.TCP_NODELAY, true);
     cb.group(group)
         .channel(NioSocketChannel.class)
         .handler(

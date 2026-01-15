@@ -14,9 +14,7 @@ import core.utils.Direction;
 import core.utils.Point;
 import core.utils.Vector2;
 import core.utils.components.MissingComponentException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * System responsible for updating the position of entities based on their velocity, while
@@ -30,9 +28,11 @@ import java.util.Optional;
 public class MoveSystem extends System {
 
   /** Distance to snap next to a wall (e.g. when trying to enter a 1-tile wide tunnel) */
-  public static final float CORNER_CORRECT_DISTANCE = 0.3f;
+  public static final float CORNER_CORRECT_DISTANCE = 0.1f;
 
   private static final float CORNER_CORRECT_COOLDOWN = 0.2f;
+
+  private static final float EPSILON = 0.01f;
 
   private final Map<Entity, Float> cornerCorrectTimers = new HashMap<>();
 
@@ -81,6 +81,7 @@ public class MoveSystem extends System {
     if (velocity.length() > data.vc.maxSpeed()) {
       velocity = velocity.normalize().scale(data.vc.maxSpeed());
     }
+    Vector2 absVelocity = Vector2.of(Math.abs(velocity.x()), Math.abs(velocity.y()));
 
     // Calculate scaled velocity vector per frame time
     Vector2 sv = velocity.scale(1f / Game.frameRate());
@@ -89,29 +90,38 @@ public class MoveSystem extends System {
 
     boolean hasCollider = data.cc != null;
     boolean hasHitWall = false;
-    boolean triggeredCornerCorrection = false;
+    boolean triggeredXCC = false;
+    boolean triggeredYCC = false;
     boolean canCornerCorrect = cornerCorrectTimers.getOrDefault(data.e, 0f) <= 0;
+
+    // Dont allow corner correction when moving too fast diagonally. This allows the hero to enter
+    // 1-tile wide tunnels when easily by walking diagonally into them.
+    canCornerCorrect &= absVelocity.x() < 0.5f || absVelocity.y() < 0.5f;
 
     // First: move only in X direction
     Point newPos = oldPos.translate(sv.x(), 0);
     if (isCollidingWithLevel(data.cc, newPos, vc)) {
       // Try corner correction first
       if (canCornerCorrect) {
-        Optional<Point> correctUp = closestAvailablePos(newPos, Direction.UP, collider, vc);
-        if (correctUp.isPresent()) {
-          newPos = correctUp.get();
-          triggeredCornerCorrection = true;
-        } else {
-          Optional<Point> correctDown = closestAvailablePos(newPos, Direction.DOWN, collider, vc);
-          if (correctDown.isPresent()) {
-            newPos = correctDown.get();
-            triggeredCornerCorrection = true;
+        List<Direction> correctDirs = new ArrayList<>();
+        if (sv.y() <= EPSILON) {
+          correctDirs.add(Direction.UP);
+        }
+        if (sv.y() >= -EPSILON) {
+          correctDirs.add(Direction.DOWN);
+        }
+        while (!correctDirs.isEmpty() && !triggeredXCC) {
+          Direction dir = correctDirs.removeFirst();
+          Optional<Point> correct = closestAvailablePos(newPos, dir, collider, vc);
+          if (correct.isPresent()) {
+            newPos = correct.get();
+            triggeredXCC = true;
           }
         }
       }
 
       // If corner correction not possible, hit wall
-      if (!triggeredCornerCorrection) {
+      if (!triggeredXCC) {
         float wallX = fromWall(newPos.x(), sv.x() > 0);
         if (hasCollider) {
           float xOffset = collider.offset().x();
@@ -126,26 +136,31 @@ public class MoveSystem extends System {
     newPos = newPos.translate(0, sv.y());
     if (isCollidingWithLevel(data.cc, newPos, vc)) {
       // Try corner correction first
-      if (canCornerCorrect && !triggeredCornerCorrection) {
-        Optional<Point> correctRight = closestAvailablePos(newPos, Direction.RIGHT, collider, vc);
-        if (correctRight.isPresent()) {
-          newPos = correctRight.get();
-          triggeredCornerCorrection = true;
-        } else {
-          Optional<Point> correctLeft = closestAvailablePos(newPos, Direction.LEFT, collider, vc);
-          if (correctLeft.isPresent()) {
-            newPos = correctLeft.get();
-            triggeredCornerCorrection = true;
+      if (canCornerCorrect) {
+        List<Direction> correctDirs = new ArrayList<>();
+        if (sv.x() <= EPSILON) {
+          correctDirs.add(Direction.RIGHT);
+        }
+        if (sv.x() >= -EPSILON) {
+          correctDirs.add(Direction.LEFT);
+        }
+
+        while (!correctDirs.isEmpty() && !triggeredXCC && !triggeredYCC) {
+          Direction dir = correctDirs.removeFirst();
+          Optional<Point> correct = closestAvailablePos(newPos, dir, collider, vc);
+          if (correct.isPresent()) {
+            newPos = correct.get();
+            triggeredYCC = true;
           }
         }
       }
 
       // If corner correction not possible, hit wall
-      if (!triggeredCornerCorrection) {
+      if (!triggeredYCC) {
         float wallY = fromWall(newPos.y(), sv.y() > 0);
         if (hasCollider) {
           float yOffset = collider.offset().y();
-          wallY += sv.y() > 0 ? yOffset : -yOffset;
+          wallY += sv.y() > 0 ? yOffset + collider.size().scale(0.5f).y() : -yOffset;
         }
         newPos = new Point(newPos.x(), wallY);
         hasHitWall = true;
@@ -153,7 +168,7 @@ public class MoveSystem extends System {
     }
 
     // Update corner correction timer
-    if (triggeredCornerCorrection) {
+    if (triggeredXCC || triggeredYCC) {
       cornerCorrectTimers.put(data.e, CORNER_CORRECT_COOLDOWN);
     } else {
       cornerCorrectTimers.put(
@@ -193,7 +208,8 @@ public class MoveSystem extends System {
   private Optional<Point> closestAvailablePos(
       Point start, Vector2 dir, Collider collider, VelocityComponent vc) {
     int stepCount = 10;
-    float distance = CORNER_CORRECT_DISTANCE;
+    float distance =
+        Math.max(CORNER_CORRECT_DISTANCE, collider != null ? collider.size().x() / 3 : 0);
     Vector2 step = dir.normalize().scale(distance / stepCount);
     Point testPos = start;
     for (int i = 0; i < stepCount; i++) {

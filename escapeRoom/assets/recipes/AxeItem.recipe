@@ -1,0 +1,28 @@
+{
+    "ordered": false,
+    "ingredients": [
+        {
+            "type": "item",
+            "item": {
+                "id": "GoldItem",
+                "count": 1
+            }
+        },
+        {
+            "type": "item",
+            "item": {
+                "id": "StickItem",
+                "count": 1
+            }
+        }
+    ],
+    "results": [
+        {
+            "type": "item",
+            "item": {
+                "id": "AxeItem",
+                "count": 1
+            }
+        }
+    ]
+}

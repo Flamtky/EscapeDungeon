@@ -82,7 +82,13 @@ public final class GameLoop extends ScreenAdapter {
    */
   public static final IVoidFunction onLevelLoad =
       () -> {
+        if (Game.isCheckPatternEnabled())
+          Game.currentLevel()
+            .ifPresent(level -> CheckPatternPainter.paintCheckerPattern(level.layout()));
+
         if (!PreRunConfiguration.isNetworkServer()) return; // no authority
+
+        Game.currentLevel().ifPresent(level -> level.finishedLoading(false));
 
         List<Entity> allPlayers = ECSManagement.allPlayers().toList();
         boolean firstLoad = !ECSManagement.levelStorageMap().containsKey(Game.currentLevel().get());
@@ -118,7 +124,7 @@ public final class GameLoop extends ScreenAdapter {
                           .flatMap(e -> e.fetch(PositionComponent.class))
                           .map(PositionComponent::position)
                           .orElse(new Point(0, 0));
-                  int batch_size = 25;
+                  final int batch_size = 25;
 
                   List<Tuple<Deco, Point>> sortedDecos =
                       level.decorations().stream()
@@ -130,18 +136,20 @@ public final class GameLoop extends ScreenAdapter {
                   for (int i = 0; i < batches; i++) {
                     final int skip = i * batch_size;
                     final int limit = Math.min(batch_size, sortedDecos.size() - skip);
+                    int finalI = i;
                     EventScheduler.scheduleAction(
-                        () ->
-                            sortedDecos
-                                .subList(skip, skip + limit)
-                                .forEach(t -> Game.add(DecoFactory.createDeco(t.b(), t.a()))),
+                        () -> {
+                          sortedDecos
+                              .subList(skip, skip + limit)
+                              .forEach(t -> Game.add(DecoFactory.createDeco(t.b(), t.a())));
+                          if (finalI == batches - 1) {
+                            level.finishedLoading(true);
+                          }
+                        },
                         15L * i);
                   }
                 });
 
-        if (firstLoad && Game.isCheckPatternEnabled())
-          Game.currentLevel()
-              .ifPresent(level -> CheckPatternPainter.paintCheckerPattern(level.layout()));
         PreRunConfiguration.userOnLevelLoad().accept(firstLoad);
       };
 
@@ -335,12 +343,14 @@ public final class GameLoop extends ScreenAdapter {
       Gdx.files = new HeadlessFiles();
     }
 
+    Crafting.loadRecipes();
+
     PreRunConfiguration.userOnSetup().execute();
     Game.network().start();
 
-    Crafting.loadRecipes();
-
-    Game.system(LevelSystem.class, LevelSystem::execute); // load initial level
+    if (!DungeonLoader.levelOrder().isEmpty()) {
+      if (Game.currentLevel().isEmpty()) DungeonLoader.loadLevel(0); // load the first level
+    } else LOGGER.warn("No levels found to load!");
   }
 
   private void setupMessageHandlers() {
@@ -429,7 +439,16 @@ public final class GameLoop extends ScreenAdapter {
           LOGGER.info("Received LevelChangeEvent event: {}", event.levelName());
           try {
             Game.currentLevel(LevelParser.parseLevel(event.levelData(), event.levelName()));
-            Game.player().ifPresent(GameLoop::placeOnLevelStart);
+            Game.player()
+                .ifPresent(
+                    entity -> {
+                      placeOnLevelStart(entity);
+                      Game.system(
+                          CameraSystem.class,
+                          cs -> {
+                            Game.positionOf(entity).ifPresent(cs::instantFocus);
+                          });
+                    });
           } catch (Exception e) {
             LOGGER.error("Failed to handle LevelChangeEvent: {}", e.getMessage(), e);
           }
@@ -448,6 +467,16 @@ public final class GameLoop extends ScreenAdapter {
             Game.network().snapshotTranslator().applySnapshot(event, dispatcher);
           } catch (Exception ignored) {
             LOGGER.warn("Error while applying snapshot message: {}", ignored.getMessage(), ignored);
+          }
+        });
+
+    dispatcher.registerHandler(
+        DeltaSnapshotMessage.class,
+        (ctx, event) -> {
+          try {
+            Game.network().snapshotTranslator().applyDelta(event, dispatcher);
+          } catch (Exception ignored) {
+            LOGGER.warn("Error while applying delta snapshot: {}", ignored.getMessage(), ignored);
           }
         });
 

@@ -1,5 +1,6 @@
 package core.network.server;
 
+import static core.network.config.NetworkConfig.FULL_SNAPSHOT_INTERVAL_TICKS;
 import static core.network.config.NetworkConfig.SERVER_SNAPSHOT_HZ;
 import static core.network.config.NetworkConfig.SERVER_TICK_HZ;
 
@@ -13,8 +14,11 @@ import core.game.ECSManagement;
 import core.game.PreRunConfiguration;
 import core.level.Tile;
 import core.level.loader.DungeonLoader;
+import core.network.SnapshotTranslator;
+import core.network.debug.SnapshotDebugger;
 import core.network.messages.s2c.EntitySpawnEvent;
 import core.network.messages.s2c.GameOverEvent;
+import core.network.messages.s2c.LevelState;
 import core.network.messages.s2c.SnapshotMessage;
 import core.utils.logging.DungeonLogger;
 import java.util.concurrent.*;
@@ -71,7 +75,6 @@ public final class AuthoritativeServerLoop {
    */
   public void start() {
     PreRunConfiguration.frameRate(SERVER_TICK_HZ);
-    PreRunConfiguration.userOnSetup().execute();
 
     try {
       DungeonLoader.afterAllLevels(
@@ -79,7 +82,6 @@ public final class AuthoritativeServerLoop {
             Game.network().broadcast(new GameOverEvent("All levels completed"), true);
             Game.exit("Game Over");
           });
-      DungeonLoader.loadLevel(0);
     } catch (Exception e) {
       LOGGER.warn("Failed to load initial level on server", e);
     }
@@ -147,19 +149,67 @@ public final class AuthoritativeServerLoop {
   }
 
   private void sendSnapshot() {
-    Game.network()
-        .snapshotTranslator()
-        .translateToSnapshot(serverTick)
-        .ifPresent(
-            (snapshot) -> {
-              net.connectedClients()
-                  .forEach(
-                      clientState -> {
-                        // Filter snapshot entities based on proximity to the player's entity
-                        SnapshotMessage filteredSnapshot = snapshot.filterForRecipient(clientState);
-                        Game.network().send(clientState.clientId(), filteredSnapshot, true);
-                      });
-            });
+    net.connectedClients().forEach(this::sendSnapshotToClient);
+  }
+
+  /**
+   * Sends a snapshot to a specific client. Decides whether to send a full snapshot or delta based
+   * on the time since last full snapshot.
+   *
+   * @param clientState the client to send the snapshot to
+   */
+  private void sendSnapshotToClient(ClientState clientState) {
+    int lastFullTick = clientState.lastFullSnapshotTick();
+    boolean needsFullSnapshot =
+        lastFullTick < 0 || (serverTick - lastFullTick) >= FULL_SNAPSHOT_INTERVAL_TICKS;
+
+    if (needsFullSnapshot) {
+      // Send full snapshot via TCP
+      Game.network()
+          .snapshotTranslator()
+          .translateToSnapshot(serverTick)
+          .ifPresent(
+              snapshot -> {
+                SnapshotMessage filteredSnapshot = snapshot.filterForRecipient(clientState);
+                SnapshotDebugger.logFull(filteredSnapshot);
+                Game.network().send(clientState.clientId(), filteredSnapshot, true);
+
+                // Update client's cache with the full snapshot data
+                clientState.lastFullSnapshotTick(serverTick);
+                clientState.lastSentLevelState(LevelState.currentLevelStateFull());
+
+                // Update entity state cache and track static vs mobile entities
+                clientState.lastSentEntityStates().clear();
+                clientState.lastVisibleEntityIds().clear();
+                clientState.sentStaticEntityIds().clear();
+
+                for (var entityState : filteredSnapshot.entities()) {
+                  int entityId = entityState.entityId();
+                  clientState.lastSentEntityStates().put(entityId, entityState);
+
+                  // Classify entity as static or mobile
+                  Game.findEntityById(entityId)
+                      .ifPresent(
+                          entity -> {
+                            if (SnapshotTranslator.relevantForDelta(entity)) {
+                              clientState.lastVisibleEntityIds().add(entityId);
+                            } else {
+                              clientState.sentStaticEntityIds().add(entityId);
+                            }
+                          });
+                }
+              });
+    } else {
+      // Send delta snapshot via UDP (with automatic TCP fallback)
+      Game.network()
+          .snapshotTranslator()
+          .translateToDelta(serverTick, clientState)
+          .ifPresent(
+              delta -> {
+                SnapshotDebugger.logDelta(delta);
+                Game.network().send(clientState.clientId(), delta, false);
+              });
+    }
   }
 
   private void syncClientsToEntities() {

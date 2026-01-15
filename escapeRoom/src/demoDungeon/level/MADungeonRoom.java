@@ -4,8 +4,8 @@ import com.badlogic.gdx.graphics.Color;
 import contrib.components.*;
 import contrib.components.CollideComponent;
 import contrib.components.FlyComponent;
-import contrib.components.InventoryComponent;
 import contrib.entities.LeverFactory;
+import contrib.entities.MiscFactory;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
 import contrib.systems.EventScheduler;
@@ -33,22 +33,17 @@ import core.utils.Vector2;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
 import escapeDungeon.components.IceMovementComponent;
-import escapeDungeon.items.IceWallPlacer;
+import escapeDungeon.items.*;
 import guard.GuardBuilder;
 import java.util.*;
 import mobs.EscapeRoomMonsterBuilder;
 import mushRoom.Sounds;
 import mushRoom.shaders.TorchPostProcessing;
 
-/**
- * The Demolevel.
- *
- * <p>The player has to craft a Healpotion.
- */
-public class Dungeon extends DungeonLevel {
+/** The MADungeonRoom level. */
+public class MADungeonRoom extends DungeonLevel {
 
   private boolean dimed = false;
-  private boolean torchShaderInitialized = false;
   private TorchPostProcessing torchShader;
   private final List<Entity> puzzlePushEntities = new ArrayList<>();
   private final Color[] stoneColors = {
@@ -120,8 +115,9 @@ public class Dungeon extends DungeonLevel {
    * @param namedPoints The custom points of the level.
    */
   @SuppressWarnings("unchecked")
-  public Dungeon(LevelElement[][] layout, DesignLabel designLabel, Map<String, Point> namedPoints) {
-    super(layout, designLabel, namedPoints, "Demo");
+  public MADungeonRoom(
+      LevelElement[][] layout, DesignLabel designLabel, Map<String, Point> namedPoints) {
+    super(layout, designLabel, namedPoints, "MARoom");
     changeTileDesignLabel(
         getPoint("beige11").toCoordinate(),
         getPoint("beige12").toCoordinate(),
@@ -157,6 +153,10 @@ public class Dungeon extends DungeonLevel {
         getPoint("forest24").toCoordinate(),
         DesignLabel.FOREST);
     changeTileDesignLabel(
+        getPoint("forest25").toCoordinate(),
+        getPoint("forest24").toCoordinate(),
+        DesignLabel.FOREST);
+    changeTileDesignLabel(
         getPoint("outside11").toCoordinate(),
         getPoint("outside12").toCoordinate(),
         DesignLabel.WATER);
@@ -168,9 +168,16 @@ public class Dungeon extends DungeonLevel {
         getPoint("outside13").toCoordinate(),
         getPoint("outside14").toCoordinate(),
         DesignLabel.WATER);
+    changeTileDesignLabel(
+        getPoint("outside15").toCoordinate(),
+        getPoint("outside14").toCoordinate(),
+        DesignLabel.WATER);
 
     refreshLevelTextures();
 
+    //      ds.sceneShaders().remove("torches");
+    //      ds.sceneShaders().add("torches", torchShader);
+    //    });
     Game.system(
         DrawSystem.class,
         (ds) -> {
@@ -183,6 +190,11 @@ public class Dungeon extends DungeonLevel {
           torchShader.addArea(new Rectangle(getPoint("forest21"), getPoint("forest22")));
           torchShader.addArea(new Rectangle(getPoint("forest21"), getPoint("forest23")));
           torchShader.addArea(new Rectangle(getPoint("forest23"), getPoint("forest24")));
+          torchShader.addArea(new Rectangle(getPoint("forest25"), getPoint("forest24")));
+          torchShader.addArea(new Rectangle(getPoint("poi11"), getPoint("poi12")));
+          torchShader.addArea(new Rectangle(getPoint("poi21"), getPoint("poi22")));
+          torchShader.addArea(new Rectangle(getPoint("poi31"), getPoint("poi32")));
+          ds.sceneShaders().remove("torches");
           ds.sceneShaders().add("torches", torchShader);
         });
 
@@ -304,15 +316,30 @@ public class Dungeon extends DungeonLevel {
 
   @Override
   protected void onFirstTick() {
-    changeIceTiles(
-        getPoint("fire11").toCoordinate(), getPoint("fire12").toCoordinate(), DesignLabel.ICE);
+    changeIceTiles(getPoint("fire11").toCoordinate(), getPoint("fire12").toCoordinate());
     refreshLevelTextures();
-    createPushPuzzleEntities();
-    Entity hero = Game.allPlayers().findFirst().orElseThrow();
-    hero.fetch(InventoryComponent.class).ifPresent((ic) -> ic.add(new IceWallPlacer()));
+    // Entity hero = Game.allPlayers().findFirst().orElseThrow();
+    // hero.fetch(InventoryComponent.class).ifPresent((ic) -> ic.add(new IceWallPlacer()));
     createPushPuzzle();
     createIcePuzzleEntities();
+    createChests();
     initGuards();
+    Game.add(MiscFactory.newCraftingCauldron(getPoint("crafting0")));
+  }
+
+  private void createChests() {
+    Game.add(MiscFactory.newChest(Set.of(new LeafItem()), getPoint("chest0")));
+    Game.add(MiscFactory.newChest(Set.of(new CoalItem()), getPoint("chest1")));
+    Game.add(MiscFactory.newChest(Set.of(new WaterPotionItem()), getPoint("chest2")));
+    Game.add(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest3")));
+    Game.add(MiscFactory.newChest(Set.of(new WaterPotionItem()), getPoint("chest4")));
+    Game.add(MiscFactory.newChest(Set.of(new MetalItem()), getPoint("chest5")));
+    Game.add(MiscFactory.newChest(Set.of(new LeafItem()), getPoint("chest6")));
+    Game.add(MiscFactory.newChest(Set.of(new RingSilverItem()), getPoint("chest7")));
+    Game.add(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest0")));
+    Game.add(MiscFactory.newChest(Set.of(new BlueGemItem()), getPoint("chest9")));
+    Game.add(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest10")));
+    Game.add(MiscFactory.newChest(Set.of(new StickItem()), getPoint("TreeChest")));
   }
 
   private void createPushPuzzle() {
@@ -342,10 +369,9 @@ public class Dungeon extends DungeonLevel {
               dc.depth(DepthLayer.Player.depth());
               Color tintColor = index < stoneColors.length ? stoneColors[index] : Color.WHITE;
               dc.tintColor(Color.rgba8888(tintColor));
-              // dc.shaders().add("outline", new OutlineShader(20));
               pushStone.add(dc);
               pushStone.add(new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f)));
-              pushStone.add(new VelocityComponent(5.0f));
+              pushStone.add(new VelocityComponent(5.0f, 1.3f, e -> {}, false));
               Game.add(pushStone);
               puzzlePushEntities.add(pushStone);
             });
@@ -358,8 +384,6 @@ public class Dungeon extends DungeonLevel {
               Point doorPos = getPoint("push_door" + index);
               DoorTile doorTile = (DoorTile) tileAt(doorPos).orElseThrow();
               doorTile.close();
-              /*Color tintColor = index < stoneColors.length ? stoneColors[index] : Color.WHITE;
-              doorTile.tintColor(Color.rgba8888(tintColor));*/
 
               Entity pp =
                   LeverFactory.pressurePlate(
@@ -472,47 +496,72 @@ public class Dungeon extends DungeonLevel {
 
   @Override
   protected void onTick() {
-    if (Game.allEntities().count() > 9000 && !torchShaderInitialized) {
-      if (torchShader != null) {
-        Game.levelEntities()
-            .filter(e -> e.name().contains("Torch"))
-            .forEach(
-                torch -> {
-                  torch
-                      .fetch(PositionComponent.class)
-                      .ifPresent(
-                          pos -> {
-                            torchShader.addLight(
-                                new TorchPostProcessing.Light(
-                                    pos.position().x() + 0.5f, pos.position().y(), 5.0f));
-                          });
-                });
-        Game.levelEntities()
-            .filter(e -> e.name().contains("Firebox"))
-            .forEach(
-                torch -> {
-                  torch
-                      .fetch(PositionComponent.class)
-                      .ifPresent(
-                          pos -> {
-                            torchShader.addLight(
-                                new TorchPostProcessing.Light(
-                                    pos.position().x() + 0.5f, pos.position().y(), 7.0f));
-                          });
-                });
-      }
-      torchShaderInitialized = true;
+    if (!Game.isHeadless()) {
+      updateTorchShader();
     }
+    Game.allPlayers()
+        .forEach(
+            hero -> {
+              if (hero.fetch(IceMovementComponent.class).isEmpty()) {
+                iceControls(hero);
+              }
+            });
+  }
+
+  private final Set<Integer> initLightEntityIds = new HashSet<>();
+
+  private void createIcePuzzleEntities() {
+    listPointsIndexed("snow_Wall")
+        .forEach(
+            tuple -> {
+              Point pos = tuple.a();
+              Entity snowWall = new Entity("snow_Wall");
+              snowWall.add(new PositionComponent(pos));
+              DrawComponent dc =
+                  new DrawComponent(new SimpleIPath("dungeon/ice/floor/floor_hole.png"));
+              dc.depth(DepthLayer.Player.depth());
+              CollideComponent cc =
+                  new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f));
+              TriConsumer<Entity, Entity, Direction> onCollideEnter =
+                  (self, other, dir) -> {
+                    if (other.fetch(InputComponent.class).isPresent()) {
+                      Game.remove(self);
+                    }
+                  };
+              cc.collideEnter(onCollideEnter);
+              snowWall.add(dc);
+              snowWall.add(cc);
+              Game.add(snowWall);
+            });
+  }
+
+  private void updateTorchShader() {
+    Game.levelEntities()
+        .filter(e -> !initLightEntityIds.contains(e.id()))
+        .filter(e -> (e.name().contains("Torch") || e.name().contains("Firebox")))
+        .forEach(
+            e -> {
+              float radius = e.name().contains("Torch") ? 5.0f : 7.0f;
+              PositionComponent pos = e.fetch(PositionComponent.class).orElseThrow();
+              torchShader.addLight(
+                  new TorchPostProcessing.Light(
+                      pos.position().x() + 0.5f, pos.position().y(), radius));
+              initLightEntityIds.add(e.id());
+            });
     Game.player()
-        .get()
-        .fetch(PositionComponent.class)
+        .map(player -> player.fetch(PositionComponent.class))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
         .ifPresent(
             pc -> {
               Rectangle labyrinth1 =
                   new Rectangle(getPoint("labyrinth11"), getPoint("labyrinth12"));
-              Rectangle labyrinth12 =
+              Rectangle labyrinth2 =
                   new Rectangle(getPoint("labyrinth21"), getPoint("labyrinth22"));
-              if (labyrinth1.contains(pc.position()) || labyrinth12.contains(pc.position())) {
+              Rectangle labyrinth3 = new Rectangle(getPoint("labyrinth22"), getPoint("fire12"));
+              if (labyrinth1.contains(pc.position())
+                  || labyrinth2.contains(pc.position())
+                  || labyrinth3.contains(pc.position())) {
                 if (!dimed) {
                   dimed = true;
                   for (int i = 1; i <= 15; i++) {
@@ -537,39 +586,6 @@ public class Dungeon extends DungeonLevel {
                   }
                 }
               }
-            });
-
-    Game.allPlayers()
-        .forEach(
-            hero -> {
-              if (hero.fetch(IceMovementComponent.class).isEmpty()) {
-                iceControls(hero);
-              }
-            });
-  }
-
-  private void createIcePuzzleEntities() {
-    listPointsIndexed("snow_Wall")
-        .forEach(
-            tuple -> {
-              Point pos = tuple.a();
-              Entity snowWall = new Entity("snow_Wall");
-              snowWall.add(new PositionComponent(pos));
-              DrawComponent dc =
-                  new DrawComponent(new SimpleIPath("dungeon/ice/floor/floor_hole.png"));
-              dc.depth(DepthLayer.Player.depth());
-              CollideComponent cc =
-                  new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f));
-              TriConsumer<Entity, Entity, Direction> onCollideEnter =
-                  (self, other, dir) -> {
-                    if (other.fetch(InputComponent.class).isPresent()) {
-                      Game.remove(self);
-                    }
-                  };
-              cc.collideEnter(onCollideEnter);
-              snowWall.add(dc);
-              snowWall.add(cc);
-              Game.add(snowWall);
             });
   }
 
@@ -603,17 +619,17 @@ public class Dungeon extends DungeonLevel {
   }
 
   private void iceControls(Entity hero) {
-    PositionComponent pc = hero.fetch(PositionComponent.class).get();
+    PositionComponent pc = hero.fetch(PositionComponent.class).orElseThrow();
     Point currentPos = EntityUtils.getPosition(hero);
-    VelocityComponent vc = hero.fetch(VelocityComponent.class).get();
-    InputComponent ic = hero.fetch(InputComponent.class).get();
-    Tile currentTile = Game.tileAt(currentPos).get();
+    VelocityComponent vc = hero.fetch(VelocityComponent.class).orElseThrow();
+    InputComponent ic = hero.fetch(InputComponent.class).orElseThrow();
+    Tile currentTile = Game.tileAt(currentPos).orElseThrow();
 
     if (currentTile.designLabel() == DesignLabel.ICE) {
       if (hero.fetch(FlyComponent.class).isEmpty()) {
         hero.add(new FlyComponent());
       }
-      Tile tileInFront = Game.tileAt(currentPos.translate(pc.viewDirection())).get();
+      Tile tileInFront = Game.tileAt(currentPos.translate(pc.viewDirection())).orElseThrow();
 
       vc.onWallHit(
           (self) -> {
@@ -647,7 +663,7 @@ public class Dungeon extends DungeonLevel {
     }
   }
 
-  private void changeIceTiles(Coordinate a, Coordinate b, DesignLabel newDesignLabel) {
+  private void changeIceTiles(Coordinate a, Coordinate b) {
     int minX = Math.min(a.x(), b.x());
     int maxX = Math.max(a.x(), b.x());
     int minY = Math.min(a.y(), b.y());
@@ -655,7 +671,7 @@ public class Dungeon extends DungeonLevel {
 
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
-        layout[y][x].designLabel(newDesignLabel);
+        layout[y][x].designLabel(DesignLabel.ICE);
         layout[y][x].tintColor(-1);
       }
     }

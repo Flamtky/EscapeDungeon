@@ -1,0 +1,28 @@
+{
+    "ordered": false,
+    "ingredients": [
+        {
+            "type": "item",
+            "item": {
+                "id": "StickItem",
+                "count": 1
+            }
+        },
+        {
+            "type": "item",
+            "item": {
+                "id": "CoalItem",
+                "count": 1
+            }
+        }
+    ],
+    "results": [
+        {
+            "type": "item",
+            "item": {
+                "id": "TorchItem",
+                "count": 1
+            }
+        }
+    ]
+}
