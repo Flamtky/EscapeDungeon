@@ -163,14 +163,14 @@ public class HeroController {
               } else if (skill instanceof ProjectileSkill projSkill) {
                 projSkill.endPointSupplier(() -> target);
               }
-              skill.execute(hero);
+              final boolean result = skill.execute(hero);
               hero.fetch(AnalyticsComponent.class)
                 .ifPresent(ac -> {
                   DungeonAnalyticsAPI.logXApiStatement(
                     ac,
                     DungeonAnalyticsAPI.Verb.CAST_SKILL,
                     skill.name(),
-                    Map.of("target_point", target != null ? target.toString() : "none"));
+                    Map.of("success", result, "target_point", target != null ? target.toString() : "none"));
                 });
             },
           () -> {
