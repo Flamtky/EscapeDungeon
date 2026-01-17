@@ -380,4 +380,16 @@ public class Item implements CraftingIngredient, CraftingResult, Serializable {
   public CraftingType resultType() {
     return CraftingType.ITEM;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null || getClass() != obj.getClass()) return false;
+    Item other = (Item) obj;
+
+    return displayName.equals(other.displayName)
+        && description.equals(other.description)
+        && stackSize == other.stackSize
+        && maxStackSize == other.maxStackSize;
+  }
 }

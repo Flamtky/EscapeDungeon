@@ -85,7 +85,7 @@ public class DialogFactory {
    *
    * @param ctx The context containing all necessary data for dialog creation
    * @return The created dialog instance
-   * @throws DialogCreationException if the dialog type is not registered
+   * @throws DialogCreationException if the dialog type is not registered or creation fails
    */
   public static Group create(DialogContext ctx) {
     Objects.requireNonNull(ctx, "context");

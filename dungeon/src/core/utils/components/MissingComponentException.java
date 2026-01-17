@@ -20,7 +20,7 @@ public final class MissingComponentException extends NullPointerException {
    */
   public MissingComponentException(final String message) {
     super("Missing Component:" + message);
-    LOGGER.error("Missing Component: {}", message);
+    LOGGER.error("Missing Component: {}", message, this);
   }
 
   /**

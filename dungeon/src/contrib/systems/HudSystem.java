@@ -174,11 +174,14 @@ public final class HudSystem extends System {
 
   @Override
   public void execute() {
-    if (filteredEntityStream(UIComponent.class).anyMatch(this::pausesGame)) {
-      if (!ipaused) pauseGame();
-    } else {
-      if (ipaused) unpauseGame();
-    }
+    try {
+      if (filteredEntityStream(UIComponent.class).anyMatch(this::pausesGame)) {
+        if (!ipaused) pauseGame();
+      } else {
+        if (ipaused) unpauseGame();
+      }
+    } catch (Exception ignored) {
+    } // only a hotfix for reconnecting clients
 
     // clean up any entities that no longer have a UIComponent
     entityGroupMap.keySet().removeIf(entity -> !entity.isPresent(UIComponent.class));
