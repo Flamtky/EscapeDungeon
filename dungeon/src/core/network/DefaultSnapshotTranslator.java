@@ -360,166 +360,23 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
         .forEach(
             snap -> {
               try {
-                final int entityId = snap.entityId();
-                Optional<Entity> targetEntity = Game.findEntityById(entityId);
+                // Apply entity state using shared logic
+                Optional<Entity> entityOpt = applyEntityStateToGame(snap);
 
-                if (targetEntity.isEmpty()) {
-                  long now = System.currentTimeMillis();
-                  long lastSent = lastSpawnRequestTimes.getOrDefault(entityId, 0L);
-                  if (now - lastSent >= SPAWN_REQUEST_COOLDOWN_MS) {
-                    Game.network().send((short) 0, new RequestEntitySpawn(entityId), true);
-                    lastSpawnRequestTimes.put(entityId, now);
-                    LOGGER.warn(
-                        "No entity found for snapshot with id: {}. Requesting spawn.", entityId);
-                  } else {
-                    LOGGER.debug(
-                        "Skipping spawn request for entity {} (cooldown active).", entityId);
-                  }
-                  return;
-                }
+                // Full snapshot only: handle component removal when absent
+                entityOpt.ifPresent(
+                    entity -> {
+                      // Remove sounds if not present in full snapshot
+                      if (snap.sounds().isEmpty()) {
+                        Game.audio().stopAllOnEntity(entity);
+                      }
 
-                Entity entity = targetEntity.get();
-                snap.entityName().ifPresent(entity::name);
-                lastSpawnRequestTimes.remove(entityId);
-
-                entity
-                    .fetch(PositionComponent.class)
-                    .ifPresent(
-                        pc -> {
-                          snap.position().ifPresent(pc::position);
-                          snap.viewDirection()
-                              .ifPresent(
-                                  viewDir -> {
-                                    try {
-                                      pc.viewDirection(Direction.valueOf(viewDir));
-                                    } catch (IllegalArgumentException ignored) {
-                                    }
-                                  });
-                          PositionSync.syncPosition(entity);
-                        });
-
-                entity
-                    .fetch(DrawComponent.class)
-                    .ifPresent(
-                        dc -> {
-                          snap.stateName()
-                              .ifPresent(
-                                  stateName ->
-                                      dc.stateMachine()
-                                          .setState(
-                                              stateName,
-                                              Direction.valueOf(
-                                                  snap.viewDirection().orElse("DOWN"))));
-                          snap.tintColor().ifPresent(dc::tintColor);
-                        });
-
-                entity
-                    .fetch(HealthComponent.class)
-                    .ifPresentOrElse(
-                        hc -> snap.currentHealth().ifPresent(hc::currentHealthpoints),
-                        () ->
-                            snap.maxHealth()
-                                .ifPresent(
-                                    maxHealth -> {
-                                      HealthComponent hc = new HealthComponent(maxHealth);
-                                      entity.add(hc);
-                                      snap.currentHealth().ifPresent(hc::currentHealthpoints);
-                                    }));
-
-                entity
-                    .fetch(ManaComponent.class)
-                    .ifPresentOrElse(
-                        hc -> snap.currentMana().ifPresent(hc::currentAmount),
-                        () ->
-                            snap.maxMana()
-                                .ifPresent(
-                                    maxMana -> {
-                                      ManaComponent mc = new ManaComponent(maxMana, maxMana, 0);
-                                      entity.add(mc);
-                                      snap.currentMana().ifPresent(mc::currentAmount);
-                                    }));
-                entity
-                    .fetch(StaminaComponent.class)
-                    .ifPresentOrElse(
-                        sc -> snap.currentStamina().ifPresent(sc::currentAmount),
-                        () ->
-                            snap.maxStamina()
-                                .ifPresent(
-                                    maxStamina -> {
-                                      StaminaComponent sc =
-                                          new StaminaComponent(maxStamina, maxStamina, 0);
-                                      entity.add(sc);
-                                      snap.currentStamina().ifPresent(sc::currentAmount);
-                                    }));
-
-                // Sounds
-                snap.sounds()
-                    .ifPresentOrElse(
-                        soundSpecs -> {
-                          SoundComponent sc =
-                              entity
-                                  .fetch(SoundComponent.class)
-                                  .orElseGet(
-                                      () -> {
-                                        SoundComponent newSc = new SoundComponent();
-                                        entity.add(newSc);
-                                        return newSc;
-                                      });
-                          // replace all sounds and stop removed ones
-                          var removedSounds = sc.replaceAll(soundSpecs);
-                          removedSounds.forEach(
-                              spec -> Game.audio().stopInstance(spec.instanceId()));
-                        },
-                        () -> {
-                          // No audio in snapshot, clear if present
-                          Game.audio().stopAllOnEntity(entity);
-                        });
-
-                // Inventory - convert ItemSnapshot back to Item
-                snap.inventory()
-                    .ifPresentOrElse(
-                        snapshots -> {
-                          InventoryComponent ic =
-                              entity
-                                  .fetch(InventoryComponent.class)
-                                  .orElseGet(
-                                      () -> {
-                                        InventoryComponent newIc =
-                                            new InventoryComponent(snapshots.length);
-                                        entity.add(newIc);
-                                        return newIc;
-                                      });
-                          ic.clear();
-                          for (int i = 0; i < snapshots.length; i++) {
-                            ItemSnapshot itemSnapshot = snapshots[i];
-                            ic.set(i, itemSnapshot != null ? itemSnapshot.toItem() : null);
-                          }
-                        },
-                        () -> {
-                          entity
-                              .fetch(InventoryComponent.class)
-                              .ifPresent(InventoryComponent::clear);
-                          entity.remove(InventoryComponent.class);
-                        });
-
-                // Skills
-                snap.skillData()
-                    .ifPresent(
-                        skillData -> {
-                          SkillComponent sc =
-                              entity
-                                  .fetch(SkillComponent.class)
-                                  .orElseGet(
-                                      () -> {
-                                        SkillComponent newSc = new SkillComponent();
-                                        entity.add(newSc);
-                                        return newSc;
-                                      });
-                          sc.applySyncData(skillData);
-                        });
-
-                // Allow subclasses to apply additional entity state
-                applyEntityState(entity, snap);
+                      // Remove inventory if not present in full snapshot
+                      if (snap.inventory().isEmpty()) {
+                        entity.fetch(InventoryComponent.class).ifPresent(InventoryComponent::clear);
+                        entity.remove(InventoryComponent.class);
+                      }
+                    });
               } catch (Exception e) {
                 LOGGER.error(
                     "Error applying snapshot for entity id: {}: {}",
@@ -595,8 +452,9 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
    * and delta snapshot application.
    *
    * @param snap the entity state to apply
+   * @return Optional containing the entity if successfully applied, empty if entity not found
    */
-  protected void applyEntityStateToGame(EntityState snap) {
+  protected Optional<Entity> applyEntityStateToGame(EntityState snap) {
     final int entityId = snap.entityId();
     Optional<Entity> targetEntity = Game.findEntityById(entityId);
 
@@ -610,7 +468,7 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
       } else {
         LOGGER.debug("Skipping spawn request for entity {} (cooldown active).", entityId);
       }
-      return;
+      return Optional.empty();
     }
 
     Entity entity = targetEntity.get();
@@ -688,7 +546,7 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
 
     // Sounds
     snap.sounds()
-        .ifPresentOrElse(
+        .ifPresent(
             soundSpecs -> {
               SoundComponent sc =
                   entity
@@ -701,8 +559,7 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
                           });
               var removedSounds = sc.replaceAll(soundSpecs);
               removedSounds.forEach(spec -> Game.audio().stopInstance(spec.instanceId()));
-            },
-            () -> Game.audio().stopAllOnEntity(entity));
+            });
 
     // Skills
     snap.skillData()
@@ -720,8 +577,30 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
               sc.applySyncData(skillData);
             });
 
+    // convert ItemSnapshot back to Item
+    snap.inventory()
+        .ifPresent(
+            snapshots -> {
+              InventoryComponent ic =
+                  entity
+                      .fetch(InventoryComponent.class)
+                      .orElseGet(
+                          () -> {
+                            InventoryComponent newIc = new InventoryComponent(snapshots.length);
+                            entity.add(newIc);
+                            return newIc;
+                          });
+              ic.clear();
+              for (int i = 0; i < snapshots.length; i++) {
+                ItemSnapshot itemSnapshot = snapshots[i];
+                ic.set(i, itemSnapshot != null ? itemSnapshot.toItem() : null);
+              }
+            });
+
     // Allow subclasses to apply additional entity state
     applyEntityState(entity, snap);
+
+    return Optional.of(entity);
   }
 
   /**

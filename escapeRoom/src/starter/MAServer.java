@@ -81,8 +81,6 @@ public class MAServer {
         });
   }
 
-
-
   private static void createHero() {
     Entity hero = EntityFactory.newHero(CharacterClass.ROGUE);
     hero.add(new HintLogComponent());

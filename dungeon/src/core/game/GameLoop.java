@@ -84,7 +84,7 @@ public final class GameLoop extends ScreenAdapter {
       () -> {
         if (Game.isCheckPatternEnabled())
           Game.currentLevel()
-            .ifPresent(level -> CheckPatternPainter.paintCheckerPattern(level.layout()));
+              .ifPresent(level -> CheckPatternPainter.paintCheckerPattern(level.layout()));
 
         if (!PreRunConfiguration.isNetworkServer()) return; // no authority
 
