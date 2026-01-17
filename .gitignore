@@ -68,3 +68,5 @@ replay_pid*
 # Executable binaries
 *.exe
 *.bin
+
+.env
