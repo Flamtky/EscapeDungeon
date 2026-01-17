@@ -1,15 +1,18 @@
 package tools.timer;
 
-import contrib.hud.dialogs.DialogContext;
-import contrib.hud.dialogs.DialogFactory;
-import mushRoom.modules.EscapeRoomDialogTypes;
+import core.game.ECSManagement;
+import core.game.PreRunConfiguration;
 
 /**
  * Public API for managing an elapsed time timer in the escape room.
  *
- * <p>Provides methods to start, stop, resume, and reset the timer, as well as register one-time
- * callbacks that trigger after specified elapsed time. The timer is displayed in HH:MM:SS format
- * (or MM:SS if hours is zero) in the top-right corner of the screen.
+ * <p>In multiplayer mode, the timer is authoritative on the server. Server-side callbacks are
+ * triggered only on the server, while the UI is synchronized to all clients at regular intervals.
+ * Clients use prediction and interpolation for smooth display.
+ *
+ * <p>Provides methods to start, stop, and resume the timer, as well as register one-time callbacks
+ * that trigger after specified elapsed time (server-side only). The timer is displayed in HH:MM:SS
+ * format (or MM:SS if hours is zero) in the top-right corner of the screen.
  *
  * <p>Example usage:
  *
@@ -20,6 +23,13 @@ import mushRoom.modules.EscapeRoomDialogTypes;
  */
 public final class TimerAPI {
 
+  /**
+   * Synchronization frequency in seconds.
+   *
+   * <p>The server broadcasts timer state to all clients at this interval to keep them in sync.
+   */
+  public static final float SYNC_INTERVAL_SECONDS = 5.0f;
+
   static {
     TimerDialog.currentUI(); // just to trigger static init
   }
@@ -29,7 +39,11 @@ public final class TimerAPI {
   }
 
   /**
-   * Starts a timer and displays it on the HUD with an initial elapsed time.
+   * Starts a timer with an initial elapsed time.
+   *
+   * <p>On the server (including single-player), this starts the authoritative timer system and
+   * broadcasts the start command to all clients (if in multiplayer). On clients, the timer will be
+   * started via network message.
    *
    * <p>Creates the timer dialog if it doesn't exist and sets the timer to a running state. Elapsed
    * time begins accumulating immediately.
@@ -37,21 +51,17 @@ public final class TimerAPI {
    * @param startTimeSeconds the initial elapsed time in seconds
    */
   public static void start(float startTimeSeconds) {
-    DialogContext ctx =
-        DialogContext.builder()
-            .type(EscapeRoomDialogTypes.TIMER)
-            .put("startTimeSeconds", startTimeSeconds)
-            .build();
-    DialogFactory.show(ctx, false, false);
-
-    TimerUI ui = TimerDialog.currentUI();
-    if (ui != null) {
-      ui.start();
+    if (PreRunConfiguration.isNetworkServer()) {
+      ECSManagement.system(TimerSystem.class, timerSystem -> timerSystem.start(startTimeSeconds));
     }
   }
 
   /**
-   * Starts the timer and displays it on the HUD with an initial elapsed time of zero seconds.
+   * Starts the timer with an initial elapsed time of zero seconds.
+   *
+   * <p>On the server (including single-player), this starts the authoritative timer system and
+   * broadcasts the start command to all clients (if in multiplayer). On clients, the timer will be
+   * started via network message.
    *
    * <p>Creates the timer dialog if it doesn't exist and sets the timer to a running state. Elapsed
    * time begins accumulating immediately.
@@ -63,24 +73,30 @@ public final class TimerAPI {
   /**
    * Stops the timer, pausing time accumulation.
    *
+   * <p>On the server (including single-player), this stops the authoritative timer system and
+   * broadcasts the stop command to all clients (if in multiplayer). On clients, the timer will be
+   * stopped via network message.
+   *
    * <p>The timer remains visible on the screen. Use {@link #resume()} to continue counting.
    */
   public static void stop() {
-    TimerUI ui = TimerDialog.currentUI();
-    if (ui != null) {
-      ui.stop();
+    if (PreRunConfiguration.isNetworkServer()) {
+      ECSManagement.system(TimerSystem.class, TimerSystem::stop);
     }
   }
 
   /**
    * Resumes the timer after it has been stopped.
    *
+   * <p>On the server (including single-player), this resumes the authoritative timer system and
+   * broadcasts the resume command to all clients (if in multiplayer). On clients, the timer will be
+   * resumed via network message.
+   *
    * <p>Time accumulation resumes from where it was paused.
    */
   public static void resume() {
-    TimerUI ui = TimerDialog.currentUI();
-    if (ui != null) {
-      ui.resume();
+    if (PreRunConfiguration.isNetworkServer()) {
+      ECSManagement.system(TimerSystem.class, TimerSystem::resume);
     }
   }
 
@@ -100,33 +116,34 @@ public final class TimerAPI {
   }
 
   /**
-   * Resets the elapsed time to zero.
-   *
-   * <p>Clears all pending callbacks, allowing them to be registered again if desired. Does not
-   * affect the running state of the timer.
-   */
-  public static void reset() {
-    TimerUI ui = TimerDialog.currentUI();
-    if (ui != null) {
-      ui.reset();
-    }
-  }
-
-  /**
    * Gets the current elapsed time in seconds.
+   *
+   * <p>On the server (including single-player), returns the authoritative server time. On clients,
+   * returns the predicted local time from the UI.
    *
    * @return the elapsed time in seconds, or 0 if the timer is not active
    */
   public static float elapsedSeconds() {
-    TimerUI ui = TimerDialog.currentUI();
-    if (ui != null) {
-      return ui.elapsedSeconds();
+    if (PreRunConfiguration.isNetworkServer()) {
+      var timerSys = ECSManagement.systems().get(TimerSystem.class);
+      if (timerSys == null) {
+        return 0;
+      }
+      return ((TimerSystem) timerSys).elapsedSeconds();
+    } else {
+      TimerUI ui = TimerDialog.currentUI();
+      if (ui != null) {
+        return ui.elapsedSeconds();
+      }
+      return 0;
     }
-    return 0;
   }
 
   /**
    * Registers a one-time callback to be executed when the specified elapsed time is reached.
+   *
+   * <p>Callbacks are only executed on the server side (including single-player). In multiplayer,
+   * this method should only be called on the server.
    *
    * <p>Multiple callbacks can be registered for the same elapsed time. Each callback is executed
    * only once and then automatically removed. To trigger the same action multiple times, register a
@@ -143,21 +160,20 @@ public final class TimerAPI {
    * @param callback the runnable to execute when the time is reached
    */
   public static void registerCallback(long elapsedSeconds, Runnable callback) {
-    TimerUI ui = TimerDialog.currentUI();
-    if (ui != null) {
-      ui.registerCallback(elapsedSeconds, callback);
+    if (PreRunConfiguration.isNetworkServer()) {
+      ECSManagement.system(TimerSystem.class, ts -> ts.registerCallback(elapsedSeconds, callback));
     }
   }
 
   /**
    * Clears all registered callbacks.
    *
-   * <p>This removes all pending callbacks that have not yet been triggered.
+   * <p>This removes all pending callbacks that have not yet been triggered. On the server
+   * (including single-player), this clears callbacks from the authoritative timer system.
    */
   public static void clearCallbacks() {
-    TimerUI ui = TimerDialog.currentUI();
-    if (ui != null) {
-      ui.clearCallbacks();
+    if (PreRunConfiguration.isNetworkServer()) {
+      ECSManagement.system(TimerSystem.class, TimerSystem::clearCallbacks);
     }
   }
 

@@ -44,6 +44,11 @@ public final class TimerDialog {
    */
   private static Group build(DialogContext dialogContext) {
     float startTime = dialogContext.find("startTimeSeconds", Float.class).orElse(0f);
+
+    if (currentUI != null) { // Dispose of existing UI if present
+      currentUI.dispose();
+      currentUI.remove();
+    }
     currentUI = new TimerUI(startTime);
     return currentUI;
   }
@@ -53,16 +58,7 @@ public final class TimerDialog {
    *
    * @return the current TimerUI, or null if no timer is active
    */
-  static TimerUI currentUI() {
+  public static TimerUI currentUI() {
     return currentUI;
-  }
-
-  /**
-   * Sets the current TimerUI instance.
-   *
-   * @param ui the TimerUI to set as current
-   */
-  static void currentUI(TimerUI ui) {
-    currentUI = ui;
   }
 }

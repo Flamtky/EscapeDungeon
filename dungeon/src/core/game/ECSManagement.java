@@ -165,7 +165,7 @@ public final class ECSManagement {
     LOGGER.info(entity + " will be added to the Game.");
 
     try {
-      if (Game.network().isServer()) {
+      if (PreRunConfiguration.multiplayerEnabled() && PreRunConfiguration.isNetworkServer()) {
         if (entity.isPresent(PositionComponent.class) && entity.isPresent(DrawComponent.class)) {
           Game.network().broadcast(new EntitySpawnEvent(entity), true);
         }
@@ -198,7 +198,7 @@ public final class ECSManagement {
     LOGGER.info(entity + " will be removed from the Game.");
 
     try {
-      if (Game.network().isServer()) {
+      if (PreRunConfiguration.multiplayerEnabled() && PreRunConfiguration.isNetworkServer()) {
         Game.network()
             .broadcast(new EntityDespawnEvent(entity.id(), "Entity removed from game"), true);
       }

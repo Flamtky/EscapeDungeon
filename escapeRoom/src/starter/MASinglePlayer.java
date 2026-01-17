@@ -5,6 +5,8 @@ import com.badlogic.gdx.audio.Music;
 import contrib.crafting.Crafting;
 import contrib.entities.CharacterClass;
 import contrib.entities.EntityFactory;
+import contrib.hud.dialogs.DialogContext;
+import contrib.hud.dialogs.DialogFactory;
 import contrib.item.Item;
 import contrib.modules.levelHide.LevelHideSystem;
 import contrib.systems.*;
@@ -20,7 +22,9 @@ import escapeDungeon.items.*;
 import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
 import java.io.IOException;
+import mushRoom.modules.EscapeRoomDialogTypes;
 import network.EscapeRoomSnapshotTranslator;
+import tools.timer.*;
 
 /**
  * Starter for the Demo Escaperoom Dungeon.
@@ -59,6 +63,7 @@ public class MASinglePlayer {
           createHero();
           Crafting.loadRecipes();
           DungeonLoader.loadLevel(START_LEVEL);
+          registerTimerHandlers();
         });
   }
 
@@ -122,6 +127,7 @@ public class MASinglePlayer {
     // Game.add(new IllegalSystem());
     Game.add(new BedSleepSystem());
     if (DEBUG_MODE) Game.add(new Debugger());
+    Game.add(new TimerSystem());
   }
 
   private static void setupMusic() {
@@ -129,5 +135,55 @@ public class MASinglePlayer {
     backgroundMusic.setLooping(true);
     backgroundMusic.play();
     backgroundMusic.setVolume(.05f);
+  }
+
+  /** Registers network message handlers for timer synchronization. */
+  private static void registerTimerHandlers() {
+    var dispatcher = Game.network().messageDispatcher();
+
+    // Handle timer command messages (START, STOP, RESUME)
+    dispatcher.registerHandler(
+        TimerCommandMessage.class,
+        (session, msg) -> {
+          System.out.println("Received TimerCommandMessage: " + msg.command());
+          switch (msg.command()) {
+            case START:
+              // Create timer dialog if it doesn't exist
+              DialogContext ctx =
+                  DialogContext.builder()
+                      .type(EscapeRoomDialogTypes.TIMER)
+                      .put("startTimeSeconds", msg.startTimeSeconds())
+                      .build();
+              DialogFactory.show(ctx, false, false);
+
+              TimerUI ui = TimerDialog.currentUI();
+              if (ui != null) {
+                ui.start(msg.startTimeSeconds());
+              }
+              break;
+            case STOP:
+              TimerUI stopUi = TimerDialog.currentUI();
+              if (stopUi != null) {
+                stopUi.stop();
+              }
+              break;
+            case RESUME:
+              TimerUI resumeUi = TimerDialog.currentUI();
+              if (resumeUi != null) {
+                resumeUi.resume();
+              }
+              break;
+          }
+        });
+
+    // Handle periodic sync messages
+    dispatcher.registerHandler(
+        TimerSyncMessage.class,
+        (session, msg) -> {
+          TimerUI ui = TimerDialog.currentUI();
+          if (ui != null) {
+            ui.syncFromServer(msg.elapsedSeconds(), msg.running());
+          }
+        });
   }
 }

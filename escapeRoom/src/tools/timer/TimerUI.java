@@ -7,15 +7,16 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import core.Game;
 import core.utils.FontHelper;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A UI component that displays elapsed time in HH:MM:SS format (or MM:SS if hours is zero).
  *
- * <p>The timer is positioned in the top-right corner of the screen and can be started, stopped,
- * reset, and shown/hidden independently. Supports registering callbacks that trigger after a
- * specified elapsed time.
+ * <p>In multiplayer, the timer is synchronized from the server and uses client-side prediction with
+ * interpolation to ensure smooth display. The timer will snap to the server's authoritative time
+ * when the discrepancy exceeds a threshold.
+ *
+ * <p>The timer is positioned in the top-right corner of the screen and can be started, stopped, and
+ * shown/hidden independently.
  */
 public class TimerUI extends Group {
 
@@ -25,21 +26,21 @@ public class TimerUI extends Group {
   private static final float PADDING_Y = 2;
   private static final String DEFAULT_TIME_FORMAT = "%time";
 
+  /**
+   * Threshold in seconds for snapping to server time.
+   *
+   * <p>If the client's predicted time differs from the server's time by more than this threshold,
+   * the client will immediately snap to the server's time instead of smoothly interpolating.
+   */
+  private static final float SNAP_THRESHOLD_SECONDS = 0.5f;
+
   private final BitmapFont font;
   private final GlyphLayout glyphLayout;
-  private final List<TimerCallback> callbacks;
 
-  private float elapsedTime; // seconds
+  private float elapsedTime; // seconds - current display time (client prediction)
+  private float serverTime; // seconds - last received server time
   private boolean running = false;
   private String displayFormat = DEFAULT_TIME_FORMAT;
-
-  /**
-   * Record representing a timer callback.
-   *
-   * @param triggerTimeSeconds the elapsed time in seconds at which to trigger
-   * @param callback the runnable to execute
-   */
-  private record TimerCallback(long triggerTimeSeconds, Runnable callback) {}
 
   /**
    * Creates a new TimerUI instance.
@@ -51,9 +52,9 @@ public class TimerUI extends Group {
   public TimerUI(float startTimeSeconds) {
     this.font = FontHelper.getFont(FontHelper.DEFAULT_FONT_PATH, FONT_SIZE, FONT_COLOR);
     this.glyphLayout = new GlyphLayout();
-    this.callbacks = new ArrayList<>();
 
     this.elapsedTime = startTimeSeconds;
+    this.serverTime = startTimeSeconds;
 
     this.setBounds(0, 0, Game.windowWidth(), Game.windowHeight());
   }
@@ -68,10 +69,11 @@ public class TimerUI extends Group {
   }
 
   /**
-   * Updates the timer each frame, accumulating elapsed time and triggering callbacks.
+   * Updates the timer each frame, accumulating elapsed time with client-side prediction.
    *
    * <p>This method is called automatically by the scene2d framework. Time accumulation occurs
-   * regardless of game pause state.
+   * regardless of game pause state. In multiplayer, the displayed time is predicted locally and
+   * corrected by periodic server synchronization messages.
    *
    * @param delta the time elapsed since the last frame in seconds
    */
@@ -81,7 +83,6 @@ public class TimerUI extends Group {
 
     if (running) {
       elapsedTime += delta;
-      triggerCallbacks();
     }
   }
 
@@ -106,6 +107,20 @@ public class TimerUI extends Group {
     font.draw(batch, timeString, x, y);
   }
 
+  /**
+   * Starts the timer with the specified initial time.
+   *
+   * <p>This method is called when receiving a START command from the server or when starting a
+   * timer locally (server-side only).
+   *
+   * @param startTimeSeconds the initial elapsed time in seconds
+   */
+  public void start(float startTimeSeconds) {
+    this.elapsedTime = startTimeSeconds;
+    this.serverTime = startTimeSeconds;
+    this.running = true;
+  }
+
   /** Starts the timer, allowing it to accumulate elapsed time. */
   public void start() {
     running = true;
@@ -122,13 +137,25 @@ public class TimerUI extends Group {
   }
 
   /**
-   * Resets the elapsed time to zero and clears all triggered callback states.
+   * Synchronizes the client timer with the server's authoritative time.
    *
-   * <p>This allows callbacks to be triggered again if the timer is restarted.
+   * <p>If the difference between client prediction and server time exceeds {@link
+   * #SNAP_THRESHOLD_SECONDS}, the client will immediately snap to the server time. Otherwise, the
+   * server time is stored for gradual correction on the next sync.
+   *
+   * @param serverElapsedSeconds the authoritative elapsed time from the server
+   * @param serverRunning the running state from the server
    */
-  public void reset() {
-    elapsedTime = 0f;
-    callbacks.clear();
+  public void syncFromServer(float serverElapsedSeconds, boolean serverRunning) {
+    this.serverTime = serverElapsedSeconds;
+    this.running = serverRunning;
+
+    float timeDifference = Math.abs(elapsedTime - serverElapsedSeconds);
+
+    // Snap to server time if difference is too large
+    if (timeDifference > SNAP_THRESHOLD_SECONDS) {
+      this.elapsedTime = serverElapsedSeconds;
+    }
   }
 
   /**
@@ -155,42 +182,6 @@ public class TimerUI extends Group {
       this.displayFormat = format;
     }
     return this;
-  }
-
-  /**
-   * Registers a one-time callback to be executed when the specified elapsed time is reached.
-   *
-   * <p>Multiple callbacks can be registered for the same elapsed time. Each callback is executed
-   * only once and then removed from the callback list.
-   *
-   * @param elapsedSeconds the elapsed time in seconds at which to trigger the callback
-   * @param callback the runnable to execute when the time is reached
-   */
-  public void registerCallback(long elapsedSeconds, Runnable callback) {
-    callbacks.add(new TimerCallback(elapsedSeconds, callback));
-  }
-
-  /** Clears all registered callbacks. */
-  public void clearCallbacks() {
-    callbacks.clear();
-  }
-
-  /**
-   * Checks and triggers all callbacks whose time threshold has been reached.
-   *
-   * <p>Triggered callbacks are removed from the list after execution.
-   */
-  private void triggerCallbacks() {
-    long currentSeconds = (long) elapsedTime;
-
-    callbacks.removeIf(
-        callback -> {
-          if (callback.triggerTimeSeconds() <= currentSeconds) {
-            callback.callback().run();
-            return true; // Remove this callback
-          }
-          return false; // Keep this callback
-        });
   }
 
   /**

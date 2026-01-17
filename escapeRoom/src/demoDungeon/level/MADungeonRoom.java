@@ -39,6 +39,7 @@ import java.util.*;
 import mobs.EscapeRoomMonsterBuilder;
 import mushRoom.Sounds;
 import mushRoom.shaders.TorchPostProcessing;
+import tools.timer.TimerAPI;
 
 /** The MADungeonRoom level. */
 public class MADungeonRoom extends DungeonLevel {
@@ -325,6 +326,8 @@ public class MADungeonRoom extends DungeonLevel {
     createChests();
     initGuards();
     Game.add(MiscFactory.newCraftingCauldron(getPoint("crafting0")));
+
+    TimerAPI.start(); // TODO: start if (all) player joined?
   }
 
   private void createChests() {

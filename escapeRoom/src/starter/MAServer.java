@@ -25,6 +25,7 @@ import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
 import java.io.IOException;
 import network.EscapeRoomSnapshotTranslator;
+import tools.timer.TimerSystem;
 
 /**
  * Starter for the Demo Escaperoom Dungeon.
@@ -122,6 +123,7 @@ public class MAServer {
     Game.add(new AttachmentSystem());
     Game.add(new IllegalSystem());
     Game.add(new BedSleepSystem());
+    Game.add(new TimerSystem());
     if (DEBUG_MODE && !Game.isHeadless()) Game.add(new Debugger());
   }
 

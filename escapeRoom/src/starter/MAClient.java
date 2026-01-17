@@ -1,5 +1,7 @@
 package starter;
 
+import contrib.hud.dialogs.DialogContext;
+import contrib.hud.dialogs.DialogFactory;
 import contrib.utils.components.Debugger;
 import core.Game;
 import core.configuration.KeyboardConfig;
@@ -10,7 +12,9 @@ import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoomClient;
 import java.io.IOException;
+import mushRoom.modules.EscapeRoomDialogTypes;
 import network.EscapeRoomSnapshotTranslator;
+import tools.timer.*;
 
 /** The main class for the Multiplayer Client for development and testing purposes. */
 public final class MAClient {
@@ -43,6 +47,7 @@ public final class MAClient {
     Game.userOnSetup(
         () -> {
           Game.add(new Debugger());
+          registerTimerHandlers();
         });
 
     Game.userOnFrame(
@@ -55,5 +60,61 @@ public final class MAClient {
 
     // Start the game
     Game.run();
+  }
+
+  /** Registers network message handlers for timer synchronization. */
+  private static void registerTimerHandlers() {
+    var dispatcher = Game.network().messageDispatcher();
+
+    // Handle timer command messages (START, STOP, RESUME)
+    dispatcher.registerHandler(
+        TimerCommandMessage.class,
+        (session, msg) -> {
+          System.out.println("Received TimerCommandMessage: " + msg.command());
+          switch (msg.command()) {
+            case START:
+              // Create timer dialog if it doesn't exist
+              DialogContext ctx =
+                  DialogContext.builder()
+                      .type(EscapeRoomDialogTypes.TIMER)
+                      .put("startTimeSeconds", msg.startTimeSeconds())
+                      .build();
+              DialogFactory.show(ctx, false, false);
+
+              TimerUI ui = TimerDialog.currentUI();
+              if (ui != null) {
+                ui.start(msg.startTimeSeconds());
+              }
+              break;
+            case STOP:
+              TimerUI stopUi = TimerDialog.currentUI();
+              if (stopUi != null) {
+                stopUi.stop();
+              }
+              break;
+            case RESUME:
+              TimerUI resumeUi = TimerDialog.currentUI();
+              if (resumeUi != null) {
+                resumeUi.resume();
+              }
+              break;
+          }
+        });
+
+    // Handle periodic sync messages
+    dispatcher.registerHandler(
+        TimerSyncMessage.class,
+        (session, msg) -> {
+          TimerUI ui = TimerDialog.currentUI();
+          if (ui != null) {
+            ui.syncFromServer(msg.elapsedSeconds(), msg.running());
+          } else {
+            var command =
+                msg.running()
+                    ? TimerCommandMessage.TimerCommand.START
+                    : TimerCommandMessage.TimerCommand.STOP;
+            dispatcher.dispatch(session, new TimerCommandMessage(command, msg.elapsedSeconds()));
+          }
+        });
   }
 }
