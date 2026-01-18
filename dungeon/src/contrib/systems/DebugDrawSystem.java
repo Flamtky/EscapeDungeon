@@ -393,7 +393,11 @@ public class DebugDrawSystem extends System {
             vc -> {
               String velStr =
                   String.format("(%.2f, %.2f)", vc.currentVelocity().x(), vc.currentVelocity().y());
-              info.append("Velocity: ").append(velStr).append("\n");
+              info.append("Velocity: ")
+                  .append(velStr)
+                  .append(" (maxSpeed: ")
+                  .append(vc.maxSpeed())
+                  .append(")\n");
             });
 
     entity

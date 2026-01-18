@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import contrib.components.*;
 import contrib.components.CollideComponent;
 import contrib.components.FlyComponent;
+import contrib.entities.CharacterClass;
 import contrib.entities.LeverFactory;
 import contrib.entities.MiscFactory;
 import contrib.entities.deco.Deco;
@@ -18,6 +19,7 @@ import contrib.systems.EventScheduler;
 import contrib.utils.EntityUtils;
 import contrib.utils.ICommand;
 import contrib.utils.components.ai.idle.PatrolWalk;
+import contrib.utils.components.skill.Skill;
 import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
@@ -41,6 +43,7 @@ import core.utils.components.path.SimpleIPath;
 import escapeDungeon.components.AxeComponent;
 import escapeDungeon.components.IceMovementComponent;
 import escapeDungeon.items.*;
+import escapeDungeon.skill.SprintSkill;
 import guard.GuardBuilder;
 import java.util.*;
 import mobs.EscapeRoomMonsterBuilder;
@@ -122,6 +125,12 @@ public class MADungeonRoom extends DungeonLevel {
   };
 
   private final Tuple<Point[], PatrolWalk.MODE>[] guardCheckPoints;
+
+  private static final Map<CharacterClass, Class<? extends Skill>> classToSkillMap =
+      Map.of(
+          CharacterClass.ROGUE, SprintSkill.class
+          // Add other mappings as needed
+          );
 
   /**
    * Creates a new Demo Level.

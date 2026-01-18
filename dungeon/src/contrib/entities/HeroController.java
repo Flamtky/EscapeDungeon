@@ -139,11 +139,17 @@ public class HeroController {
       Vector2 unitSpeed =
           Vector2.of(direction.x() != 0 ? speed.x() : 0, direction.y() != 0 ? speed.y() : 0);
       updatedForce = updatedForce.normalize().scale(unitSpeed.length());
+      updatedForce =
+          updatedForce.scale(
+              hero.fetch(SprintComponent.class).map(SprintComponent::multiplier).orElse(1f));
       vc.applyForce(MOVEMENT_ID, updatedForce);
+      hero.remove(SprintComponent.class);
     }
 
     // analytics for successful movement in MoveSystem
   }
+
+  private static long lastSkillUseAnalyticsLogTime = 0;
 
   /**
    * Uses the hero's active skill targeting the specified point. If the active skill is a
@@ -169,12 +175,23 @@ public class HeroController {
                   .ifPresent(
                       ac -> {
                         var target_pos =
-                            target != null ? Map.of("x", target.x(), "y", target.y()) : "none";
+                            target != null
+                                ? Map.of(
+                                    "x",
+                                    Double.isNaN(target.x()) ? 0 : target.x(),
+                                    "y",
+                                    Double.isNaN(target.y()) ? 0 : target.y())
+                                : "none";
+                        if (System.currentTimeMillis() - lastSkillUseAnalyticsLogTime < 100) {
+                          LOGGER.debug("Skipping skill use analytics log to prevent spamming.");
+                          return;
+                        }
                         DungeonAnalyticsAPI.logXApiStatement(
                             ac,
                             DungeonAnalyticsAPI.Verb.CAST_SKILL,
                             skill.name(),
                             Map.of("success", result, "target_point", target_pos));
+                        lastSkillUseAnalyticsLogTime = System.currentTimeMillis();
                       });
             },
             () -> {
