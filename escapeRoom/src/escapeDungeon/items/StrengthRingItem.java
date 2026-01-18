@@ -35,6 +35,13 @@ public class StrengthRingItem extends Item {
   }
 
   @Override
+  public void added(Entity collector) {
+    itemHolder = collector;
+    Sounds.KEY_ITEM_PICKUP_SOUND.play();
+    collector.fetch(VelocityComponent.class).ifPresent((vc) -> vc.mass(1.4f));
+  }
+
+  @Override
   public Optional<Entity> drop(final Point position) {
     if (itemHolder != null) {
       itemHolder.fetch(VelocityComponent.class).ifPresent((vc) -> vc.mass(1.2f));

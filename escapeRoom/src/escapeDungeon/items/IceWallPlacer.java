@@ -46,6 +46,18 @@ public class IceWallPlacer extends Item {
   }
 
   @Override
+  public void added(Entity collector) {
+    itemHolder = collector;
+    Sounds.KEY_ITEM_PICKUP_SOUND.play();
+    collector.add(new IceMovementComponent());
+    collector
+      .fetch(SkillComponent.class)
+      .ifPresent(
+        (sc) ->
+          sc.addSkill(new IceWallSkill("IceWallSkill", 100, 3, Tuple.of(Resource.MANA, 0))));
+  }
+
+  @Override
   public Optional<Entity> drop(final Point position) {
     if (itemHolder != null) {
       itemHolder

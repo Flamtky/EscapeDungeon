@@ -48,6 +48,17 @@ public class TorchItem extends Item {
   }
 
   @Override
+  public void added(Entity collector) {
+    itemHolder = collector;
+    Sounds.KEY_ITEM_PICKUP_SOUND.play();
+    collector
+      .fetch(SkillComponent.class)
+      .ifPresent(
+        (sc) ->
+          sc.addSkill(new TorchSkill("TorchSkill", 500, 3, Tuple.of(Resource.MANA, 0))));
+  }
+
+  @Override
   public Optional<Entity> drop(final Point position) {
     if (itemHolder != null) {
       itemHolder.fetch(SkillComponent.class).ifPresent((sc) -> sc.removeSkill(TorchSkill.class));
