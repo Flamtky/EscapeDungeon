@@ -4,6 +4,7 @@ import core.Entity;
 import core.network.DefaultSnapshotTranslator;
 import core.network.messages.s2c.EntityState;
 import guard.AlertnessComponent;
+import starter.IllegalComponent;
 
 /**
  * Custom SnapshotTranslator for the EscapeRoom subproject.
@@ -26,7 +27,7 @@ public class EscapeRoomSnapshotTranslator extends DefaultSnapshotTranslator {
    */
   @Override
   protected EntityState.Builder createBuilder(Entity entity) {
-    if (entity.isPresent(AlertnessComponent.class)) {
+    if (entity.isPresent(AlertnessComponent.class) || entity.isPresent(IllegalComponent.class)) {
       return EscapeRoomEntityState.builder();
     }
     return super.createBuilder(entity);
@@ -54,6 +55,12 @@ public class EscapeRoomSnapshotTranslator extends DefaultSnapshotTranslator {
                 escapeBuilder.viewConeAngle(ac.viewConeAngle());
                 escapeBuilder.viewRange(ac.viewRange());
                 escapeBuilder.decayRate(ac.decayRate());
+              });
+      entity
+          .fetch(IllegalComponent.class)
+          .ifPresent(
+              illegalComp -> {
+                escapeBuilder.isIllegal(illegalComp.isIllegal());
               });
     }
   }
@@ -93,18 +100,26 @@ public class EscapeRoomSnapshotTranslator extends DefaultSnapshotTranslator {
                             });
 
                 // Update current alertness if present
-                // Note: We can't directly set alertness on AlertnessComponent,
-                // so we reset and increase to the target value
-                escapeState
-                    .currentAlertness()
-                    .ifPresent(
-                        curAlertness -> {
-                          // Reset to 0 and increase to target (this syncs the alertness value)
-                          ac.reset();
-                          if (curAlertness > 0) {
-                            ac.increaseAlertness(curAlertness, null);
-                          }
-                        });
+                escapeState.currentAlertness().ifPresent(ac::alertness);
+              });
+      escapeState
+          .isIllegal()
+          .ifPresent(
+              isIllegal -> {
+                IllegalComponent illegalComp =
+                    entity
+                        .fetch(IllegalComponent.class)
+                        .orElseGet(
+                            () -> {
+                              IllegalComponent newIllegalComp = new IllegalComponent();
+                              entity.add(newIllegalComp);
+                              return newIllegalComp;
+                            });
+                if (isIllegal) {
+                  illegalComp.addReason(IllegalComponent.Reason.UNKNOWN);
+                } else {
+                  illegalComp.removeReason(IllegalComponent.Reason.UNKNOWN);
+                }
               });
     }
   }

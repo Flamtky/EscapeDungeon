@@ -1,6 +1,7 @@
 package core.network.messages.s2c;
 
 import contrib.components.CharacterClassComponent;
+import contrib.components.DecoComponent;
 import contrib.components.SkillComponent;
 import contrib.components.SkillComponentData;
 import core.Entity;
@@ -21,6 +22,7 @@ import core.network.messages.c2s.RequestEntitySpawn;
  * @param entityId the entity's unique ID
  * @param positionComponent the entity's position component
  * @param drawComponent the entity's draw component
+ * @param decoComponent the entity's deco component, if it has one (null if not)
  * @param isPersistent whether the entity should be saved to the map
  * @param playerComponent the entity's player component, if it has one (null if not)
  * @param characterClassId the entity's character class ID, if it has one (0 if not)
@@ -32,6 +34,7 @@ public record EntitySpawnEvent(
     int entityId,
     PositionComponent positionComponent,
     DrawComponent drawComponent,
+    DecoComponent decoComponent,
     boolean isPersistent,
     // For Player entities (Hero):
     PlayerComponent playerComponent,
@@ -53,6 +56,7 @@ public record EntitySpawnEvent(
         entity.id(),
         entity.fetch(PositionComponent.class).orElseThrow(),
         entity.fetch(DrawComponent.class).orElse(null),
+        entity.fetch(DecoComponent.class).orElse(null),
         entity.isPersistent(),
         entity.fetch(PlayerComponent.class).orElse(null),
         entity

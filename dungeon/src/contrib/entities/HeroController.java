@@ -71,13 +71,14 @@ public class HeroController {
     if (hero.fetch(InputComponent.class).map(InputComponent::deactivateControls).orElse(false)) {
       LOGGER.debug("Hero {} controls are deactivated, cannot move.", hero.id());
       hero.fetch(AnalyticsComponent.class)
-        .ifPresent(ac -> {
-          DungeonAnalyticsAPI.logXApiStatement(
-            ac,
-            DungeonAnalyticsAPI.Verb.MOVED,
-            hero.name() + "#" + hero.id(),
-            Map.of("success", false, "reason", "controls_deactivated"));
-        });
+          .ifPresent(
+              ac -> {
+                DungeonAnalyticsAPI.logXApiStatement(
+                    ac,
+                    DungeonAnalyticsAPI.Verb.MOVED,
+                    hero.name() + "#" + hero.id(),
+                    Map.of("success", false, "reason", "controls_deactivated"));
+              });
       return;
     }
 
@@ -101,13 +102,20 @@ public class HeroController {
               dir,
               dir);
           hero.fetch(AnalyticsComponent.class)
-            .ifPresent(ac -> {
-              DungeonAnalyticsAPI.logXApiStatement(
-                ac,
-                DungeonAnalyticsAPI.Verb.MOVED,
-                hero.name() + "#" + hero.id(),
-                Map.of("success", false, "reason", "movement_disabled", "direction", dir.toString()));
-            });
+              .ifPresent(
+                  ac -> {
+                    DungeonAnalyticsAPI.logXApiStatement(
+                        ac,
+                        DungeonAnalyticsAPI.Verb.MOVED,
+                        hero.name() + "#" + hero.id(),
+                        Map.of(
+                            "success",
+                            false,
+                            "reason",
+                            "movement_disabled",
+                            "direction",
+                            dir.toString()));
+                  });
           return;
         }
       }
@@ -135,13 +143,14 @@ public class HeroController {
     }
 
     hero.fetch(AnalyticsComponent.class)
-      .ifPresent(ac -> {
-        DungeonAnalyticsAPI.logXApiStatement(
-          ac,
-          DungeonAnalyticsAPI.Verb.MOVED,
-          hero.name() + "#" + hero.id(),
-          Map.of("success", true, "direction", direction.toString()));
-      });
+        .ifPresent(
+            ac -> {
+              DungeonAnalyticsAPI.logXApiStatement(
+                  ac,
+                  DungeonAnalyticsAPI.Verb.MOVED,
+                  hero.name() + "#" + hero.id(),
+                  Map.of("success", true, "direction", direction.toString()));
+            });
   }
 
   /**
@@ -165,24 +174,30 @@ public class HeroController {
               }
               final boolean result = skill.execute(hero);
               hero.fetch(AnalyticsComponent.class)
-                .ifPresent(ac -> {
-                  DungeonAnalyticsAPI.logXApiStatement(
-                    ac,
-                    DungeonAnalyticsAPI.Verb.CAST_SKILL,
-                    skill.name(),
-                    Map.of("success", result, "target_point", target != null ? target.toString() : "none"));
-                });
+                  .ifPresent(
+                      ac -> {
+                        DungeonAnalyticsAPI.logXApiStatement(
+                            ac,
+                            DungeonAnalyticsAPI.Verb.CAST_SKILL,
+                            skill.name(),
+                            Map.of(
+                                "success",
+                                result,
+                                "target_point",
+                                target != null ? target.toString() : "none"));
+                      });
             },
-          () -> {
+            () -> {
               LOGGER.debug("Hero {} has no active skill to use.", hero.id());
               hero.fetch(AnalyticsComponent.class)
-                .ifPresent(ac -> {
-                  DungeonAnalyticsAPI.logXApiStatement(
-                    ac,
-                    DungeonAnalyticsAPI.Verb.CAST_SKILL,
-                    "no_active_skill",
-                    Map.of("success", false, "reason", "no_active_skill"));
-                });
+                  .ifPresent(
+                      ac -> {
+                        DungeonAnalyticsAPI.logXApiStatement(
+                            ac,
+                            DungeonAnalyticsAPI.Verb.CAST_SKILL,
+                            "no_active_skill",
+                            Map.of("success", false, "reason", "no_active_skill"));
+                      });
             });
   }
 
@@ -203,13 +218,14 @@ public class HeroController {
     if (hero.isPresent(UIComponent.class)) {
       LOGGER.debug("Hero {} has dialogs open, cannot interact.", hero.id());
       hero.fetch(AnalyticsComponent.class)
-        .ifPresent(ac -> {
-          DungeonAnalyticsAPI.logXApiStatement(
-            ac,
-            DungeonAnalyticsAPI.Verb.INTERACTED,
-            "entity_interaction",
-            Map.of("success", false, "reason", "dialogs_open"));
-        });
+          .ifPresent(
+              ac -> {
+                DungeonAnalyticsAPI.logXApiStatement(
+                    ac,
+                    DungeonAnalyticsAPI.Verb.INTERACTED,
+                    "entity_interaction",
+                    Map.of("success", false, "reason", "dialogs_open"));
+              });
       return;
     }
 
@@ -241,24 +257,26 @@ public class HeroController {
           LOGGER.trace("Hero {} interacting with entity {}", hero.id(), entity.id());
           ic.triggerInteraction(entity, hero);
           hero.fetch(AnalyticsComponent.class)
-            .ifPresent(ac -> {
-              DungeonAnalyticsAPI.logXApiStatement(
-                ac,
-                DungeonAnalyticsAPI.Verb.INTERACTED,
-                hero.name() + "#" + hero.id(),
-                Map.of("success", true));
-            });
+              .ifPresent(
+                  ac -> {
+                    DungeonAnalyticsAPI.logXApiStatement(
+                        ac,
+                        DungeonAnalyticsAPI.Verb.INTERACTED,
+                        hero.name() + "#" + hero.id(),
+                        Map.of("success", true));
+                  });
         },
         () -> {
           LOGGER.trace("No interactable entity found for hero {} to interact with", hero.id());
           hero.fetch(AnalyticsComponent.class)
-            .ifPresent(ac -> {
-              DungeonAnalyticsAPI.logXApiStatement(
-                ac,
-                DungeonAnalyticsAPI.Verb.INTERACTED,
-                hero.name() + "#" + hero.id(),
-                Map.of("success", false, "reason", "no_entity_found"));
-            });
+              .ifPresent(
+                  ac -> {
+                    DungeonAnalyticsAPI.logXApiStatement(
+                        ac,
+                        DungeonAnalyticsAPI.Verb.INTERACTED,
+                        hero.name() + "#" + hero.id(),
+                        Map.of("success", false, "reason", "no_entity_found"));
+                  });
         });
   }
 
@@ -278,13 +296,14 @@ public class HeroController {
               else skillComponent.prevSkill();
 
               hero.fetch(AnalyticsComponent.class)
-                .ifPresent(ac -> {
-                  DungeonAnalyticsAPI.logXApiStatement(
-                    ac,
-                    DungeonAnalyticsAPI.Verb.CHANGED_SKILL,
-                    skillComponent.activeSkill().map(Skill::name).orElse("no_skill"),
-                    Map.of("next_skill", nextSkill));
-                });
+                  .ifPresent(
+                      ac -> {
+                        DungeonAnalyticsAPI.logXApiStatement(
+                            ac,
+                            DungeonAnalyticsAPI.Verb.CHANGED_SKILL,
+                            skillComponent.activeSkill().map(Skill::name).orElse("no_skill"),
+                            Map.of("next_skill", nextSkill));
+                      });
             });
   }
 
@@ -301,13 +320,14 @@ public class HeroController {
     if (invComp.isEmpty() || playerComp.isEmpty()) {
       LOGGER.error("Trying to open inventory for non-player entity or entity without inventory.");
       hero.fetch(AnalyticsComponent.class)
-        .ifPresent(ac -> {
-          DungeonAnalyticsAPI.logXApiStatement(
-            ac,
-            DungeonAnalyticsAPI.Verb.OPENED,
-            hero.name() + "#" + hero.id(),
-            Map.of("success", false, "reason", "missing_components"));
-        });
+          .ifPresent(
+              ac -> {
+                DungeonAnalyticsAPI.logXApiStatement(
+                    ac,
+                    DungeonAnalyticsAPI.Verb.OPENED,
+                    hero.name() + "#" + hero.id(),
+                    Map.of("success", false, "reason", "missing_components"));
+              });
       return;
     }
     var pc = playerComp.get();
@@ -315,13 +335,14 @@ public class HeroController {
     if (pc.openDialogs() && !InventoryGUI.inPlayerInventory(hero)) {
       LOGGER.debug("Player {} has other dialogs open, cannot toggle inventory.", hero.id());
       hero.fetch(AnalyticsComponent.class)
-        .ifPresent(ac -> {
-          DungeonAnalyticsAPI.logXApiStatement(
-            ac,
-            DungeonAnalyticsAPI.Verb.OPENED,
-            hero.name() + "#" + hero.id(),
-            Map.of("success", false, "reason", "other_dialogs_open"));
-        });
+          .ifPresent(
+              ac -> {
+                DungeonAnalyticsAPI.logXApiStatement(
+                    ac,
+                    DungeonAnalyticsAPI.Verb.OPENED,
+                    hero.name() + "#" + hero.id(),
+                    Map.of("success", false, "reason", "other_dialogs_open"));
+              });
       return;
     }
 
@@ -347,13 +368,14 @@ public class HeroController {
     }
     InventoryGUI.setInventoryOpen(hero, isUIOpen);
     hero.fetch(AnalyticsComponent.class)
-      .ifPresent(ac -> {
-        DungeonAnalyticsAPI.logXApiStatement(
-          ac,
-          DungeonAnalyticsAPI.Verb.OPENED,
-          hero.name() + "#" + hero.id(),
-          Map.of("success", true, "is_open", InventoryGUI.inPlayerInventory(hero)));
-      });
+        .ifPresent(
+            ac -> {
+              DungeonAnalyticsAPI.logXApiStatement(
+                  ac,
+                  DungeonAnalyticsAPI.Verb.OPENED,
+                  hero.name() + "#" + hero.id(),
+                  Map.of("success", true, "is_open", InventoryGUI.inPlayerInventory(hero)));
+            });
   }
 
   /**
@@ -389,14 +411,16 @@ public class HeroController {
       returnItemToInventory(sourceInv, item, itemSlot, entity);
     }
 
-    entity.fetch(AnalyticsComponent.class)
-      .ifPresent(ac -> {
-        DungeonAnalyticsAPI.logXApiStatement(
-          ac,
-          DungeonAnalyticsAPI.Verb.DROPPED,
-          item.displayName(),
-          Map.of("item_slot", itemSlot, "success", success));
-      });
+    entity
+        .fetch(AnalyticsComponent.class)
+        .ifPresent(
+            ac -> {
+              DungeonAnalyticsAPI.logXApiStatement(
+                  ac,
+                  DungeonAnalyticsAPI.Verb.DROPPED,
+                  item.displayName(),
+                  Map.of("item_slot", itemSlot, "success", success));
+            });
   }
 
   /**
@@ -435,14 +459,16 @@ public class HeroController {
     Optional<UIComponent> uiComp = player.fetch(UIComponent.class);
     if (uiComp.isEmpty()) {
       LOGGER.debug("No UI component found for entity {}", player.id());
-      player.fetch(AnalyticsComponent.class)
-        .ifPresent(ac -> {
-          DungeonAnalyticsAPI.logXApiStatement(
-            ac,
-            DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-            player.name() + "#" + player.id(),
-            Map.of("success", false, "reason", "no_ui_component"));
-        });
+      player
+          .fetch(AnalyticsComponent.class)
+          .ifPresent(
+              ac -> {
+                DungeonAnalyticsAPI.logXApiStatement(
+                    ac,
+                    DungeonAnalyticsAPI.Verb.MOVED_ITEM,
+                    player.name() + "#" + player.id(),
+                    Map.of("success", false, "reason", "no_ui_component"));
+              });
       return false;
     }
 
@@ -450,14 +476,16 @@ public class HeroController {
         InventoryGUI.getPlayerInventoryGUI(player).map(IInventoryHolder::inventoryComponent);
     if (playerInv.isEmpty()) {
       LOGGER.debug("No inventory GUI found for entity {}", player.id());
-      player.fetch(AnalyticsComponent.class)
-        .ifPresent(ac -> {
-          DungeonAnalyticsAPI.logXApiStatement(
-            ac,
-            DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-            player.name() + "#" + player.id(),
-            Map.of("success", false, "reason", "no_player_inventory"));
-        });
+      player
+          .fetch(AnalyticsComponent.class)
+          .ifPresent(
+              ac -> {
+                DungeonAnalyticsAPI.logXApiStatement(
+                    ac,
+                    DungeonAnalyticsAPI.Verb.MOVED_ITEM,
+                    player.name() + "#" + player.id(),
+                    Map.of("success", false, "reason", "no_player_inventory"));
+              });
       return false;
     }
 
@@ -480,15 +508,24 @@ public class HeroController {
           player.id(),
           adjustedFromSlot,
           adjustedToSlot);
-      player.fetch(AnalyticsComponent.class)
-        .ifPresent(ac -> {
-          DungeonAnalyticsAPI.logXApiStatement(
-            ac,
-            DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-            player.name() + "#" + player.id(),
-            Map.of("success", false, "reason", "invalid_slot_indices",
-                   "from_slot", adjustedFromSlot, "to_slot", adjustedToSlot));
-        });
+      player
+          .fetch(AnalyticsComponent.class)
+          .ifPresent(
+              ac -> {
+                DungeonAnalyticsAPI.logXApiStatement(
+                    ac,
+                    DungeonAnalyticsAPI.Verb.MOVED_ITEM,
+                    player.name() + "#" + player.id(),
+                    Map.of(
+                        "success",
+                        false,
+                        "reason",
+                        "invalid_slot_indices",
+                        "from_slot",
+                        adjustedFromSlot,
+                        "to_slot",
+                        adjustedToSlot));
+              });
       return false;
     }
 
@@ -496,15 +533,22 @@ public class HeroController {
     if (itemToMove.isEmpty()) {
       LOGGER.debug(
           "No item in slot {} of source inventory for entity {}", adjustedFromSlot, player.id());
-      player.fetch(AnalyticsComponent.class)
-        .ifPresent(ac -> {
-          DungeonAnalyticsAPI.logXApiStatement(
-            ac,
-            DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-            player.name() + "#" + player.id(),
-            Map.of("success", false, "reason", "no_item_in_source_slot",
-                   "from_slot", adjustedFromSlot));
-        });
+      player
+          .fetch(AnalyticsComponent.class)
+          .ifPresent(
+              ac -> {
+                DungeonAnalyticsAPI.logXApiStatement(
+                    ac,
+                    DungeonAnalyticsAPI.Verb.MOVED_ITEM,
+                    player.name() + "#" + player.id(),
+                    Map.of(
+                        "success",
+                        false,
+                        "reason",
+                        "no_item_in_source_slot",
+                        "from_slot",
+                        adjustedFromSlot));
+              });
       return false;
     }
 
@@ -519,15 +563,22 @@ public class HeroController {
                     "Failed to swap items between inventories for entity {}: could not set item in source slot {}",
                     player.id(),
                     adjustedFromSlot);
-                player.fetch(AnalyticsComponent.class)
-                  .ifPresent(ac -> {
-                    DungeonAnalyticsAPI.logXApiStatement(
-                      ac,
-                      DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-                      player.name() + "#" + player.id(),
-                      Map.of("success", false, "reason", "failed_to_set_in_source_slot",
-                             "from_slot", adjustedFromSlot));
-                  });
+                player
+                    .fetch(AnalyticsComponent.class)
+                    .ifPresent(
+                        ac -> {
+                          DungeonAnalyticsAPI.logXApiStatement(
+                              ac,
+                              DungeonAnalyticsAPI.Verb.MOVED_ITEM,
+                              player.name() + "#" + player.id(),
+                              Map.of(
+                                  "success",
+                                  false,
+                                  "reason",
+                                  "failed_to_set_in_source_slot",
+                                  "from_slot",
+                                  adjustedFromSlot));
+                        });
                 return;
               }
               suc = target.set(adjustedToSlot, itemToMove.get());
@@ -537,15 +588,22 @@ public class HeroController {
                     player.id(),
                     adjustedToSlot);
                 source.set(adjustedFromSlot, existingItem); // revert source
-                player.fetch(AnalyticsComponent.class)
-                  .ifPresent(ac -> {
-                    DungeonAnalyticsAPI.logXApiStatement(
-                      ac,
-                      DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-                      player.name() + "#" + player.id(),
-                      Map.of("success", false, "reason", "failed_to_set_in_target_slot",
-                             "to_slot", adjustedToSlot));
-                  });
+                player
+                    .fetch(AnalyticsComponent.class)
+                    .ifPresent(
+                        ac -> {
+                          DungeonAnalyticsAPI.logXApiStatement(
+                              ac,
+                              DungeonAnalyticsAPI.Verb.MOVED_ITEM,
+                              player.name() + "#" + player.id(),
+                              Map.of(
+                                  "success",
+                                  false,
+                                  "reason",
+                                  "failed_to_set_in_target_slot",
+                                  "to_slot",
+                                  adjustedToSlot));
+                        });
                 return;
               }
               LOGGER.debug(
@@ -562,15 +620,22 @@ public class HeroController {
                     player.id(),
                     adjustedToSlot);
                 source.set(adjustedFromSlot, itemToMove.get()); // revert source
-                player.fetch(AnalyticsComponent.class)
-                  .ifPresent(ac -> {
-                    DungeonAnalyticsAPI.logXApiStatement(
-                      ac,
-                      DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-                      player.name() + "#" + player.id(),
-                      Map.of("success", false, "reason", "failed_to_set_in_target_slot",
-                             "to_slot", adjustedToSlot));
-                  });
+                player
+                    .fetch(AnalyticsComponent.class)
+                    .ifPresent(
+                        ac -> {
+                          DungeonAnalyticsAPI.logXApiStatement(
+                              ac,
+                              DungeonAnalyticsAPI.Verb.MOVED_ITEM,
+                              player.name() + "#" + player.id(),
+                              Map.of(
+                                  "success",
+                                  false,
+                                  "reason",
+                                  "failed_to_set_in_target_slot",
+                                  "to_slot",
+                                  adjustedToSlot));
+                        });
                 return;
               }
               LOGGER.debug(
@@ -579,18 +644,26 @@ public class HeroController {
                   player.id());
             });
 
-    player.fetch(AnalyticsComponent.class)
-      .ifPresent(ac -> {
-        DungeonAnalyticsAPI.logXApiStatement(
-          ac,
-          DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-          player.name() + "#" + player.id(),
-          Map.of("success", true,
-                 "from_slot", adjustedFromSlot,
-                 "to_slot", adjustedToSlot,
-                 "source_inventory", source == playerInv.get() ? "player" : "other",
-                 "target_inventory", target == playerInv.get() ? "player" : "other"));
-      });
+    player
+        .fetch(AnalyticsComponent.class)
+        .ifPresent(
+            ac -> {
+              DungeonAnalyticsAPI.logXApiStatement(
+                  ac,
+                  DungeonAnalyticsAPI.Verb.MOVED_ITEM,
+                  player.name() + "#" + player.id(),
+                  Map.of(
+                      "success",
+                      true,
+                      "from_slot",
+                      adjustedFromSlot,
+                      "to_slot",
+                      adjustedToSlot,
+                      "source_inventory",
+                      source == playerInv.get() ? "player" : "other",
+                      "target_inventory",
+                      target == playerInv.get() ? "player" : "other"));
+            });
     return true;
   }
 
@@ -611,27 +684,31 @@ public class HeroController {
     Item item = inventory.get(itemSlot).orElse(null);
     if (item == null) {
       LOGGER.debug("No item in slot {} for entity {}", itemSlot, entity.id());
-      entity.fetch(AnalyticsComponent.class)
-        .ifPresent(ac -> {
-          DungeonAnalyticsAPI.logXApiStatement(
-            ac,
-            DungeonAnalyticsAPI.Verb.USED_ITEM,
-            entity.name() + "#" + entity.id(),
-            Map.of("success", false, "reason", "no_item_in_slot", "item_slot", itemSlot));
-        });
+      entity
+          .fetch(AnalyticsComponent.class)
+          .ifPresent(
+              ac -> {
+                DungeonAnalyticsAPI.logXApiStatement(
+                    ac,
+                    DungeonAnalyticsAPI.Verb.USED_ITEM,
+                    entity.name() + "#" + entity.id(),
+                    Map.of("success", false, "reason", "no_item_in_slot", "item_slot", itemSlot));
+              });
       return false;
     }
 
     item.use(entity);
 
-    entity.fetch(AnalyticsComponent.class)
-      .ifPresent(ac -> {
-        DungeonAnalyticsAPI.logXApiStatement(
-          ac,
-          DungeonAnalyticsAPI.Verb.USED_ITEM,
-          item.displayName(),
-          Map.of("item_slot", itemSlot, "success", true));
-      });
+    entity
+        .fetch(AnalyticsComponent.class)
+        .ifPresent(
+            ac -> {
+              DungeonAnalyticsAPI.logXApiStatement(
+                  ac,
+                  DungeonAnalyticsAPI.Verb.USED_ITEM,
+                  item.displayName(),
+                  Map.of("item_slot", itemSlot, "success", true));
+            });
     return true;
   }
 

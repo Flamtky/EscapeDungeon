@@ -47,6 +47,7 @@ public final class MAClient {
     Game.userOnSetup(
         () -> {
           Game.add(new Debugger());
+          Game.add(new IllegalSystem());
           registerTimerHandlers();
         });
 

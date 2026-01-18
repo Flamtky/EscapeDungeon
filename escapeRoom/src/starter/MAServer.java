@@ -1,14 +1,11 @@
 package starter;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Music;
 import contrib.crafting.Crafting;
 import contrib.entities.CharacterClass;
 import contrib.entities.EntityFactory;
 import contrib.entities.HeroController;
 import contrib.modules.levelHide.LevelHideSystem;
 import contrib.systems.*;
-import contrib.utils.components.Debugger;
 import core.Entity;
 import core.Game;
 import core.game.ECSManagement;
@@ -33,9 +30,6 @@ import tools.timer.TimerSystem;
  * <p>Usage: run with the Gradle task {@code runMA}.
  */
 public class MAServer {
-  private static final boolean DEBUG_MODE = true;
-  private static final String BACKGROUND_MUSIC = "sounds/background.wav";
-  private static final int START_LEVEL = 0;
 
   /**
    * Main method to start the game.
@@ -98,22 +92,21 @@ public class MAServer {
   }
 
   private static void createSystems() {
-    ECSManagement.add(new PositionSystem());
-    ECSManagement.add(new VelocitySystem());
-    ECSManagement.add(new FrictionSystem());
-    ECSManagement.add(new MoveSystem());
-    if (DEBUG_MODE && !Game.isHeadless()) Game.add(new LevelEditorSystem());
+    Game.add(new PositionSystem());
+    Game.add(new VelocitySystem());
+    Game.add(new FrictionSystem());
+    Game.add(new MoveSystem());
     Game.add(new LevelHideSystem());
     Game.add(new CollisionSystem());
     Game.add(new ManaRestoreSystem());
-    if (!DEBUG_MODE) Game.add(new StaminaDrainSystem());
+    Game.add(new StaminaDrainSystem());
     Game.add(new StaminaExhaustionSystem());
     Game.add(new DebugSleepSystem());
     Game.add(new AISystem());
     Game.add(new ProjectileSystem());
     Game.add(new HealthSystem());
     Game.add(new SpikeSystem());
-    if (!DEBUG_MODE) Game.add(new FallingSystem());
+    Game.add(new FallingSystem());
     Game.add(new PathSystem());
     Game.add(new PitSystem());
     Game.add(new LeverSystem());
@@ -124,14 +117,6 @@ public class MAServer {
     Game.add(new IllegalSystem());
     Game.add(new BedSleepSystem());
     Game.add(new TimerSystem());
-    if (DEBUG_MODE && !Game.isHeadless()) Game.add(new Debugger());
-  }
-
-  private static void setupMusic() {
-    Music backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal(BACKGROUND_MUSIC));
-    backgroundMusic.setLooping(true);
-    backgroundMusic.play();
-    backgroundMusic.setVolume(.05f);
   }
 
   private static void onFrame() {

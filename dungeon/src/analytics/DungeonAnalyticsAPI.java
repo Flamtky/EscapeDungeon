@@ -4,7 +4,6 @@ import contrib.entities.CharacterClass;
 import core.components.AnalyticsComponent;
 import core.network.server.ClientState;
 import core.utils.logging.DungeonLogger;
-
 import java.sql.*;
 import java.util.Map;
 import java.util.UUID;
@@ -15,8 +14,9 @@ import java.util.concurrent.Executors;
  * Service API for logging Educational Escape Room (EER) data to the evaluation database. Supports
  * xAPI statements, user profiles, and survey responses.
  *
- * All database operations are non-blocking except for {@link #startSession(ClientState, String)},
- * which blocks to return the session UUID synchronously. Other methods execute asynchronously.
+ * <p>All database operations are non-blocking except for {@link #startSession(ClientState,
+ * String)}, which blocks to return the session UUID synchronously. Other methods execute
+ * asynchronously.
  */
 public class DungeonAnalyticsAPI {
 
@@ -29,8 +29,8 @@ public class DungeonAnalyticsAPI {
   }
 
   /**
-   * Registers a new player or updates an existing player's Hexad profile.
-   * This operation is executed asynchronously and does not block the caller.
+   * Registers a new player or updates an existing player's Hexad profile. This operation is
+   * executed asynchronously and does not block the caller.
    *
    * @param playerState The client's state containing player identifiers.
    * @param characterClass The player's Hexad character class.
@@ -39,9 +39,10 @@ public class DungeonAnalyticsAPI {
     if (!ENABLED) {
       return;
     }
-    EXECUTOR.submit(() -> {
-      var sql =
-          """
+    EXECUTOR.submit(
+        () -> {
+          var sql =
+              """
               INSERT INTO players (player_id, hexad_primary_type, hexad_scores)
               VALUES (?, ?, ?::jsonb)
               ON CONFLICT (player_id) DO UPDATE
@@ -49,30 +50,31 @@ public class DungeonAnalyticsAPI {
                   hexad_scores = EXCLUDED.hexad_scores;
               """;
 
-      final Map<CharacterClass, String> classToType = Map.of(
-          CharacterClass.ROGUE, "dummy1",
-          CharacterClass.APPRENTICE, "dummy2"
-      );
+          final Map<CharacterClass, String> classToType =
+              Map.of(
+                  CharacterClass.ROGUE, "dummy1",
+                  CharacterClass.APPRENTICE, "dummy2");
 
-      try (Connection conn = DatabaseConnector.getConnection();
-          PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        pstmt.setString(1, stateToId(playerState));
-        pstmt.setString(2, classToType.getOrDefault(characterClass, "unknown"));
-        pstmt.setString(3, "{}"); // TODO: Replace with actual Hexad scores JSON
-        pstmt.executeUpdate();
-      } catch (SQLException e) {
-        LOGGER.error("Failed to upsert player profile: " + e.getMessage(), e);
-      }
-    });
+          try (Connection conn = DatabaseConnector.getConnection();
+              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, stateToId(playerState));
+            pstmt.setString(2, classToType.getOrDefault(characterClass, "unknown"));
+            pstmt.setString(3, "{}"); // TODO: Replace with actual Hexad scores JSON
+            pstmt.executeUpdate();
+          } catch (SQLException e) {
+            LOGGER.error("Failed to upsert player profile: " + e.getMessage(), e);
+          }
+        });
   }
 
   /**
-   * Initializes a new gameplay session in the database.
-   * This operation is synchronous and blocks until the session UUID is retrieved.
+   * Initializes a new gameplay session in the database. This operation is synchronous and blocks
+   * until the session UUID is retrieved.
    *
    * @param playerState The client's state containing player identifiers.
    * @param configJson JSON configuration for this session (e.g., difficulty, adaptivity).
-   * @return The generated {@link UUID} of the session. Null if the operation fails or analytics is disabled.
+   * @return The generated {@link UUID} of the session. Null if the operation fails or analytics is
+   *     disabled.
    */
   public static UUID startSession(ClientState playerState, String configJson) {
     if (!ENABLED) {
@@ -98,8 +100,8 @@ public class DungeonAnalyticsAPI {
   }
 
   /**
-   * Logs an xAPI statement documenting an event during the escape room.
-   * This operation is executed asynchronously and does not block the caller.
+   * Logs an xAPI statement documenting an event during the escape room. This operation is executed
+   * asynchronously and does not block the caller.
    *
    * @param ac The AnalyticsComponent containing session and player info.
    * @param verb The action performed (e.g., "solved", "attempted").
@@ -107,29 +109,30 @@ public class DungeonAnalyticsAPI {
    * @param resultJsonMap JSON containing metrics, skill tags, and pyramid data.
    */
   public static void logXApiStatement(
-    AnalyticsComponent ac, Verb verb, String objectId, Map<String, Object> resultJsonMap) {
+      AnalyticsComponent ac, Verb verb, String objectId, Map<String, Object> resultJsonMap) {
     if (!ENABLED) {
       return;
     }
-    EXECUTOR.submit(() -> {
-      var sql =
-          """
+    EXECUTOR.submit(
+        () -> {
+          var sql =
+              """
               INSERT INTO xapi_statements (session_id, player_id, verb, object_id, result)
               VALUES (?, ?, ?, ?, ?::jsonb)
               """;
 
-      try (Connection conn = DatabaseConnector.getConnection();
-          PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        pstmt.setObject(1, ac.sessionId());
-        pstmt.setString(2, stateToId(ac.state()));
-        pstmt.setString(3, verb.toString());
-        pstmt.setString(4, objectId);
-        pstmt.setString(5, mapToJson(resultJsonMap));
-        pstmt.executeUpdate();
-      } catch (SQLException e) {
-        LOGGER.error("Failed to log xAPI statement: " + e.getMessage(), e);
-      }
-    });
+          try (Connection conn = DatabaseConnector.getConnection();
+              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setObject(1, ac.sessionId());
+            pstmt.setString(2, stateToId(ac.state()));
+            pstmt.setString(3, verb.toString());
+            pstmt.setString(4, objectId);
+            pstmt.setString(5, mapToJson(resultJsonMap));
+            pstmt.executeUpdate();
+          } catch (SQLException e) {
+            LOGGER.error("Failed to log xAPI statement: " + e.getMessage(), e);
+          }
+        });
   }
 
   private static String mapToJson(Map<String, Object> map) {
@@ -155,36 +158,37 @@ public class DungeonAnalyticsAPI {
   }
 
   /**
-   * Saves a survey response (Pre-Game or Post-Game) to the database.
-   * This operation is executed asynchronously and does not block the caller.
+   * Saves a survey response (Pre-Game or Post-Game) to the database. This operation is executed
+   * asynchronously and does not block the caller.
    *
    * @param sessionId The UUID of the session linked to the survey.
    * @param type The survey type ("pre_game" or "post_game").
    * @param responsesJson JSON containing the student's answers.
    */
-  public static void submitSurvey(UUID sessionId, SurveyType type, String responsesJson){
+  public static void submitSurvey(UUID sessionId, SurveyType type, String responsesJson) {
     if (!ENABLED) {
       return;
     }
-    EXECUTOR.submit(() -> {
-      var sql =
-          "INSERT INTO survey_responses (session_id, survey_type, responses) VALUES (?, ?, ?::jsonb)";
+    EXECUTOR.submit(
+        () -> {
+          var sql =
+              "INSERT INTO survey_responses (session_id, survey_type, responses) VALUES (?, ?, ?::jsonb)";
 
-      try (Connection conn = DatabaseConnector.getConnection();
-          PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        pstmt.setObject(1, sessionId);
-        pstmt.setString(2, type.toString().toLowerCase());
-        pstmt.setString(3, responsesJson);
-        pstmt.executeUpdate();
-      } catch (SQLException e) {
-        LOGGER.error("Failed to submit survey: " + e.getMessage(), e);
-      }
-    });
+          try (Connection conn = DatabaseConnector.getConnection();
+              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setObject(1, sessionId);
+            pstmt.setString(2, type.toString().toLowerCase());
+            pstmt.setString(3, responsesJson);
+            pstmt.executeUpdate();
+          } catch (SQLException e) {
+            LOGGER.error("Failed to submit survey: " + e.getMessage(), e);
+          }
+        });
   }
 
   /**
-   * Updates the end timestamp for a session.
-   * This operation is executed asynchronously and does not block the caller.
+   * Updates the end timestamp for a session. This operation is executed asynchronously and does not
+   * block the caller.
    *
    * @param sessionId The UUID of the session to terminate.
    */
@@ -192,22 +196,21 @@ public class DungeonAnalyticsAPI {
     if (!ENABLED) {
       return;
     }
-    EXECUTOR.submit(() -> {
-      var sql = "UPDATE sessions SET end_time = CURRENT_TIMESTAMP WHERE session_id = ?";
+    EXECUTOR.submit(
+        () -> {
+          var sql = "UPDATE sessions SET end_time = CURRENT_TIMESTAMP WHERE session_id = ?";
 
-      try (Connection conn = DatabaseConnector.getConnection();
-          PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        pstmt.setObject(1, sessionId);
-        pstmt.executeUpdate();
-      } catch (SQLException e) {
-        LOGGER.error("Failed to end session: " + e.getMessage(), e);
-      }
-    });
+          try (Connection conn = DatabaseConnector.getConnection();
+              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setObject(1, sessionId);
+            pstmt.executeUpdate();
+          } catch (SQLException e) {
+            LOGGER.error("Failed to end session: " + e.getMessage(), e);
+          }
+        });
   }
 
-  /**
-   * Enum representing common verbs used in xAPI statements for the escape room.
-   */
+  /** Enum representing common verbs used in xAPI statements for the escape room. */
   public enum Verb {
     MOVED("moved"),
     INTERACTED("interacted"),

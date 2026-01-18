@@ -13,8 +13,10 @@ import core.Entity;
 import core.Game;
 import core.System;
 import core.components.DrawComponent;
-import core.components.InputComponent;
 import core.components.PositionComponent;
+import core.components.VelocityComponent;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A system that manages bed sleep interactions and stamina restoration during sleep.
@@ -33,6 +35,8 @@ import core.components.PositionComponent;
  * being added to the game and replaces their interaction component with custom sleep logic.
  */
 public class BedSleepSystem extends System {
+
+  private static final Map<Integer, Float> oldSpeeds = new HashMap<>();
 
   /**
    * Creates a new {@code BedSleepSystem}.
@@ -124,11 +128,14 @@ public class BedSleepSystem extends System {
                     .fetch(PositionComponent.class)
                     .ifPresent(
                         playerPos ->
-                            playerPos.position(bedPos.position().translate(-0.2f, -0.25f))));
+                            playerPos.position(bedPos.position().translate(-0.2f, -0.35f))));
     PositionSync.syncPosition(player);
 
-    // Disable player controls during sleep
-    player.fetch(InputComponent.class).ifPresent(ic -> ic.deactivateControls(true));
+    // Disable movement controls during sleep
+    var oldSpeed =
+        player.fetch(VelocityComponent.class).map(VelocityComponent::maxSpeed).orElse(0f);
+    oldSpeeds.put(player.id(), oldSpeed);
+    player.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(0f));
 
     // Play death animation as placeholder for sleep animation
     player
@@ -208,8 +215,10 @@ public class BedSleepSystem extends System {
     // Ensure stamina is at max
     stamina.currentAmount(stamina.maxAmount());
 
-    // Re-enable player controls after sleep
-    entity.fetch(InputComponent.class).ifPresent(ic -> ic.deactivateControls(false));
+    // Re-enable movement controls
+    float oldSpeed = oldSpeeds.getOrDefault(entity.id(), 1f);
+    entity.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(oldSpeed));
+    oldSpeeds.remove(entity.id());
 
     // Reset animation state to idle
     entity.fetch(DrawComponent.class).ifPresent(DrawComponent::resetState);

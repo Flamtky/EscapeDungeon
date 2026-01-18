@@ -41,7 +41,7 @@ public final class AttributeBarUtil {
   private static final int DEFAULT_BAR_HEIGHT = 10;
 
   /** Gap between stacked bars. */
-  public static final float BAR_GAP = 15f;
+  public static final float BAR_GAP = DEFAULT_BAR_HEIGHT;
 
   private AttributeBarUtil() {} // Utility class, no instances
 
@@ -115,9 +115,26 @@ public final class AttributeBarUtil {
     ProgressBar bar = new ProgressBar(MIN, MAX, STEP_SIZE, false, defaultSkin(), styleName);
     bar.setAnimateDuration(UPDATE_DURATION);
     bar.setSize(DEFAULT_BAR_WIDTH, DEFAULT_BAR_HEIGHT);
-    updatePosition(bar, EntityUtils.getPosition(entity), verticalOffset);
+    updatePosition(bar, getBarOriginForEntity(entity, verticalOffset));
     bar.setVisible(true);
     return bar;
+  }
+
+  public static Point getBarOriginForEntity(Entity entity, float verticalOffset) {
+    Vector3 worldCoords =
+        new Vector3(
+            EntityUtils.getPosition(entity).x(),
+            Game.positionOf(entity).map(Point::y).orElse(0f),
+            0);
+    Vector3 screenCoords = CameraSystem.camera().project(worldCoords);
+
+    Stage stage = Game.stage().orElseThrow(() -> new RuntimeException("No stage available"));
+    screenCoords.x = screenCoords.x / stage.getViewport().getScreenWidth() * stage.getWidth();
+    screenCoords.x -= DEFAULT_BAR_WIDTH / 2f; // center the bar horizontally
+    screenCoords.y = screenCoords.y / stage.getViewport().getScreenHeight() * stage.getHeight();
+    // screenCoords.y -= DEFAULT_BAR_HEIGHT; // adjust for bar height
+
+    return new Point(screenCoords.x, screenCoords.y - verticalOffset);
   }
 
   /**
@@ -125,18 +142,9 @@ public final class AttributeBarUtil {
    *
    * @param bar the progress bar
    * @param pos the position of the entity
-   * @param verticalOffset offset above the entity
    */
-  public static void updatePosition(ProgressBar bar, Point pos, float verticalOffset) {
-    Vector3 worldCoords = new Vector3(pos.x(), pos.y(), 0);
-    Vector3 screenCoords = CameraSystem.camera().project(worldCoords);
-
-    Stage stage = Game.stage().orElseThrow(() -> new RuntimeException("No stage available"));
-    screenCoords.x = screenCoords.x / stage.getViewport().getScreenWidth() * stage.getWidth();
-    screenCoords.x -= bar.getWidth() / 2; // center the bar horizontally
-    screenCoords.y = screenCoords.y / stage.getViewport().getScreenHeight() * stage.getHeight();
-
-    bar.setPosition(screenCoords.x, screenCoords.y - verticalOffset);
+  public static void updatePosition(ProgressBar bar, Point pos) {
+    bar.setPosition(pos.x(), pos.y());
   }
 
   /**
@@ -158,7 +166,7 @@ public final class AttributeBarUtil {
     bar.setVisible(
         entity.fetch(DrawComponent.class).map(DrawComponent::isVisible).orElse(false)
             && barDisplayable.current() != barDisplayable.max());
-    updatePosition(bar, EntityUtils.getPosition(entity), verticalOffset);
+    updatePosition(bar, getBarOriginForEntity(entity, verticalOffset));
     bar.setValue(barDisplayable.current() / barDisplayable.max());
   }
 

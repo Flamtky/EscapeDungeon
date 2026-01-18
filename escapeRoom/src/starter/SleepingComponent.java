@@ -10,17 +10,15 @@ import core.Component;
  *
  * <p>The component stores the stamina recovery rate and the starting stamina amount when sleep
  * began, allowing the sleep system to calculate and apply stamina restoration over time.
+ *
+ * @param staminaRecoveryRate The amount of stamina restored per second while sleeping.
+ * @param startingStamina The stamina amount when sleep started. Used for progress tracking.
  */
-public class SleepingComponent implements Component {
+public record SleepingComponent(float startingStamina, float staminaRecoveryRate)
+    implements Component {
 
   /** The default stamina recovery rate per second. */
   public static final float DEFAULT_STAMINA_RECOVERY_RATE = 5.0f;
-
-  /** The amount of stamina restored per second while sleeping. */
-  private final float staminaRecoveryRate;
-
-  /** The stamina amount when sleep started. Used for progress tracking. */
-  private final float startingStamina;
 
   /**
    * Creates a new {@code SleepingComponent} with the default stamina recovery rate.
@@ -37,16 +35,14 @@ public class SleepingComponent implements Component {
    * @param startingStamina the stamina amount when sleep started
    * @param staminaRecoveryRate the amount of stamina to restore per second
    */
-  public SleepingComponent(float startingStamina, float staminaRecoveryRate) {
-    this.startingStamina = startingStamina;
-    this.staminaRecoveryRate = staminaRecoveryRate;
-  }
+  public SleepingComponent {}
 
   /**
    * Returns the stamina recovery rate per second.
    *
    * @return the amount of stamina restored per second while sleeping
    */
+  @Override
   public float staminaRecoveryRate() {
     return staminaRecoveryRate;
   }
@@ -56,6 +52,7 @@ public class SleepingComponent implements Component {
    *
    * @return the starting stamina value
    */
+  @Override
   public float startingStamina() {
     return startingStamina;
   }
