@@ -71,7 +71,6 @@ public final class MAClient {
     dispatcher.registerHandler(
         TimerCommandMessage.class,
         (session, msg) -> {
-          System.out.println("Received TimerCommandMessage: " + msg.command());
           switch (msg.command()) {
             case START:
               // Create timer dialog if it doesn't exist

@@ -717,7 +717,7 @@ public final class ServerTransport {
       return;
     }
 
-    Optional<Entity> optEntity = Game.levelEntities().filter(e -> e.id() == entityId).findFirst();
+    Optional<Entity> optEntity = Game.findEntityById(entityId);
     if (optEntity.isEmpty()) {
       LOGGER.warn("Entity id='{}' not found for spawn", entityId);
       return;
