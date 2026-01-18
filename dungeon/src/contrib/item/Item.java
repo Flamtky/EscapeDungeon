@@ -392,4 +392,13 @@ public class Item implements CraftingIngredient, CraftingResult, Serializable {
         && stackSize == other.stackSize
         && maxStackSize == other.maxStackSize;
   }
+
+  /**
+   * Gets called when the item is added to an entity's inventory.
+   *
+   * @param owner The entity to which the item should be added.
+   */
+  public void added(Entity owner) {
+    // noop
+  }
 }

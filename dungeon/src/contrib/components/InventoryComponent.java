@@ -2,6 +2,8 @@ package contrib.components;
 
 import contrib.item.Item;
 import core.Component;
+import core.Entity;
+import core.Game;
 import core.utils.logging.DungeonLogger;
 import java.util.*;
 import java.util.function.Consumer;
@@ -70,12 +72,7 @@ public final class InventoryComponent implements Component {
 
     int firstEmpty = this.findNextAvailableSlot();
     if (firstEmpty == -1) return false;
-    LOGGER.debug(
-        "Item '{}' was added to the inventory of entity '{}'.",
-        item.getClass().getSimpleName(),
-        this.getClass().getSimpleName());
-    inventory[firstEmpty] = item;
-    return true;
+    return set(firstEmpty, item);
   }
 
   /**
@@ -300,6 +297,7 @@ public final class InventoryComponent implements Component {
     }
     this.inventory[index % this.inventory.length] = item;
     this.onItemAdded.accept(item);
+    item.added(Game.findInLevel(this).orElseThrow());
     return true;
   }
 
