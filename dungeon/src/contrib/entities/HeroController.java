@@ -168,15 +168,13 @@ public class HeroController {
               hero.fetch(AnalyticsComponent.class)
                   .ifPresent(
                       ac -> {
+                        var target_pos =
+                            target != null ? Map.of("x", target.x(), "y", target.y()) : "none";
                         DungeonAnalyticsAPI.logXApiStatement(
                             ac,
                             DungeonAnalyticsAPI.Verb.CAST_SKILL,
                             skill.name(),
-                            Map.of(
-                                "success",
-                                result,
-                                "target_point",
-                                target != null ? target.toString() : "none"));
+                            Map.of("success", result, "target_point", target_pos));
                       });
             },
             () -> {

@@ -3,6 +3,7 @@ package analytics;
 import contrib.entities.CharacterClass;
 import core.components.AnalyticsComponent;
 import core.network.server.ClientState;
+import core.utils.JsonHandler;
 import core.utils.logging.DungeonLogger;
 import java.sql.*;
 import java.util.Map;
@@ -131,39 +132,12 @@ public class DungeonAnalyticsAPI {
             pstmt.setString(2, stateToId(ac.state()));
             pstmt.setString(3, verb.toString());
             pstmt.setString(4, objectId);
-            pstmt.setString(5, mapToJson(resultJsonMap));
+            pstmt.setString(5, JsonHandler.writeJson(resultJsonMap, false));
             pstmt.executeUpdate();
           } catch (SQLException e) {
             LOGGER.error("Failed to log xAPI statement: " + e.getMessage(), e);
           }
         });
-  }
-
-  private static String mapToJson(Map<String, Object> map) {
-    StringBuilder jsonBuilder = new StringBuilder();
-    jsonBuilder.append("{");
-    int size = map.size();
-    int index = 0;
-    for (Map.Entry<String, Object> entry : map.entrySet()) {
-      jsonBuilder.append("\"").append(entry.getKey()).append("\":");
-      Object value = entry.getValue();
-      if (value instanceof String) {
-        jsonBuilder.append("\"").append(value).append("\"");
-      } else if (value instanceof Map) {
-        // Recursive call for nested maps
-        @SuppressWarnings("unchecked")
-        Map<String, Object> nestedMap = (Map<String, Object>) value;
-        jsonBuilder.append(mapToJson(nestedMap));
-      } else {
-        jsonBuilder.append(value);
-      }
-      if (index < size - 1) {
-        jsonBuilder.append(",");
-      }
-      index++;
-    }
-    jsonBuilder.append("}");
-    return jsonBuilder.toString();
   }
 
   /**
