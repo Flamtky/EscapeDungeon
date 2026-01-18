@@ -53,8 +53,8 @@ public class DungeonAnalyticsAPI {
 
           final Map<CharacterClass, String> classToType =
               Map.of(
-                  CharacterClass.ROGUE, "dummy1",
-                  CharacterClass.APPRENTICE, "dummy2");
+                  CharacterClass.ROGUE, "Achiever",
+                  CharacterClass.APPRENTICE, "Socialiser");
 
           try (Connection conn = DatabaseConnector.getConnection();
               PreparedStatement pstmt = conn.prepareStatement(sql)) {

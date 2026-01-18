@@ -92,7 +92,7 @@ public class MAServer {
   }
 
   private static void createSystems() {
-    //Game.add(new PositionSystem());
+    // Game.add(new PositionSystem());
     Game.add(new VelocitySystem());
     Game.add(new FrictionSystem());
     Game.add(new MoveSystem());
