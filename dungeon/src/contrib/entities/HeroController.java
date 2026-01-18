@@ -142,15 +142,7 @@ public class HeroController {
       vc.applyForce(MOVEMENT_ID, updatedForce);
     }
 
-    hero.fetch(AnalyticsComponent.class)
-        .ifPresent(
-            ac -> {
-              DungeonAnalyticsAPI.logXApiStatement(
-                  ac,
-                  DungeonAnalyticsAPI.Verb.MOVED,
-                  hero.name() + "#" + hero.id(),
-                  Map.of("success", true, "direction", direction.toString()));
-            });
+    // analytics for successful movement in MoveSystem
   }
 
   /**

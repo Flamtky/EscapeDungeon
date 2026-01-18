@@ -1,5 +1,6 @@
 package core.systems;
 
+import analytics.DungeonAnalyticsAPI;
 import contrib.components.CollideComponent;
 import contrib.systems.CollisionSystem;
 import contrib.systems.PositionSync;
@@ -8,8 +9,10 @@ import contrib.utils.components.collide.CollisionUtils;
 import core.Entity;
 import core.Game;
 import core.System;
+import core.components.AnalyticsComponent;
 import core.components.PositionComponent;
 import core.components.VelocityComponent;
+import core.level.Tile;
 import core.utils.Direction;
 import core.utils.Point;
 import core.utils.Vector2;
@@ -181,6 +184,31 @@ public class MoveSystem extends System {
       newPos = oldPos;
     }
     data.pc.position(newPos);
+
+    if (data.e.isPresent(AnalyticsComponent.class)) {
+      Tile currentTile = Game.tileAt(newPos).orElse(null);
+      Tile oldTile = Game.tileAt(oldPos).orElse(null);
+      if (currentTile != null && currentTile != oldTile) {
+        Vector2 finalVelocity = velocity;
+        var posData = Map.of("x", (int) newPos.x(), "y", (int) newPos.y());
+        data.e
+            .fetch(AnalyticsComponent.class)
+            .ifPresent(
+                ac -> {
+                  DungeonAnalyticsAPI.logXApiStatement(
+                      ac,
+                      DungeonAnalyticsAPI.Verb.MOVED,
+                      data.e.name() + "#" + data.e.id(),
+                      Map.of(
+                          "success",
+                          true,
+                          "direction",
+                          finalVelocity.direction().toString(),
+                          "pos",
+                          posData));
+                });
+      }
+    }
 
     if (hasHitWall) {
       data.vc.onWallHit().accept(data.e);

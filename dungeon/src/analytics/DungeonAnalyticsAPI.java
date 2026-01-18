@@ -90,7 +90,11 @@ public class DungeonAnalyticsAPI {
 
       try (ResultSet rs = pstmt.executeQuery()) {
         if (rs.next()) {
-          return (UUID) rs.getObject("session_id");
+          var result = (UUID) rs.getObject("session_id");
+          if (result == null) {
+            throw new SQLException("Failed to retrieve generated session_id");
+          }
+          return result;
         }
       }
     } catch (SQLException e) {
@@ -145,6 +149,11 @@ public class DungeonAnalyticsAPI {
       Object value = entry.getValue();
       if (value instanceof String) {
         jsonBuilder.append("\"").append(value).append("\"");
+      } else if (value instanceof Map) {
+        // Recursive call for nested maps
+        @SuppressWarnings("unchecked")
+        Map<String, Object> nestedMap = (Map<String, Object>) value;
+        jsonBuilder.append(mapToJson(nestedMap));
       } else {
         jsonBuilder.append(value);
       }
