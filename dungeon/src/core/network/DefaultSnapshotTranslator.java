@@ -23,6 +23,7 @@ import core.utils.Point;
 import core.utils.logging.DungeonLogger;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * The default implementation of {@link SnapshotTranslator}.
@@ -94,16 +95,18 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
     }
     latestServerTick = serverTick;
 
-    List<EntityState> list = new ArrayList<>();
+    List<EntityState> list =
+        Game.levelEntities()
+            .filter(this::isClientRelevant)
+            .parallel()
+            .map(
+                e -> {
+                  EntityState.Builder builder = createBuilder(e);
+                  populateBuilder(e, builder);
+                  return builder.build();
+                })
+            .collect(Collectors.toList());
 
-    Game.levelEntities()
-        .filter(this::isClientRelevant)
-        .forEach(
-            e -> {
-              EntityState.Builder builder = createBuilder(e);
-              populateBuilder(e, builder);
-              list.add(builder.build());
-            });
     return Optional.of(new SnapshotMessage(serverTick, list, LevelState.currentLevelStateFull()));
   }
 
@@ -225,6 +228,18 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
     return false;
   }
 
+  /**
+   * Helper record for capturing per-entity delta processing results during parallel stream
+   * processing.
+   *
+   * @param entityState the processed entity state
+   * @param entityId the entity ID
+   * @param isDeltaRelevant whether the entity is mobile (relevant for delta)
+   * @param currentPos the entity's current position, if present
+   */
+  private record DeltaEntityResult(
+      EntityState entityState, int entityId, boolean isDeltaRelevant, Optional<Point> currentPos) {}
+
   // Server-side delta generation
   @Override
   public Optional<DeltaSnapshotMessage> translateToDelta(int serverTick, ClientState client) {
@@ -245,66 +260,74 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
             .flatMap(e -> e.fetch(PositionComponent.class))
             .map(PositionComponent::position);
 
+    // Parallel entity processing: collect results without side effects
+    var results =
+        Game.levelEntities()
+            .filter(this::isClientRelevant)
+            .parallel()
+            .map(
+                e -> {
+                  int entityId = e.id();
+                  boolean isDeltaRelevant = SnapshotTranslator.relevantForDelta(e);
+
+                  EntityState.Builder builder = createBuilder(e);
+                  populateBuilder(e, builder);
+                  EntityState currentState = builder.build();
+                  Optional<Point> currentPos = currentState.position();
+
+                  return new DeltaEntityResult(currentState, entityId, isDeltaRelevant, currentPos);
+                })
+            .collect(Collectors.toList());
+
     List<EntityState> changedEntities = new ArrayList<>();
     Set<Integer> currentMobileVisibleIds = new HashSet<>();
 
-    // Build current entity states and detect changes
-    Game.levelEntities()
-        .filter(this::isClientRelevant)
-        .forEach(
-            e -> {
-              int entityId = e.id();
-              boolean isDeltaRelevant = SnapshotTranslator.relevantForDelta(e);
+    // Process results and apply side effects
+    for (DeltaEntityResult result : results) {
+      int entityId = result.entityId();
+      EntityState currentState = result.entityState();
+      boolean isDeltaRelevant = result.isDeltaRelevant();
+      Optional<Point> entityPos = result.currentPos();
 
-              // Static entities: skip if already sent, they never change
-              if (!isDeltaRelevant) {
-                if (sentStaticIds.contains(entityId)) {
-                  return; // Already sent in full snapshot, skip
-                }
-                // New static entity that appeared mid-level (rare case)
-                // Include it in delta and mark as sent
-                EntityState.Builder builder = createBuilder(e);
-                populateBuilder(e, builder);
-                EntityState currentState = builder.build();
+      // Static entities: skip if already sent, they never change
+      if (!isDeltaRelevant) {
+        if (sentStaticIds.contains(entityId)) {
+          continue; // Already sent in full snapshot, skip
+        }
+        // New static entity that appeared mid-level (rare case)
+        // Include it in delta and mark as sent
+        // Check proximity for new static entities too
+        if (playerPos.isPresent() && entityPos.isPresent()) {
+          double distance = playerPos.get().distance(entityPos.get());
+          if (distance > 20.0) {
+            continue; // Skip entities outside visibility range
+          }
+        }
 
-                // Check proximity for new static entities too
-                Optional<Point> entityPos = currentState.position();
-                if (playerPos.isPresent() && entityPos.isPresent()) {
-                  double distance = playerPos.get().distance(entityPos.get());
-                  if (distance > 20.0) {
-                    return; // Skip entities outside visibility range
-                  }
-                }
+        changedEntities.add(currentState);
+        sentStaticIds.add(entityId);
+        lastSentStates.put(entityId, currentState);
+        continue;
+      }
 
-                changedEntities.add(currentState);
-                sentStaticIds.add(entityId);
-                lastSentStates.put(entityId, currentState);
-                return;
-              }
+      // Mobile entities: full delta processing
+      // Check if entity is near player (proximity filter)
+      if (playerPos.isPresent() && entityPos.isPresent()) {
+        double distance = playerPos.get().distance(entityPos.get());
+        if (distance > 20.0) {
+          continue; // Skip entities outside visibility range
+        }
+      }
 
-              // Mobile entities: full delta processing
-              EntityState.Builder builder = createBuilder(e);
-              populateBuilder(e, builder);
-              EntityState currentState = builder.build();
+      currentMobileVisibleIds.add(entityId);
 
-              // Check if entity is near player (proximity filter)
-              Optional<Point> entityPos = currentState.position();
-              if (playerPos.isPresent() && entityPos.isPresent()) {
-                double distance = playerPos.get().distance(entityPos.get());
-                if (distance > 20.0) {
-                  return; // Skip entities outside visibility range
-                }
-              }
-
-              currentMobileVisibleIds.add(entityId);
-
-              // Check if entity state has changed
-              EntityState lastState = lastSentStates.get(entityId);
-              if (lastState == null || !lastState.equals(currentState)) {
-                changedEntities.add(currentState);
-                lastSentStates.put(entityId, currentState);
-              }
-            });
+      // Check if entity state has changed
+      EntityState lastState = lastSentStates.get(entityId);
+      if (lastState == null || !lastState.equals(currentState)) {
+        changedEntities.add(currentState);
+        lastSentStates.put(entityId, currentState);
+      }
+    }
 
     // Detect mobile entities that left visibility range (for ghost cleanup)
     // Only mobile entities need removal - static entities persist
@@ -464,7 +487,7 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
       if (now - lastSent >= SPAWN_REQUEST_COOLDOWN_MS) {
         Game.network().send((short) 0, new RequestEntitySpawn(entityId), true);
         lastSpawnRequestTimes.put(entityId, now);
-        LOGGER.warn("No entity found for snapshot with id: {}. Requesting spawn.", entityId);
+        LOGGER.trace("No entity found for snapshot with id: {}. Requesting spawn.", entityId);
       } else {
         LOGGER.debug("Skipping spawn request for entity {} (cooldown active).", entityId);
       }

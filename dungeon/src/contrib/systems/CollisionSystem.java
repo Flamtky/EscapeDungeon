@@ -15,6 +15,7 @@ import core.utils.Vector2;
 import core.utils.components.MissingComponentException;
 import core.utils.logging.DungeonLogger;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /**
@@ -49,7 +50,7 @@ public final class CollisionSystem extends System {
   /** Solid entities will be kept at this distance after colliding. */
   public static final float COLLIDE_SET_DISTANCE = 0.0001f;
 
-  private final Map<CollisionKey, CollisionData> collisions = new HashMap<>();
+  private final Map<CollisionKey, CollisionData> collisions = new ConcurrentHashMap<>();
 
   /** Cache for collision data pairs to avoid recreating them every tick. */
   private final List<CollisionData> cachedPairs = new ArrayList<>();
@@ -166,7 +167,7 @@ public final class CollisionSystem extends System {
     }
     // Iterate over a copy to avoid ConcurrentModificationException when entities are removed
     // during collision handling (e.g., projectile hits solid and gets destroyed)
-    new ArrayList<>(cachedPairs).forEach(this::onEnterLeaveCheck);
+    new ArrayList<>(cachedPairs).parallelStream().forEach(this::onEnterLeaveCheck);
   }
 
   /** Rebuild the cache of collision data pairs from scratch. */
@@ -247,9 +248,11 @@ public final class CollisionSystem extends System {
       // a collision is currently happening
       if (!collisions.containsKey(key)) {
         // a new collision should call the onEnter on both entities
-        collisions.put(key, cdata);
-        cdata.a.onEnter(cdata.ea, cdata.eb, d);
-        cdata.b.onEnter(cdata.eb, cdata.ea, d.opposite());
+        if (collisions.putIfAbsent(key, cdata) == null) {
+          // Only this thread won the race and should call onEnter
+          cdata.a.onEnter(cdata.ea, cdata.eb, d);
+          cdata.b.onEnter(cdata.eb, cdata.ea, d.opposite());
+        }
       }
       // collision is ongoing
       cdata.a.onHold(cdata.ea, cdata.eb, d);
@@ -274,7 +277,7 @@ public final class CollisionSystem extends System {
         checkSolidCollision(cdata, d);
       }
 
-    } else if (collisions.remove(key) != null) {
+    } else if (collisions.remove(key, cdata)) {
       Direction d = checkDirectionOfCollision(cdata.a.collider(), cdata.b.collider());
       // a collision was happening and the two entities are no longer colliding, on Leave
       // called once
