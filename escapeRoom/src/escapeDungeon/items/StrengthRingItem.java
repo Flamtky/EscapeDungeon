@@ -13,7 +13,7 @@ public class StrengthRingItem extends Item {
 
   private static final String PATH = "items/rpg/item_ring_gold_gem_red.png";
 
-  private static Entity itemHolder;
+  private Entity itemHolder;
 
   public StrengthRingItem() {
     super(

@@ -18,7 +18,7 @@ public class IceWallPlacer extends Item {
 
   private static final String PATH = "items/rpg/item_ring_silver_gem_blue.png";
 
-  private static Entity itemHolder;
+  private Entity itemHolder;
 
   /** Constructs a new IceWallPlacer item. */
   public IceWallPlacer() {

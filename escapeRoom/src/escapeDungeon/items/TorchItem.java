@@ -20,7 +20,7 @@ public class TorchItem extends Item {
 
   private static final String PATH = "items/rpg/item_torch.png";
 
-  private static Entity itemHolder;
+  private Entity itemHolder;
 
   /** Constructs a new AxeItem. */
   public TorchItem() {
