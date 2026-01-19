@@ -58,10 +58,12 @@ public class IceWallSkill extends CursorSkill {
                                       && t.designLabel() == DesignLabel.ICE)
                           .size()
                       < maxWallAmount) {
-                    tile.levelElement(LevelElement.HOLE);
-                    tile.refreshTexture();
-                    var iceWallEntity = DecoFactory.createDeco(tile.position(), Deco.FlagIndia);
-                    Game.add(iceWallEntity);
+                    if (Game.entityAtPoint(point).noneMatch(e -> e.name().contains("hero"))) {
+                      tile.levelElement(LevelElement.HOLE);
+                      tile.refreshTexture();
+                      var iceWallEntity = DecoFactory.createDeco(tile.position(), Deco.FlagIndia);
+                      Game.add(iceWallEntity);
+                    }
                   }
                 }
               }

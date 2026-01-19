@@ -13,7 +13,7 @@ public class StrengthRingItem extends Item {
 
   private static final String PATH = "items/rpg/item_ring_gold_gem_red.png";
 
-  private static Entity itemHolder;
+  private Entity itemHolder;
 
   public StrengthRingItem() {
     super(
@@ -30,8 +30,19 @@ public class StrengthRingItem extends Item {
   public boolean collect(Entity itemEntity, Entity collector) {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
-    collector.fetch(VelocityComponent.class).ifPresent((vc) -> vc.mass(1.4f));
+    if (itemHolder != null) {
+      collector.fetch(VelocityComponent.class).ifPresent((vc) -> vc.mass(1.4f));
+    }
     return super.collect(itemEntity, collector);
+  }
+
+  @Override
+  public void added(Entity collector) {
+    itemHolder = collector;
+    Sounds.KEY_ITEM_PICKUP_SOUND.play();
+    if (itemHolder != null) {
+      itemHolder.fetch(VelocityComponent.class).ifPresent((vc) -> vc.mass(1.4f));
+    }
   }
 
   @Override

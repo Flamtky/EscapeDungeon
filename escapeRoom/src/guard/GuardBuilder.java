@@ -2,6 +2,8 @@ package guard;
 
 import contrib.components.AttachmentComponent;
 import contrib.components.CollideComponent;
+import contrib.hud.DialogUtils;
+import contrib.systems.EventScheduler;
 import contrib.utils.EntityUtils;
 import contrib.utils.components.ai.AIUtils;
 import contrib.utils.components.ai.fight.AIChaseBehaviour;
@@ -15,6 +17,8 @@ import core.utils.Vector2;
 import core.utils.components.path.SimpleIPath;
 import java.util.function.BiFunction;
 import mobs.EscapeRoomMonsterBuilder;
+import mushRoom.modules.qte.FollowingIndicatorDialog;
+import mushRoom.modules.qte.FollowingIndicatorDifficulty;
 
 /**
  * Builder for creating guard entities in the escape room.
@@ -224,12 +228,41 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
 
       if (path.getCount() <= 1) { // TODO: PathFinished not working here
         // Release player in cell
-        grabbedPlayer.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(oldMaxSpeed));
-        grabbedPlayer.fetch(CollideComponent.class).ifPresent(cc -> cc.isSolid(true));
-        grabbedPlayer.remove(AttachmentComponent.class);
-        this.grabbedPlayer = null;
-        guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
-        guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(3.5f));
+        FollowingIndicatorDialog.openFollowingIndicator(
+            grabbedPlayer,
+            FollowingIndicatorDifficulty.MEDIUM,
+            () -> {
+              grabbedPlayer
+                  .fetch(VelocityComponent.class)
+                  .ifPresent(vc -> vc.maxSpeed(oldMaxSpeed));
+              grabbedPlayer.fetch(CollideComponent.class).ifPresent(cc -> cc.isSolid(true));
+              grabbedPlayer.remove(AttachmentComponent.class);
+              this.grabbedPlayer = null;
+              guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
+              guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(3.5f));
+            },
+            () ->
+              DialogUtils.showTextPopup(
+                  "Das hat nicht geklappt! Jetzt muss ich kurz warten, bis ich mich wieder bewegen darf.",
+                  "Einzelhaft",
+                  () -> {
+                    grabbedPlayer.remove(AttachmentComponent.class);
+                    guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
+                    guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(3.5f));
+                    EventScheduler.scheduleAction(
+                        () -> {
+                          grabbedPlayer
+                              .fetch(VelocityComponent.class)
+                              .ifPresent(vc -> vc.maxSpeed(oldMaxSpeed));
+                          grabbedPlayer
+                              .fetch(CollideComponent.class)
+                              .ifPresent(cc -> cc.isSolid(true));
+                          this.grabbedPlayer = null;
+                        },
+                        10000);
+                  },
+                  grabbedPlayer.id())
+            );
         return;
       }
 

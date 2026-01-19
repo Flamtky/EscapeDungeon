@@ -14,7 +14,7 @@ public class GoldItem extends Item {
   /** Constructs a new AxeItem. */
   public GoldItem() {
     super(
-        "Axt",
+        "Goldbarren",
         "Damit können bestimmte Bäume gefällt werden.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));

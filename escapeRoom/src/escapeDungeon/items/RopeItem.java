@@ -7,14 +7,14 @@ import core.utils.components.path.SimpleIPath;
 import mushRoom.Sounds;
 
 /** An AxeItem can be used to chop down certain trees. */
-public class RingGoldItem extends Item {
+public class RopeItem extends Item {
 
-  private static final String PATH = "items/rpg/item_ring_gold.png";
+  private static final String PATH = "items/rpg/item_stick_wizardly.png";
 
   /** Constructs a new AxeItem. */
-  public RingGoldItem() {
+  public RopeItem() {
     super(
-        "Goldring",
+        "Seil",
         "Damit können bestimmte Bäume gefällt werden.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));

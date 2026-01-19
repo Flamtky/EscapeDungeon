@@ -93,6 +93,7 @@ public class MASinglePlayer {
     Item.registerItem(TorchItem.class);
     Item.registerItem(WaterPotionItem.class);
     Item.registerItem(WoodenBridgeItem.class);
+    Item.registerItem(RopeItem.class);
   }
 
   private static void configGame() throws IOException {
@@ -124,7 +125,7 @@ public class MASinglePlayer {
     Game.add(new IdleSoundSystem());
     Game.add(new GuardDetectionSystem());
     Game.add(new AttachmentSystem());
-    // Game.add(new IllegalSystem());
+    Game.add(new IllegalSystem());
     Game.add(new BedSleepSystem());
     if (DEBUG_MODE) Game.add(new Debugger());
     Game.add(new TimerSystem());

@@ -14,7 +14,7 @@ public class MetalItem extends Item {
   /** Constructs a new AxeItem. */
   public MetalItem() {
     super(
-        "Axt",
+        "Silberbarren",
         "Damit können bestimmte Bäume gefällt werden.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));

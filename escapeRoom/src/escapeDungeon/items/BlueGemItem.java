@@ -14,7 +14,7 @@ public class BlueGemItem extends Item {
   /** Constructs a new AxeItem. */
   public BlueGemItem() {
     super(
-        "Axt",
+        "BLauer Edelstein",
         "Damit können bestimmte Bäume gefällt werden.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));

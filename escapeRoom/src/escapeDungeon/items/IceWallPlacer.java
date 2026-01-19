@@ -18,7 +18,7 @@ public class IceWallPlacer extends Item {
 
   private static final String PATH = "items/rpg/item_ring_silver_gem_blue.png";
 
-  private static Entity itemHolder;
+  private Entity itemHolder;
 
   /** Constructs a new IceWallPlacer item. */
   public IceWallPlacer() {
@@ -43,6 +43,18 @@ public class IceWallPlacer extends Item {
             (sc) ->
                 sc.addSkill(new IceWallSkill("IceWallSkill", 100, 3, Tuple.of(Resource.MANA, 0))));
     return super.collect(itemEntity, collector);
+  }
+
+  @Override
+  public void added(Entity collector) {
+    itemHolder = collector;
+    Sounds.KEY_ITEM_PICKUP_SOUND.play();
+    collector.add(new IceMovementComponent());
+    collector
+        .fetch(SkillComponent.class)
+        .ifPresent(
+            (sc) ->
+                sc.addSkill(new IceWallSkill("IceWallSkill", 100, 3, Tuple.of(Resource.MANA, 0))));
   }
 
   @Override
