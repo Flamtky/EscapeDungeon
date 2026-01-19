@@ -67,14 +67,10 @@ public class DialogFactory {
    *
    * @param type The unique type of the dialog
    * @param creator Function that creates a dialog from a context
-   * @throws DialogCreationException if a dialog type with the given name is already registered
    */
   public static void register(DialogType type, Function<DialogContext, Group> creator) {
     Objects.requireNonNull(type, "type");
     Objects.requireNonNull(creator, "creator");
-    if (registry.containsKey(type)) {
-      throw new DialogCreationException("Dialog type '" + type + "' is already registered");
-    }
     registry.put(type, creator);
   }
 

@@ -16,6 +16,7 @@ import contrib.hud.UIUtils;
 import contrib.systems.EventScheduler;
 import core.Entity;
 import core.Game;
+import core.game.WindowEventManager;
 import core.utils.FontHelper;
 import core.utils.logging.DungeonLogger;
 import java.util.Objects;
@@ -202,12 +203,18 @@ public class FollowingIndicatorUI extends Group {
     selectRandomActiveZone();
     selectRandomKey();
 
+    WindowEventManager.registerWindowRefreshListener(this::handleResize);
+
     LOGGER.info(
         "FollowingIndicatorUI initialized: speed={}, zones={}, required={}, attempts={}",
         difficulty.indicatorSpeed(),
         difficulty.zoneCount(),
         difficulty.requiredSuccesses(),
         difficulty.maxAttempts());
+  }
+
+  private void handleResize() {
+    setSize(Game.windowWidth(), Game.windowHeight());
   }
 
   @Override

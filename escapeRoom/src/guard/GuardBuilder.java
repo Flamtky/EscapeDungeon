@@ -1,5 +1,6 @@
 package guard;
 
+import contrib.components.AIComponent;
 import contrib.components.AttachmentComponent;
 import contrib.components.CollideComponent;
 import contrib.hud.DialogUtils;
@@ -240,6 +241,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
               this.grabbedPlayer = null;
               guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
               guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(3.5f));
+              guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(true));
             },
             () ->
                 DialogUtils.showTextPopup(
@@ -249,6 +251,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
                       grabbedPlayer.remove(AttachmentComponent.class);
                       guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
                       guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(3.5f));
+                      guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(true));
                       EventScheduler.scheduleAction(
                           () -> {
                             grabbedPlayer
@@ -262,6 +265,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
                           10000);
                     },
                     grabbedPlayer.id()));
+        guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(false));
         return;
       }
 
