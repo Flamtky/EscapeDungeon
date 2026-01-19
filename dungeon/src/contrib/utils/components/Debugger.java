@@ -6,7 +6,10 @@ import contrib.components.CollideComponent;
 import contrib.components.HealthComponent;
 import contrib.components.UIComponent;
 import contrib.configuration.KeyboardConfig;
+import contrib.hud.UIUtils;
+import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogFactory;
+import contrib.hud.dialogs.DialogType;
 import contrib.systems.DebugDrawSystem;
 import contrib.systems.LevelEditorSystem;
 import contrib.utils.EntityUtils;
@@ -48,6 +51,7 @@ public class Debugger extends System {
 
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(Debugger.class);
   private static Entity pauseMenu;
+  private static int advanceTimer = 0;
 
   /** Creates a new Debugger system. */
   public Debugger() {
@@ -210,21 +214,55 @@ public class Debugger extends System {
 
   /** Pauses the game. */
   public static void PAUSE_GAME() {
-    if (pauseMenu == null
-        || pauseMenu.fetch(UIComponent.class).map(x -> x.dialog().getStage() == null).orElse(true))
-      pauseMenu = newPauseMenu();
+    if (isPaused()) {
+      unpause();
+    } else {
+      pause();
+    }
   }
 
-  private static Entity newPauseMenu() {
-    UIComponent ui = DialogFactory.showOkDialog("Pause", "Spiel pausiert", () -> {});
-
+  private static void pause() {
+    UIComponent ui =
+        DialogFactory.show(
+            DialogContext.builder().type(DialogType.DefaultTypes.PAUSE_MENU).center(false).build());
     ui.dialog().setVisible(true);
-    return ui.dialogContext().ownerEntity();
+    pauseMenu = ui.dialogContext().ownerEntity();
+  }
+
+  private static void unpause() {
+    if (pauseMenu == null) return;
+    UIUtils.closeDialog(pauseMenu.fetch(UIComponent.class).orElseThrow());
+  }
+
+  private static boolean isPaused() {
+    if (pauseMenu == null) return false;
+    return pauseMenu.fetch(UIComponent.class).map(x -> x.dialog().getStage() != null).orElse(false);
+  }
+
+  private static void ADVANCE_FRAME() {
+    if (!isPaused()) return;
+    unpause();
+    advanceTimer = 2; // Set to 2 to account for the current frame
+    LOGGER.info("Advanced one frame");
+  }
+
+  private static void checkFrameAdvance() {
+    if (advanceTimer > 0) {
+      advanceTimer--;
+      if (advanceTimer == 0) {
+        pause();
+      }
+    }
   }
 
   private static void OPEN_DOORS() {
     Game.endTiles().forEach(ExitTile::open);
     Game.allTiles(LevelElement.DOOR).forEach(door -> ((DoorTile) door).open());
+  }
+
+  @Override
+  public void stop() {
+    // Cant be stopped
   }
 
   /**
@@ -236,6 +274,7 @@ public class Debugger extends System {
       Debugger.ZOOM_CAMERA(-0.2f);
     if (Gdx.input.isKeyJustPressed(KeyboardConfig.DEBUG_ZOOM_IN.value()))
       Debugger.ZOOM_CAMERA(0.2f);
+
     if (Gdx.input.isKeyJustPressed(KeyboardConfig.DEBUG_TELEPORT_TO_CURSOR.value()))
       Debugger.TELEPORT_TO_CURSOR();
     if (Gdx.input.isKeyJustPressed(KeyboardConfig.DEBUG_TELEPORT_TO_END.value()))
@@ -249,7 +288,10 @@ public class Debugger extends System {
     if (Gdx.input.isKeyJustPressed(KeyboardConfig.DEBUG_OPEN_DOORS.value())) Debugger.OPEN_DOORS();
     if (Gdx.input.isKeyJustPressed(core.configuration.KeyboardConfig.PAUSE.value()))
       Debugger.PAUSE_GAME();
+    if (Gdx.input.isKeyJustPressed(core.configuration.KeyboardConfig.ADVANCE_FRAME.value()))
+      Debugger.ADVANCE_FRAME();
     if (Gdx.input.isKeyJustPressed(KeyboardConfig.DEBUG_TOGGLE_HUD.value()))
       Game.system(DebugDrawSystem.class, DebugDrawSystem::toggleHUD);
+    checkFrameAdvance();
   }
 }

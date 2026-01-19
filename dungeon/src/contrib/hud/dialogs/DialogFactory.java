@@ -54,6 +54,7 @@ public class DialogFactory {
     register(DialogType.DefaultTypes.CRAFTING_GUI, CraftingGUI::build);
     register(DialogType.DefaultTypes.KEYPAD, KeypadUI::build);
     register(DialogType.DefaultTypes.PROGRESS_BAR, AttributeBarUtil::buildProgressBar);
+    register(DialogType.DefaultTypes.PAUSE_MENU, PauseDialog::build);
     LOGGER.debug("Registered built-in dialog types");
   }
 
@@ -208,12 +209,10 @@ public class DialogFactory {
     UIComponent ui = show(ctx, targetIds);
 
     // Register callback
-    ui.registerCallback(
-        DialogContextKeys.ON_CONFIRM,
-        data -> {
-          onConfirm.execute();
-          UIUtils.closeDialog(ui, true);
-        });
+    ui.registerCallback(DialogContextKeys.ON_CONFIRM, data -> UIUtils.closeDialog(ui, true, true));
+
+    // Default onClose behavior (e.g. when pressing ESC)
+    ui.onClose(uic -> onConfirm.execute());
 
     return ui;
   }
@@ -244,14 +243,12 @@ public class DialogFactory {
         DialogContextKeys.ON_YES,
         data -> {
           onYes.execute();
-          UIUtils.closeDialog(ui, true);
+          UIUtils.closeDialog(ui, true, false);
         });
-    ui.registerCallback(
-        DialogContextKeys.ON_NO,
-        data -> {
-          onNo.execute();
-          UIUtils.closeDialog(ui, true);
-        });
+    ui.registerCallback(DialogContextKeys.ON_NO, data -> UIUtils.closeDialog(ui, true, true));
+
+    // Default onClose behavior (e.g. when pressing ESC)
+    ui.onClose(uic -> onNo.execute());
 
     return ui;
   }
