@@ -4,11 +4,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import contrib.components.BarDisplayable;
 import contrib.utils.AttributeBarUtil;
 import core.Entity;
-import core.Game;
 import core.System;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
-import core.utils.Point;
 import core.utils.logging.DungeonLogger;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -139,9 +137,7 @@ public final class AttributeBarSystem extends System {
 
       // Update position
       AttributeBarUtil.updatePosition(
-          progressBar,
-          Game.positionOf(entity).orElse(new Point(0, 0)).translate(0.5f, 0),
-          entry.verticalOffset());
+          progressBar, AttributeBarUtil.getBarOriginForEntity(entity, entry.verticalOffset));
 
       // Update value
       progressBar.setValue(bar.current() / bar.max());

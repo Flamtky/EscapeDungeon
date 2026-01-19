@@ -403,6 +403,7 @@ public final class GameLoop extends ScreenAdapter {
 
           Entity newEntity = new Entity(event.entityId());
           newEntity.add(event.positionComponent());
+          if (event.decoComponent() != null) newEntity.add(event.decoComponent());
           if (event.drawComponent() != null) newEntity.add(event.drawComponent());
           newEntity.persistent(event.isPersistent());
 

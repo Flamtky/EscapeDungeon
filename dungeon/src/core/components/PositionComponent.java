@@ -122,7 +122,7 @@ public final class PositionComponent implements Component, Serializable {
    * @return The position.
    */
   public Point position() {
-    return new Point(position);
+    return position;
   }
 
   /**

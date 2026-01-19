@@ -28,7 +28,7 @@ public final class PositionSystem extends System {
 
   @Override
   public void execute() {
-    filteredEntityStream(PositionComponent.class)
+    filteredEntityStream()
         .map(this::buildDataObject)
         .filter(data -> data.pc.position().equals(PositionComponent.ILLEGAL_POSITION))
         .forEach(this::randomPosition);

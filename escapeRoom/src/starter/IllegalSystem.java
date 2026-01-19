@@ -6,6 +6,7 @@ import core.Game;
 import core.System;
 import core.components.DrawComponent;
 import core.components.PlayerComponent;
+import core.game.PreRunConfiguration;
 import core.level.Tile;
 import core.level.utils.DesignLabel;
 import core.utils.components.draw.shader.OutlineShader;
@@ -30,11 +31,13 @@ public class IllegalSystem extends System {
 
   /** Constructs an IllegalSystem that processes PlayerComponent entities. */
   public IllegalSystem() {
-    super(PlayerComponent.class);
+    super(AuthoritativeSide.BOTH, PlayerComponent.class);
   }
 
   @Override
   public void execute() {
+    if (!PreRunConfiguration.isNetworkServer()) return; // no authority
+
     filteredEntityStream().forEach(this::handlePlayer);
   }
 
@@ -64,28 +67,25 @@ public class IllegalSystem extends System {
   }
 
   private static void outlineIfIllegal(Entity player) {
-    if (!Game.isHeadless()) { // won't work in mp
-      player
-          .fetch(DrawComponent.class)
-          .ifPresent(
-              drawComponent -> {
-                player
-                    .fetch(IllegalComponent.class)
-                    .ifPresent(
-                        ic -> {
-                          if (ic.isIllegal()) {
-                            drawComponent
-                                .shaders()
-                                .add(
-                                    ILLEGAL_SHADER_KEY,
-                                    new OutlineShader(
-                                        ILLEGAL_OUTLINE_WIDTH, ILLEGAL_OUTLINE_COLOR));
-                          } else {
-                            drawComponent.shaders().remove(ILLEGAL_SHADER_KEY);
-                          }
-                        });
-              });
-    }
+    player
+        .fetch(DrawComponent.class)
+        .ifPresent(
+            drawComponent -> {
+              player
+                  .fetch(IllegalComponent.class)
+                  .ifPresent(
+                      ic -> {
+                        if (ic.isIllegal()) {
+                          drawComponent
+                              .shaders()
+                              .add(
+                                  ILLEGAL_SHADER_KEY,
+                                  new OutlineShader(ILLEGAL_OUTLINE_WIDTH, ILLEGAL_OUTLINE_COLOR));
+                        } else {
+                          drawComponent.shaders().remove(ILLEGAL_SHADER_KEY);
+                        }
+                      });
+            });
   }
 
   private boolean isLegalFloor(final Tile tile) {
