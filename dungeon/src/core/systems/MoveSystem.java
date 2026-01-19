@@ -87,7 +87,7 @@ public class MoveSystem extends System {
     }
     velocity =
         velocity.scale(
-            data.e.fetch(SprintComponent.class).map(SprintComponent::multiplier).orElse(0f));
+            data.e.fetch(SprintComponent.class).map(SprintComponent::multiplier).orElse(1f));
     data.e.remove(SprintComponent.class);
 
     Vector2 absVelocity = Vector2.of(Math.abs(velocity.x()), Math.abs(velocity.y()));

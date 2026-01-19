@@ -364,6 +364,29 @@ public class MADungeonRoom extends DungeonLevel {
                 iceControls(player);
               }
               checkEscape(player);
+
+              // give skills to classes
+              classToSkillMap.forEach(
+                  (Ch, skillCls) -> {
+                    if (player
+                        .fetch(CharacterClassComponent.class)
+                        .map(cc -> cc.characterClass() == Ch)
+                        .orElse(false)) {
+                      player
+                          .fetch(SkillComponent.class)
+                          .ifPresent(
+                              skillComp -> {
+                                if (skillComp.getSkill(skillCls).isEmpty()) {
+                                  try {
+                                    skillComp.addSkill(
+                                        skillCls.getDeclaredConstructor().newInstance());
+                                  } catch (Exception e) {
+                                    e.printStackTrace();
+                                  }
+                                }
+                              });
+                    }
+                  });
             });
   }
 
