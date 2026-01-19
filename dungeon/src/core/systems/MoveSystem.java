@@ -2,6 +2,7 @@ package core.systems;
 
 import analytics.DungeonAnalyticsAPI;
 import contrib.components.CollideComponent;
+import contrib.components.SprintComponent;
 import contrib.systems.CollisionSystem;
 import contrib.systems.PositionSync;
 import contrib.utils.components.collide.Collider;
@@ -84,6 +85,11 @@ public class MoveSystem extends System {
     if (velocity.length() > data.vc.maxSpeed()) {
       velocity = velocity.normalize().scale(data.vc.maxSpeed());
     }
+    velocity =
+        velocity.scale(
+            data.e.fetch(SprintComponent.class).map(SprintComponent::multiplier).orElse(0f));
+    data.e.remove(SprintComponent.class);
+
     Vector2 absVelocity = Vector2.of(Math.abs(velocity.x()), Math.abs(velocity.y()));
 
     // Calculate scaled velocity vector per frame time

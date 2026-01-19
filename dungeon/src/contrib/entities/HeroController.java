@@ -139,11 +139,7 @@ public class HeroController {
       Vector2 unitSpeed =
           Vector2.of(direction.x() != 0 ? speed.x() : 0, direction.y() != 0 ? speed.y() : 0);
       updatedForce = updatedForce.normalize().scale(unitSpeed.length());
-      updatedForce =
-          updatedForce.scale(
-              hero.fetch(SprintComponent.class).map(SprintComponent::multiplier).orElse(1f));
       vc.applyForce(MOVEMENT_ID, updatedForce);
-      hero.remove(SprintComponent.class);
     }
 
     // analytics for successful movement in MoveSystem
