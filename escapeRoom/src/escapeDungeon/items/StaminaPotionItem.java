@@ -1,5 +1,6 @@
 package escapeDungeon.items;
 
+import contrib.components.StaminaComponent;
 import contrib.item.Item;
 import core.Entity;
 import core.utils.components.draw.animation.Animation;
@@ -14,7 +15,7 @@ public class StaminaPotionItem extends Item {
   /** Constructs a new AxeItem. */
   public StaminaPotionItem() {
     super(
-        "Axt",
+        "Ausdauertrank",
         "Damit können bestimmte Bäume gefällt werden.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
@@ -22,7 +23,11 @@ public class StaminaPotionItem extends Item {
 
   @Override
   public void use(Entity user) {
-    // Nothing
+    user.fetch(StaminaComponent.class)
+        .ifPresent(
+            sc -> sc.restore(50)
+            );
+    super.use(user);
   }
 
   @Override

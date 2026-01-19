@@ -8,24 +8,21 @@ import core.utils.Point;
 import core.utils.Tuple;
 import core.utils.components.draw.animation.Animation;
 import core.utils.components.path.SimpleIPath;
-import escapeDungeon.skill.IceWallSkill;
-import escapeDungeon.skill.TorchSkill;
 import escapeDungeon.skill.WallbreakerSkill;
-import mushRoom.Sounds;
-
 import java.util.Optional;
+import mushRoom.Sounds;
 
 /** An AxeItem can be used to chop down certain trees. */
 public class PickaxeItem extends Item {
 
   private static final String PATH = "items/rpg/pickaxe_silver.png";
 
-  private static Entity itemHolder;
+  private Entity itemHolder;
 
   /** Constructs a new AxeItem. */
   public PickaxeItem() {
     super(
-        "Axt",
+        "Spitzhacke",
         "Damit können bestimmte Bäume gefällt werden.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
@@ -40,18 +37,39 @@ public class PickaxeItem extends Item {
   public boolean collect(Entity itemEntity, Entity collector) {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
-    collector
-      .fetch(SkillComponent.class)
-      .ifPresent(
-        (sc) ->
-          sc.addSkill(new WallbreakerSkill("WallbreakerSkill", 1000, Tuple.of(Resource.STAMINA, 10))));
+    if (itemHolder != null) {
+      itemHolder
+          .fetch(SkillComponent.class)
+          .ifPresent(
+              (sc) ->
+                  sc.addSkill(
+                      new WallbreakerSkill(
+                          "WallbreakerSkill", 1000, Tuple.of(Resource.STAMINA, 10))));
+    }
     return super.collect(itemEntity, collector);
+  }
+
+  @Override
+  public void added(Entity collector) {
+    itemHolder = collector;
+    Sounds.KEY_ITEM_PICKUP_SOUND.play();
+    if (itemHolder != null) {
+      itemHolder
+          .fetch(SkillComponent.class)
+          .ifPresent(
+              (sc) ->
+                  sc.addSkill(
+                      new WallbreakerSkill(
+                          "WallbreakerSkill", 1000, Tuple.of(Resource.STAMINA, 10))));
+    }
   }
 
   @Override
   public Optional<Entity> drop(final Point position) {
     if (itemHolder != null) {
-      itemHolder.fetch(SkillComponent.class).ifPresent((sc) -> sc.removeSkill(WallbreakerSkill.class));
+      itemHolder
+          .fetch(SkillComponent.class)
+          .ifPresent((sc) -> sc.removeSkill(WallbreakerSkill.class));
       itemHolder = null;
     }
     return super.drop(position);

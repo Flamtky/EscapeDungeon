@@ -8,6 +8,12 @@ import contrib.entities.LeverFactory;
 import contrib.entities.MiscFactory;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
+import contrib.hud.DialogUtils;
+import contrib.hud.dialogs.DialogContext;
+import contrib.hud.dialogs.DialogContextKeys;
+import contrib.hud.dialogs.DialogType;
+import contrib.modules.interaction.Interaction;
+import contrib.modules.interaction.InteractionComponent;
 import contrib.systems.EventScheduler;
 import contrib.utils.EntityUtils;
 import contrib.utils.ICommand;
@@ -32,6 +38,7 @@ import core.utils.TriConsumer;
 import core.utils.Vector2;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
+import escapeDungeon.components.AxeComponent;
 import escapeDungeon.components.IceMovementComponent;
 import escapeDungeon.items.*;
 import guard.GuardBuilder;
@@ -336,10 +343,25 @@ public class MADungeonRoom extends DungeonLevel {
     TimerAPI.start(); // TODO: start if (all) player joined?
   }
 
+  @Override
+  protected void onTick() {
+    if (!Game.isHeadless()) {
+      updateTorchShader();
+    }
+    Game.allPlayers()
+        .forEach(
+            player -> {
+              if (player.fetch(IceMovementComponent.class).isEmpty()) {
+                iceControls(player);
+              }
+              checkEscape(player);
+            });
+  }
+
   private void createChests() {
     Game.add(MiscFactory.newChest(Set.of(new LeafItem()), getPoint("chest0")));
-    Game.add(MiscFactory.newChest(Set.of(new CoalItem(), new PickaxeItem()), getPoint("chest1")));
-    Game.add(MiscFactory.newChest(Set.of(new WaterPotionItem(), new PickaxeItem()), getPoint("chest2")));
+    Game.add(MiscFactory.newChest(Set.of(new CoalItem()), getPoint("chest1")));
+    Game.add(MiscFactory.newChest(Set.of(new WaterPotionItem()), getPoint("chest2")));
     Game.add(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest3")));
     Game.add(MiscFactory.newChest(Set.of(new WaterPotionItem()), getPoint("chest4")));
     Game.add(MiscFactory.newChest(Set.of(new MetalItem()), getPoint("chest5")));
@@ -348,7 +370,76 @@ public class MADungeonRoom extends DungeonLevel {
     Game.add(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest0")));
     Game.add(MiscFactory.newChest(Set.of(new BlueGemItem()), getPoint("chest9")));
     Game.add(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest10")));
-    Game.add(MiscFactory.newChest(Set.of(new StickItem()), getPoint("TreeChest")));
+    Game.add(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest11")));
+    Game.add(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest12")));
+    Game.add(MiscFactory.newChest(Set.of(new LeafItem()), getPoint("chest13")));
+    Game.add(MiscFactory.newChest(Set.of(new WaterPotionItem()), getPoint("chest14")));
+    Game.add(MiscFactory.newChest(Set.of(new EnvelopeItem()), getPoint("chest15")));
+    createTreeChest();
+  }
+
+  private void createTreeChest() {
+    Entity chest = MiscFactory.newChest(Set.of(new StickItem()), getPoint("TreeChest"));
+    chest
+        .fetch(InteractionComponent.class)
+        .ifPresent(
+            (ic) -> {
+              chest.remove(InteractionComponent.class);
+            });
+    chest.add(
+        new InteractionComponent(
+            () ->
+                new Interaction(
+                    (interacted, interactor) ->
+                        interactor
+                            .fetch(InventoryComponent.class)
+                            .ifPresent(
+                                whoIc -> {
+                                  interactor
+                                      .fetch(AxeComponent.class)
+                                      .ifPresentOrElse(
+                                          (ac) -> {
+                                            interacted
+                                                .fetch(InventoryComponent.class)
+                                                .ifPresent(
+                                                    (ic) -> {
+                                                      if (!ic.hasItem(LogItem.class)) {
+                                                        ic.add(new LogItem());
+                                                      }
+                                                    });
+                                          },
+                                          () -> {
+                                            interacted
+                                                .fetch(InventoryComponent.class)
+                                                .ifPresent(
+                                                    (ic) -> {
+                                                      if (ic.hasItem(LogItem.class)) {
+                                                        ic.items(LogItem.class).forEach(ic::remove);
+                                                      }
+                                                    });
+                                          });
+                                  interacted
+                                      .fetch(InventoryComponent.class)
+                                      .ifPresent(
+                                          (ic) -> {
+                                            if (!ic.hasItem(StickItem.class)) {
+                                              ic.add(new StickItem());
+                                            }
+                                            if (!ic.hasItem(LeafItem.class)) {
+                                              ic.add(new LeafItem());
+                                            }
+                                          });
+                                  DialogContext context =
+                                      DialogContext.builder()
+                                          .type(DialogType.DefaultTypes.DUAL_INVENTORY)
+                                          .put(DialogContextKeys.ENTITY, interactor.id())
+                                          .put(DialogContextKeys.SECONDARY_ENTITY, interacted.id())
+                                          .put(DialogContextKeys.OWNER_ENTITY, interactor.id())
+                                          .build();
+                                  UIComponent ui = new UIComponent(context, true, interactor.id());
+                                  interactor.add(ui);
+                                }))));
+    Game.add(chest);
   }
 
   private void createPushPuzzle() {
@@ -361,46 +452,35 @@ public class MADungeonRoom extends DungeonLevel {
 
     createPushPuzzleEntities();
     createIcePuzzleEntities();
-
-    /* Game.add(
-    LeverFactory.createLever(
-      getPoint("push-reset"),
-      new ICommand() {
-        public void execute() {
-          resetPushStones();
-        }
-
-        public void undo() {}
-      }));*/
   }
 
   private void createPushStones(int riddle) {
     listPointsIndexed("push_stone")
-      .forEach(
-        tuple -> {
-          Point pos = tuple.a();
-          int index = tuple.b();
-          if (riddle == 0) {
-            if (index == 0 || index == 20) {
-              pushStones1.add(createStone(index, pos));
-            }
-          }
-          if (riddle == 1) {
-            if (index >= 1 && index <= 6) {
-              pushStones1.add(createStone(index, pos));
-            }
-          }
-          if (riddle == 2) {
-            if (index >= 7 && index <= 9) {
-              pushStones2.add(createStone(index, pos));
-            }
-          }
-          if (riddle == 3) {
-            if ((index >= 10 && index <= 19) || (index >= 21 && index <= 59)) {
-              pushStones3.add(createStone(index, pos));
-            }
-          }
-        });
+        .forEach(
+            tuple -> {
+              Point pos = tuple.a();
+              int index = tuple.b();
+              if (riddle == 0) {
+                if (index == 0 || index == 20) {
+                  pushStones1.add(createStone(index, pos));
+                }
+              }
+              if (riddle == 1) {
+                if (index >= 1 && index <= 6) {
+                  pushStones1.add(createStone(index, pos));
+                }
+              }
+              if (riddle == 2) {
+                if (index >= 7 && index <= 9) {
+                  pushStones2.add(createStone(index, pos));
+                }
+              }
+              if (riddle == 3) {
+                if ((index >= 10 && index <= 19) || (index >= 21 && index <= 59)) {
+                  pushStones3.add(createStone(index, pos));
+                }
+              }
+            });
   }
 
   private Entity createStone(int index, Point pos) {
@@ -412,8 +492,7 @@ public class MADungeonRoom extends DungeonLevel {
     dc.tintColor(Color.rgba8888(tintColor));
     pushStone.add(dc);
     pushStone.add(new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f)));
-    pushStone.add(new VelocityComponent(5.0f, 1.3f, e -> {
-    }, false));
+    pushStone.add(new VelocityComponent(5.0f, 1.3f, e -> {}, false));
     Game.add(pushStone);
     return pushStone;
   }
@@ -430,163 +509,175 @@ public class MADungeonRoom extends DungeonLevel {
                 doorTile.close();
 
                 Entity pp =
-                  LeverFactory.pressurePlate(
-                    platePos,
-                    1f,
-                    new ICommand() {
-                      public void execute() {
-                        Sounds.DOOR_OPEN_SOUND.play();
-                        doorTile.open();
-                      }
+                    LeverFactory.pressurePlate(
+                        platePos,
+                        1f,
+                        new ICommand() {
+                          public void execute() {
+                            Sounds.DOOR_OPEN_SOUND.play();
+                            doorTile.open();
+                          }
 
-                      public void undo() {
-                        Sounds.DOOR_CLOSE_SOUND.play();
-                        doorTile.close();
-                      }
-                    });
+                          public void undo() {
+                            Sounds.DOOR_CLOSE_SOUND.play();
+                            doorTile.close();
+                          }
+                        });
                 pp.fetch(DrawComponent.class)
-                  .ifPresent(
-                    dc -> {
-                      Color tColor =
-                        index < plateColors.length ? plateColors[index] : Color.WHITE;
-                      dc.tintColor(Color.rgba8888(tColor));
-                    });
+                    .ifPresent(
+                        dc -> {
+                          Color tColor =
+                              index < plateColors.length ? plateColors[index] : Color.WHITE;
+                          dc.tintColor(Color.rgba8888(tColor));
+                        });
                 PressurePlateComponent pressurePlateComponent =
-                  pp.fetch(PressurePlateComponent.class).orElseThrow();
+                    pp.fetch(PressurePlateComponent.class).orElseThrow();
                 TriConsumer<Entity, Entity, Direction> onCollideEnter =
-                  (self, other, dir) -> {
-                    self.fetch(DrawComponent.class)
-                      .ifPresent(
-                        dc -> {
-                          boolean colorMatches =
-                            other
-                              .fetch(DrawComponent.class)
-                              .map(odc -> odc.tintColor() == dc.tintColor())
-                              .orElse(false);
-                          if (colorMatches) {
-                            other
-                              .fetch(VelocityComponent.class)
-                              .ifPresent(vc -> pressurePlateComponent.increase(vc.mass()));
-                          }
-                        });
-                  };
+                    (self, other, dir) -> {
+                      self.fetch(DrawComponent.class)
+                          .ifPresent(
+                              dc -> {
+                                boolean colorMatches =
+                                    other
+                                        .fetch(DrawComponent.class)
+                                        .map(odc -> odc.tintColor() == dc.tintColor())
+                                        .orElse(false);
+                                if (colorMatches) {
+                                  other
+                                      .fetch(VelocityComponent.class)
+                                      .ifPresent(vc -> pressurePlateComponent.increase(vc.mass()));
+                                }
+                              });
+                    };
                 TriConsumer<Entity, Entity, Direction> onCollideLeave =
-                  (self, other, dir) -> {
-                    if (other.isPresent(ProjectileComponent.class)) return;
-                    self.fetch(DrawComponent.class)
-                      .ifPresent(
-                        dc -> {
-                          boolean colorMatches =
-                            other
-                              .fetch(DrawComponent.class)
-                              .map(odc -> odc.tintColor() == dc.tintColor())
-                              .orElse(false);
-                          if (colorMatches) {
-                            other
-                              .fetch(VelocityComponent.class)
-                              .ifPresent(vc -> pressurePlateComponent.decrease(vc.mass()));
-                          }
-                        });
-                  };
+                    (self, other, dir) -> {
+                      if (other.isPresent(ProjectileComponent.class)) return;
+                      self.fetch(DrawComponent.class)
+                          .ifPresent(
+                              dc -> {
+                                boolean colorMatches =
+                                    other
+                                        .fetch(DrawComponent.class)
+                                        .map(odc -> odc.tintColor() == dc.tintColor())
+                                        .orElse(false);
+                                if (colorMatches) {
+                                  other
+                                      .fetch(VelocityComponent.class)
+                                      .ifPresent(vc -> pressurePlateComponent.decrease(vc.mass()));
+                                }
+                              });
+                    };
                 pp.add(new CollideComponent(onCollideEnter, onCollideLeave).isSolid(false));
 
                 Game.add(pp);
               }
               if (index == 21) {
-                  Game.add(LeverFactory.pressurePlate(
-                    platePos,
-                    1.4f,
-                    new ICommand() {
-                      public void execute() {
-                        resetPushStones21 = true;
-                        if (resetPushStones22) {
-                          resetPushStones(3);
-                        }
-                      }
-                      public void undo() {
-                        resetPushStones21 = false;
-                      }
-                    }));
+                Game.add(
+                    LeverFactory.pressurePlate(
+                        platePos,
+                        1.4f,
+                        new ICommand() {
+                          public void execute() {
+                            resetPushStones21 = true;
+                            if (resetPushStones22) {
+                              resetPushStones(3);
+                            }
+                          }
+
+                          public void undo() {
+                            resetPushStones21 = false;
+                          }
+                        }));
               }
               if (index == 22) {
-                Game.add(LeverFactory.pressurePlate(
-                  platePos,
-                  1.4f,
-                  new ICommand() {
-                    public void execute() {
-                      resetPushStones22 = true;
-                      if (resetPushStones21) {
-                        resetPushStones(3);
-                      }
-                    }
-                    public void undo() {
-                      resetPushStones22 = false;
-                    }
-                  }));
+                Game.add(
+                    LeverFactory.pressurePlate(
+                        platePos,
+                        1.4f,
+                        new ICommand() {
+                          public void execute() {
+                            resetPushStones22 = true;
+                            if (resetPushStones21) {
+                              resetPushStones(3);
+                            }
+                          }
+
+                          public void undo() {
+                            resetPushStones22 = false;
+                          }
+                        }));
               }
               if (index == 23) {
-                Game.add(LeverFactory.pressurePlate(
-                  platePos,
-                  1.4f,
-                  new ICommand() {
-                    public void execute() {
-                      resetPushStones23 = true;
-                      if (resetPushStones24) {
-                        resetPushStones(2);
-                      }
-                    }
-                    public void undo() {
-                      resetPushStones23 = false;
-                    }
-                  }));
+                Game.add(
+                    LeverFactory.pressurePlate(
+                        platePos,
+                        1.4f,
+                        new ICommand() {
+                          public void execute() {
+                            resetPushStones23 = true;
+                            if (resetPushStones24) {
+                              resetPushStones(2);
+                            }
+                          }
+
+                          public void undo() {
+                            resetPushStones23 = false;
+                          }
+                        }));
               }
               if (index == 24) {
-                Game.add(LeverFactory.pressurePlate(
-                  platePos,
-                  1.4f,
-                  new ICommand() {
-                    public void execute() {
-                      resetPushStones24 = true;
-                      if (resetPushStones23) {
-                        resetPushStones(2);
-                      }
-                    }
-                    public void undo() {
-                      resetPushStones24 = false;
-                    }
-                  }));
+                Game.add(
+                    LeverFactory.pressurePlate(
+                        platePos,
+                        1.4f,
+                        new ICommand() {
+                          public void execute() {
+                            resetPushStones24 = true;
+                            if (resetPushStones23) {
+                              resetPushStones(2);
+                            }
+                          }
+
+                          public void undo() {
+                            resetPushStones24 = false;
+                          }
+                        }));
               }
               if (index == 25) {
-                Game.add(LeverFactory.pressurePlate(
-                  platePos,
-                  1.4f,
-                  new ICommand() {
-                    public void execute() {
-                      resetPushStones25 = true;
-                      if (resetPushStones26) {
-                        resetPushStones(1);
-                      }
-                    }
-                    public void undo() {
-                      resetPushStones25 = false;
-                    }
-                  }));
+                Game.add(
+                    LeverFactory.pressurePlate(
+                        platePos,
+                        1.4f,
+                        new ICommand() {
+                          public void execute() {
+                            resetPushStones25 = true;
+                            if (resetPushStones26) {
+                              resetPushStones(1);
+                            }
+                          }
+
+                          public void undo() {
+                            resetPushStones25 = false;
+                          }
+                        }));
               }
               if (index == 26) {
-                Game.add(LeverFactory.pressurePlate(
-                  platePos,
-                  1.4f,
-                  new ICommand() {
-                    public void execute() {
-                      resetPushStones26 = true;
-                      if (resetPushStones25) {
-                        resetPushStones(1);
-                      }
-                    }
-                    public void undo() {
-                      resetPushStones26 = false;
-                    }
-                  }));
+                Game.add(
+                    LeverFactory.pressurePlate(
+                        platePos,
+                        1.4f,
+                        new ICommand() {
+                          public void execute() {
+                            resetPushStones26 = true;
+                            if (resetPushStones25) {
+                              resetPushStones(1);
+                            }
+                          }
+
+                          public void undo() {
+                            resetPushStones26 = false;
+                          }
+                        }));
               }
             });
 
@@ -648,20 +739,6 @@ public class MADungeonRoom extends DungeonLevel {
     }
   }
 
-  @Override
-  protected void onTick() {
-    if (!Game.isHeadless()) {
-      updateTorchShader();
-    }
-    Game.allPlayers()
-        .forEach(
-            hero -> {
-              if (hero.fetch(IceMovementComponent.class).isEmpty()) {
-                iceControls(hero);
-              }
-            });
-  }
-
   private final Set<Integer> initLightEntityIds = new HashSet<>();
 
   private void createIcePuzzleEntities() {
@@ -678,7 +755,7 @@ public class MADungeonRoom extends DungeonLevel {
                   new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f));
               TriConsumer<Entity, Entity, Direction> onCollideEnter =
                   (self, other, dir) -> {
-                  other.fetch(FlyComponent.class).ifPresent(fc -> Game.remove(self));
+                    other.fetch(FlyComponent.class).ifPresent(fc -> Game.remove(self));
                   };
               cc.collideEnter(onCollideEnter);
               snowWall.add(dc);
@@ -846,5 +923,18 @@ public class MADungeonRoom extends DungeonLevel {
         .speed(3.5f)
         .idleAI(() -> new PatrolWalk(Arrays.asList(patrolPoints), 5_000, mode))
         .build(this.getPoint("guardSpawn"));
+  }
+
+  private void checkEscape(Entity player) {
+    player
+        .fetch(PositionComponent.class)
+        .ifPresent(
+            pc -> {
+              float x = pc.position().x();
+              float y = pc.position().y();
+              if (x <= 1 || x >= 99 || y <= 0 || y >= 188) {
+                DialogUtils.showTextPopup("Du bist entkommen!", "ENTKOMMEN!", Game::exit);
+              }
+            });
   }
 }

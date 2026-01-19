@@ -8,12 +8,9 @@ import core.utils.Point;
 import core.utils.Tuple;
 import core.utils.components.draw.animation.Animation;
 import core.utils.components.path.SimpleIPath;
-import escapeDungeon.components.IceMovementComponent;
-import escapeDungeon.skill.IceWallSkill;
 import escapeDungeon.skill.TorchSkill;
-import mushRoom.Sounds;
-
 import java.util.Optional;
+import mushRoom.Sounds;
 
 /** An AxeItem can be used to chop down certain trees. */
 public class TorchItem extends Item {
@@ -25,25 +22,26 @@ public class TorchItem extends Item {
   /** Constructs a new AxeItem. */
   public TorchItem() {
     super(
-        "Axt",
+        "Fackel",
         "Damit können bestimmte Bäume gefällt werden.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }
 
   @Override
-  public void use(Entity user) {
-  }
+  public void use(Entity user) {}
 
   @Override
   public boolean collect(Entity itemEntity, Entity collector) {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
-    collector
-      .fetch(SkillComponent.class)
-      .ifPresent(
-        (sc) ->
-          sc.addSkill(new TorchSkill("TorchSkill", 500, 3, Tuple.of(Resource.MANA, 0))));
+    if (itemHolder != null) {
+      itemHolder
+          .fetch(SkillComponent.class)
+          .ifPresent(
+              (sc) ->
+                  sc.addSkill(new TorchSkill("TorchSkill", 500, 3, Tuple.of(Resource.MANA, 0))));
+    }
     return super.collect(itemEntity, collector);
   }
 
@@ -51,11 +49,13 @@ public class TorchItem extends Item {
   public void added(Entity collector) {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
-    collector
-      .fetch(SkillComponent.class)
-      .ifPresent(
-        (sc) ->
-          sc.addSkill(new TorchSkill("TorchSkill", 500, 3, Tuple.of(Resource.MANA, 0))));
+    if (itemHolder != null) {
+      itemHolder
+          .fetch(SkillComponent.class)
+          .ifPresent(
+              (sc) ->
+                  sc.addSkill(new TorchSkill("TorchSkill", 500, 3, Tuple.of(Resource.MANA, 0))));
+    }
   }
 
   @Override

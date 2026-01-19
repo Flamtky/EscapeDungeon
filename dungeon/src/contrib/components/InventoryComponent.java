@@ -2,7 +2,6 @@ package contrib.components;
 
 import contrib.item.Item;
 import core.Component;
-import core.Entity;
 import core.Game;
 import core.utils.logging.DungeonLogger;
 import java.util.*;
@@ -297,7 +296,7 @@ public final class InventoryComponent implements Component {
     }
     this.inventory[index % this.inventory.length] = item;
     this.onItemAdded.accept(item);
-    item.added(Game.findInLevel(this).orElseThrow());
+    item.added(Game.findInLevel(this).orElse(null));
     return true;
   }
 

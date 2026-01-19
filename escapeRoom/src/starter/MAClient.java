@@ -37,7 +37,7 @@ public final class MAClient {
     NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
     MASinglePlayer.registerItems();
     PreRunConfiguration.username("APPRENTICE");
-    //PreRunConfiguration.username("ROGUE");
+    // PreRunConfiguration.username("ROGUE");
 
     // Game Settings
     Game.loadConfig(new SimpleIPath("dungeon_config.json"), KeyboardConfig.class);

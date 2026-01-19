@@ -3626,283 +3626,330 @@ public enum Deco {
   BRIDGESHorizontalBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(336, 464, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESSmallTopBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(384, 464, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalTopLeftBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(400, 464, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalTopBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 464, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalTopRightBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 464, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESSmallTopGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 464, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalTopLeftGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(464, 464, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalTopGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(480, 464, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalTopRightGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(496, 464, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(256, 480, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESMiddleGray(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(272, 480, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(320, 480, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESMiddleBeige(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(336, 480, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESSmallMiddleBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(384, 480, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalLeftBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(400, 480, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalMiddleBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 480, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalRightBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 480, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESSmallMiddleGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 480, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalLeftGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(464, 480, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalMiddleGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(480, 480, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalRightGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(496, 480, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESSmallBottomBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(384, 496, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalLeftBottomBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(400, 496, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalBottomBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(416, 496, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalRightBottomBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 496, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESSmallBottomGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 496, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalLeftBottomGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(464, 496, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalBottomGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(480, 496, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESHorizontalRightBottomGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(496, 496, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalTopLeftGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 368, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalTopGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 368, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalTopRightGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(464, 368, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalLeftGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 384, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalMiddleGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 384, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalRightGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(464, 384, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalBottomLeftGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 400, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalBottomGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 400, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalBottomRightGreen(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(464, 400, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalTopLeftBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 416, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalTopBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 416, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalTopRightBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(464, 416, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalLeftBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 432, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalMiddleBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 432, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalRightBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(464, 432, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalBottomLeftBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(432, 448, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalBottomBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(448, 448, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   BRIDGESVerticalBottomRightBrown(
       "spritesheets/FG_Cellar.png",
       new AnimationConfig(new SpritesheetConfig(464, 448, 1, 1, 16, 16)),
-      new Rectangle(1f, 1f, 0f, 0f),
+      null,
+      DepthLayer.Player.depth() - 1,
       Category.BRIDGES),
   /** A decoration. */
   DoorGrayGray1Animated(

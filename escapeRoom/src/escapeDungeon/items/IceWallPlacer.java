@@ -51,10 +51,10 @@ public class IceWallPlacer extends Item {
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     collector.add(new IceMovementComponent());
     collector
-      .fetch(SkillComponent.class)
-      .ifPresent(
-        (sc) ->
-          sc.addSkill(new IceWallSkill("IceWallSkill", 100, 3, Tuple.of(Resource.MANA, 0))));
+        .fetch(SkillComponent.class)
+        .ifPresent(
+            (sc) ->
+                sc.addSkill(new IceWallSkill("IceWallSkill", 100, 3, Tuple.of(Resource.MANA, 0))));
   }
 
   @Override

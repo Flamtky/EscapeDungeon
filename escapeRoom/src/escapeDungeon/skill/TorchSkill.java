@@ -1,18 +1,14 @@
 package escapeDungeon.skill;
 
-import contrib.components.DecoComponent;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
 import contrib.utils.components.skill.Resource;
 import contrib.utils.components.skill.cursorSkill.CursorSkill;
 import core.Entity;
 import core.Game;
-import core.components.PositionComponent;
-import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
 import core.utils.Point;
 import core.utils.Tuple;
-import mushRoom.shaders.TorchPostProcessing;
 
 /** A skill that allows the caster to create or remove ice walls on ice-designated tiles. */
 public class TorchSkill extends CursorSkill {
@@ -42,10 +38,10 @@ public class TorchSkill extends CursorSkill {
     Game.tileAt(point)
         .ifPresent(
             (tile -> {
-                if (tile.levelElement() == LevelElement.FLOOR) {
-                  Entity torch = DecoFactory.createDeco(tile.position(), Deco.TorchGrayAnimated);
-                  Game.add(torch);
-                }
+              if (tile.levelElement() == LevelElement.FLOOR) {
+                Entity torch = DecoFactory.createDeco(tile.position(), Deco.TorchGrayAnimated);
+                Game.add(torch);
+              }
             }));
   }
 }

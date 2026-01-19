@@ -30,7 +30,9 @@ public class StrengthRingItem extends Item {
   public boolean collect(Entity itemEntity, Entity collector) {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
-    collector.fetch(VelocityComponent.class).ifPresent((vc) -> vc.mass(1.4f));
+    if (itemHolder != null) {
+      collector.fetch(VelocityComponent.class).ifPresent((vc) -> vc.mass(1.4f));
+    }
     return super.collect(itemEntity, collector);
   }
 
@@ -38,7 +40,9 @@ public class StrengthRingItem extends Item {
   public void added(Entity collector) {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
-    collector.fetch(VelocityComponent.class).ifPresent((vc) -> vc.mass(1.4f));
+    if (itemHolder != null) {
+      itemHolder.fetch(VelocityComponent.class).ifPresent((vc) -> vc.mass(1.4f));
+    }
   }
 
   @Override

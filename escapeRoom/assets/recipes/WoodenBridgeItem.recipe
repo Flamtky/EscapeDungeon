@@ -5,10 +5,19 @@
             "type": "item",
             "item": {
                 "id": "LogItem",
-                "count": 3
+                "count": 2
             }
         }
     ],
+    "ingredients": [
+            {
+                "type": "item",
+                "item": {
+                    "id": "RopeItem",
+                    "count": 1
+                }
+            }
+        ],
     "results": [
         {
             "type": "item",

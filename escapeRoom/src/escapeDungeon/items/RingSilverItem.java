@@ -14,7 +14,7 @@ public class RingSilverItem extends Item {
   /** Constructs a new AxeItem. */
   public RingSilverItem() {
     super(
-        "Axt",
+        "Silberring",
         "Damit können bestimmte Bäume gefällt werden.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));

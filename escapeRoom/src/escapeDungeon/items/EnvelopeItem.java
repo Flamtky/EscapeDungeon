@@ -14,7 +14,7 @@ public class EnvelopeItem extends Item {
   /** Constructs a new AxeItem. */
   public EnvelopeItem() {
     super(
-        "Axt",
+        "Briefumschlag",
         "Damit können bestimmte Bäume gefällt werden.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));

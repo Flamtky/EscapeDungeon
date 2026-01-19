@@ -14,7 +14,7 @@ public class LogItem extends Item {
   /** Constructs a new AxeItem. */
   public LogItem() {
     super(
-        "Axt",
+        "Baumstamm",
         "Damit können bestimmte Bäume gefällt werden.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
