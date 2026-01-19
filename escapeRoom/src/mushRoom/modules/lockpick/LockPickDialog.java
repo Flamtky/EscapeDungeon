@@ -1,12 +1,10 @@
 package mushRoom.modules.lockpick;
 
 import com.badlogic.gdx.scenes.scene2d.Group;
-import contrib.hud.dialogs.DialogContext;
-import contrib.hud.dialogs.DialogContextKeys;
-import contrib.hud.dialogs.DialogFactory;
+import contrib.hud.UIUtils;
+import contrib.hud.dialogs.*;
 import core.Entity;
 import core.Game;
-import core.game.WindowEventManager;
 import mushRoom.modules.EscapeRoomDialogTypes;
 
 /**
@@ -17,17 +15,8 @@ import mushRoom.modules.EscapeRoomDialogTypes;
  */
 public final class LockPickDialog {
 
-  private static LockPickDifficulty currentDifficulty;
-  private static Runnable currentOnSuccess;
-  private static Runnable currentOnFailure;
-  private static LockPickUI currentUI;
-
   static {
     DialogFactory.register(EscapeRoomDialogTypes.LOCKPICK, LockPickDialog::build);
-
-    if (!Game.isHeadless()) {
-      WindowEventManager.registerWindowRefreshListener(LockPickDialog::handleResize);
-    }
   }
 
   private LockPickDialog() {
@@ -44,50 +33,51 @@ public final class LockPickDialog {
    * @param difficulty The difficulty level for the lock-pick minigame
    * @param onSuccess Callback executed when the lock is successfully picked
    * @param onFailure Callback executed when all attempts are exhausted or dialog is closed
-   * @return The opened LockPickUI instance
    */
-  public static LockPickUI openLockPick(
+  public static void openLockPick(
       Entity user, LockPickDifficulty difficulty, Runnable onSuccess, Runnable onFailure) {
-    currentDifficulty = difficulty;
-    currentOnSuccess = onSuccess;
-    currentOnFailure = onFailure;
-
-    DialogContext ctx = DialogContext.builder().type(EscapeRoomDialogTypes.LOCKPICK).build();
+    DialogContext ctx =
+        DialogContext.builder()
+            .type(EscapeRoomDialogTypes.LOCKPICK)
+            .put("difficulty", difficulty)
+            .build();
 
     // Show and wire up onClose to trigger failure if the lock is still locked
-    DialogFactory.show(ctx, user.id())
-        .onClose(
-            (ui) -> {
-              if (currentUI != null && currentUI.isLocked()) {
-                currentUI.triggerFailure();
-              }
-              // Dispose textures when dialog closes
-              if (currentUI != null) {
-                currentUI.dispose();
-                currentUI = null;
-              }
-            });
+    var ui = DialogFactory.show(ctx, user.id());
+    ui.registerCallback(DialogContextKeys.ON_CONFIRM, data -> onSuccess.run());
+    ui.registerCallback(DialogContextKeys.ON_CANCEL, data -> onFailure.run());
 
-    return currentUI;
+    ui.onClose(
+        (uic) -> {
+          onFailure.run();
+          // Dispose when dialog closes
+          UIUtils.closeDialog(ui, true, false);
+        });
   }
 
-  /** Handles window resize events to adjust the size of the current lock-pick UI. */
-  private static void handleResize() {
-    if (currentUI != null) {
-      currentUI.setSize(Game.windowWidth(), Game.windowHeight());
-    }
-  }
-
-  private static Group build(DialogContext dialogContext) {
+  public static Group build(DialogContext dialogContext) {
     Entity owner = dialogContext.requireEntity(DialogContextKeys.OWNER_ENTITY);
-    currentUI = new LockPickUI(currentDifficulty, owner);
+    LockPickDifficulty currentDifficulty =
+        dialogContext.require("difficulty", LockPickDifficulty.class);
 
-    if (currentOnSuccess != null) {
-      currentUI.onSuccess(currentOnSuccess);
+    if (Game.isHeadless()) {
+      return new HeadlessDialogGroup("Lock Pick Minigame", "Lock Pick Minigame");
     }
-    if (currentOnFailure != null) {
-      currentUI.onFailure(currentOnFailure);
-    }
+
+    LockPickUI currentUI = new LockPickUI(currentDifficulty, owner);
+
+    currentUI.onSuccess(
+        () -> {
+          DialogCallbackResolver.createButtonCallback(
+                  dialogContext.dialogId(), DialogContextKeys.ON_CONFIRM)
+              .accept(null);
+        });
+    currentUI.onFailure(
+        () -> {
+          DialogCallbackResolver.createButtonCallback(
+                  dialogContext.dialogId(), DialogContextKeys.ON_CANCEL)
+              .accept(null);
+        });
 
     return currentUI;
   }

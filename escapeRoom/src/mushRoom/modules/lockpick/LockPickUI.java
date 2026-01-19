@@ -13,11 +13,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
 import contrib.components.UIComponent;
 import contrib.hud.UIUtils;
 import contrib.systems.EventScheduler;
 import core.Entity;
 import core.Game;
+import core.game.WindowEventManager;
 import core.utils.FontHelper;
 import core.utils.logging.DungeonLogger;
 import java.util.Objects;
@@ -36,7 +38,7 @@ import java.util.Objects;
  *
  * @see LockPickDialog
  */
-public class LockPickUI extends Group {
+public class LockPickUI extends Group implements Disposable {
 
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(LockPickUI.class);
 
@@ -215,6 +217,7 @@ public class LockPickUI extends Group {
 
     // Set initial size and create rings
     this.setSize(Game.windowWidth(), Game.windowHeight());
+    WindowEventManager.registerWindowRefreshListener(this::handleResize);
 
     // Add click listener for ring selection
     addListener(
@@ -227,6 +230,10 @@ public class LockPickUI extends Group {
         });
 
     setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
+  }
+
+  private void handleResize() {
+    setSize(Game.windowWidth(), Game.windowHeight());
   }
 
   @Override
@@ -752,6 +759,7 @@ public class LockPickUI extends Group {
    *
    * <p>Must be called when the UI is no longer needed to free GPU resources.
    */
+  @Override
   public void dispose() {
     for (Texture texture : ringTextures) {
       texture.dispose();

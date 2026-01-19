@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Disposable;
 import contrib.components.UIComponent;
 import contrib.hud.UIUtils;
 import contrib.systems.EventScheduler;
@@ -29,7 +30,7 @@ import java.util.Random;
  * active zone. Upon any key press, the active zone jumps to a new random position and a new random
  * key is selected.
  */
-public class FollowingIndicatorUI extends Group {
+public class FollowingIndicatorUI extends Group implements Disposable {
 
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(FollowingIndicatorUI.class);
 
@@ -504,7 +505,9 @@ public class FollowingIndicatorUI extends Group {
   }
 
   /** Disposes of resources. */
+  @Override
   public void dispose() {
+    System.out.println("Disposing FollowingIndicatorUI");
     // Fonts are managed by FontHelper, no need to dispose
   }
 }

@@ -66,15 +66,17 @@ public final class FollowingIndicatorDialog {
     FollowingIndicatorUI currentUI = new FollowingIndicatorUI(difficulty, owner);
 
     currentUI.onSuccess(
-        () ->
-            DialogCallbackResolver.createButtonCallback(
-                    dialogContext.dialogId(), DialogContextKeys.ON_CONFIRM)
-                .accept(null));
+        () -> {
+          DialogCallbackResolver.createButtonCallback(
+                  dialogContext.dialogId(), DialogContextKeys.ON_CONFIRM)
+              .accept(null);
+        });
     currentUI.onFailure(
-        () ->
-            DialogCallbackResolver.createButtonCallback(
-                    dialogContext.dialogId(), DialogContextKeys.ON_CANCEL)
-                .accept(null));
+        () -> {
+          DialogCallbackResolver.createButtonCallback(
+                  dialogContext.dialogId(), DialogContextKeys.ON_CANCEL)
+              .accept(null);
+        });
 
     return currentUI;
   }
