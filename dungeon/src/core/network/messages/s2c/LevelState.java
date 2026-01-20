@@ -8,6 +8,9 @@ import core.network.messages.NetworkMessage;
 import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Represents the state of a level, including door states and design labels.
@@ -62,31 +65,25 @@ public record LevelState(
   private static Map<Coordinate, Boolean> generateDoorStateDelta(
       Map<Coordinate, Boolean> previousDoorStates) {
     var currentDoorStates = getDoorStates();
-    Map<Coordinate, Boolean> deltaDoorStates = new HashMap<>();
-    for (var entry : currentDoorStates.entrySet()) {
-      Coordinate coord = entry.getKey();
-      Boolean currentState = entry.getValue();
-      Boolean previousState = previousDoorStates.get(coord);
-      if (previousState == null || !previousState.equals(currentState)) {
-        deltaDoorStates.put(coord, currentState);
-      }
-    }
-    return deltaDoorStates;
+    return currentDoorStates.entrySet().parallelStream()
+        .filter(
+            entry -> {
+              Boolean previousState = previousDoorStates.get(entry.getKey());
+              return previousState == null || !previousState.equals(entry.getValue());
+            })
+        .collect(Collectors.toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private static Map<Coordinate, Byte> generateDesignLabelDelta(
       Map<Coordinate, Byte> previousDesignLabels) {
     var currentDesignLabels = getDesignLabels();
-    Map<Coordinate, Byte> deltaDesignLabels = new HashMap<>();
-    for (var entry : currentDesignLabels.entrySet()) {
-      Coordinate coord = entry.getKey();
-      Byte currentLabel = entry.getValue();
-      Byte previousLabel = previousDesignLabels.get(coord);
-      if (previousLabel == null || !previousLabel.equals(currentLabel)) {
-        deltaDesignLabels.put(coord, currentLabel);
-      }
-    }
-    return deltaDesignLabels;
+    return currentDesignLabels.entrySet().parallelStream()
+        .filter(
+            entry -> {
+              Byte previousLabel = previousDesignLabels.get(entry.getKey());
+              return previousLabel == null || !previousLabel.equals(entry.getValue());
+            })
+        .collect(Collectors.toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private static Map<Coordinate, Boolean> getDoorStates() {
@@ -102,14 +99,19 @@ public record LevelState(
     var level = Game.currentLevel().orElseThrow();
     int width = level.layout().length;
     int height = level.layout()[0].length;
-    Map<Coordinate, Byte> designLabels = new HashMap<>();
+    Map<Coordinate, Byte> designLabels = new ConcurrentHashMap<>();
     Tile[][] levelLayout = level.layout();
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height; y++) {
-        Tile tile = levelLayout[x][y];
-        designLabels.put(tile.coordinate(), tile.designLabel().toByte());
-      }
-    }
+
+    IntStream.range(0, width)
+        .parallel()
+        .forEach(
+            x -> {
+              for (int y = 0; y < height; y++) {
+                Tile tile = levelLayout[x][y];
+                designLabels.put(tile.coordinate(), tile.designLabel().toByte());
+              }
+            });
+
     return designLabels;
   }
 }

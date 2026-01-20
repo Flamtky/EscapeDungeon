@@ -197,7 +197,10 @@ public final class ServerTransport {
     try {
       byte[] data = serialize(obj);
       if (data.length > SAFE_UDP_MTU) {
-        LOGGER.warn("Skip UDP send; payload too large ({} B) to {}", data.length, target);
+        LOGGER.debug(
+            "Skip UDP send; payload too large ({} B) to {}",
+            data.length,
+            target); // too spammy for info
         return CompletableFuture.completedFuture(false);
       }
       udpChannel

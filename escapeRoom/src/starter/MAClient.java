@@ -13,11 +13,19 @@ import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoomClient;
 import java.io.IOException;
 import mushRoom.modules.EscapeRoomDialogTypes;
+import mushRoom.modules.lockpick.LockPickDialog;
+import mushRoom.modules.qte.FollowingIndicatorDialog;
 import network.EscapeRoomSnapshotTranslator;
 import tools.timer.*;
 
 /** The main class for the Multiplayer Client for development and testing purposes. */
 public final class MAClient {
+
+  static {
+    DialogFactory.register(
+        EscapeRoomDialogTypes.FOLLOWING_INDICATOR, FollowingIndicatorDialog::build);
+    DialogFactory.register(EscapeRoomDialogTypes.LOCKPICK, LockPickDialog::build);
+  }
 
   private static boolean firstTick = true;
 

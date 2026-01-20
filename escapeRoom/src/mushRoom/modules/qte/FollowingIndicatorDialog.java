@@ -1,12 +1,10 @@
 package mushRoom.modules.qte;
 
 import com.badlogic.gdx.scenes.scene2d.Group;
-import contrib.hud.dialogs.DialogContext;
-import contrib.hud.dialogs.DialogContextKeys;
-import contrib.hud.dialogs.DialogFactory;
+import contrib.hud.UIUtils;
+import contrib.hud.dialogs.*;
 import core.Entity;
 import core.Game;
-import core.game.WindowEventManager;
 import mushRoom.modules.EscapeRoomDialogTypes;
 
 /**
@@ -16,18 +14,9 @@ import mushRoom.modules.EscapeRoomDialogTypes;
  */
 public final class FollowingIndicatorDialog {
 
-  private static FollowingIndicatorDifficulty currentDifficulty;
-  private static Runnable currentOnSuccess;
-  private static Runnable currentOnFailure;
-  private static FollowingIndicatorUI currentUI;
-
   static {
     DialogFactory.register(
         EscapeRoomDialogTypes.FOLLOWING_INDICATOR, FollowingIndicatorDialog::build);
-
-    if (!Game.isHeadless()) {
-      WindowEventManager.registerWindowRefreshListener(FollowingIndicatorDialog::handleResize);
-    }
   }
 
   private FollowingIndicatorDialog() {
@@ -41,52 +30,53 @@ public final class FollowingIndicatorDialog {
    * @param difficulty The difficulty level
    * @param onSuccess Callback executed when successfully completed
    * @param onFailure Callback executed when failed
-   * @return The opened FollowingIndicatorUI instance
    */
-  public static FollowingIndicatorUI openFollowingIndicator(
+  public static void openFollowingIndicator(
       Entity user,
       FollowingIndicatorDifficulty difficulty,
       Runnable onSuccess,
       Runnable onFailure) {
-    currentDifficulty = difficulty;
-    currentOnSuccess = onSuccess;
-    currentOnFailure = onFailure;
-
     DialogContext ctx =
-        DialogContext.builder().type(EscapeRoomDialogTypes.FOLLOWING_INDICATOR).build();
+        DialogContext.builder()
+            .type(EscapeRoomDialogTypes.FOLLOWING_INDICATOR)
+            .put("difficulty", difficulty)
+            .build();
 
-    DialogFactory.show(ctx, user.id())
-        .onClose(
-            ui -> {
-              if (currentUI != null && !currentUI.isSuccess() && !currentUI.isFailed()) {
-                currentUI.triggerFailure();
-              }
-              // Dispose when dialog closes
-              if (currentUI != null) {
-                currentUI.dispose();
-                currentUI = null;
-              }
-            });
+    var ui = DialogFactory.show(ctx, user.id());
+    ui.registerCallback(DialogContextKeys.ON_CONFIRM, data -> onSuccess.run());
+    ui.registerCallback(DialogContextKeys.ON_CANCEL, data -> onFailure.run());
 
-    return currentUI;
+    ui.onClose(
+        (uic) -> {
+          onFailure.run();
+          // Dispose when dialog closes
+          UIUtils.closeDialog(ui, true, false);
+        });
   }
 
-  private static void handleResize() {
-    if (currentUI != null) {
-      currentUI.setSize(Game.windowWidth(), Game.windowHeight());
-    }
-  }
-
-  private static Group build(DialogContext dialogContext) {
+  public static Group build(DialogContext dialogContext) {
     Entity owner = dialogContext.requireEntity(DialogContextKeys.OWNER_ENTITY);
-    currentUI = new FollowingIndicatorUI(currentDifficulty, owner);
+    FollowingIndicatorDifficulty difficulty =
+        dialogContext.require("difficulty", FollowingIndicatorDifficulty.class);
 
-    if (currentOnSuccess != null) {
-      currentUI.onSuccess(currentOnSuccess);
+    if (Game.isHeadless()) {
+      return new HeadlessDialogGroup("Following Indicator QTE", "Following Indicator QTE");
     }
-    if (currentOnFailure != null) {
-      currentUI.onFailure(currentOnFailure);
-    }
+
+    FollowingIndicatorUI currentUI = new FollowingIndicatorUI(difficulty, owner);
+
+    currentUI.onSuccess(
+        () -> {
+          DialogCallbackResolver.createButtonCallback(
+                  dialogContext.dialogId(), DialogContextKeys.ON_CONFIRM)
+              .accept(null);
+        });
+    currentUI.onFailure(
+        () -> {
+          DialogCallbackResolver.createButtonCallback(
+                  dialogContext.dialogId(), DialogContextKeys.ON_CANCEL)
+              .accept(null);
+        });
 
     return currentUI;
   }

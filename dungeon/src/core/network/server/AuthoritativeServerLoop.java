@@ -50,10 +50,18 @@ public final class AuthoritativeServerLoop {
   private static final DungeonLogger LOGGER =
       DungeonLogger.getLogger(AuthoritativeServerLoop.class);
   private static final boolean PRINT_RTT = false; // to debug latency issues
+  private static final boolean PRINT_TIMING = true; // to debug performance issues
 
   private final ServerTransport net;
   private final ScheduledExecutorService executor;
   private volatile int serverTick = 0;
+
+  // Timing buffers for last 1000 cycles
+  private static final int TIMING_PRINT_INTERVAL = 1000;
+  private final long[] tickTimesNs = new long[TIMING_PRINT_INTERVAL];
+  private final long[] snapshotTimesNs = new long[TIMING_PRINT_INTERVAL];
+  private int timingIndex = 0;
+  private int timingFilled = 0;
 
   /**
    * Creates a new AuthoritativeServerLoop with the given ServerTransport.
@@ -130,6 +138,7 @@ public final class AuthoritativeServerLoop {
   }
 
   private void tick() {
+    long tickStart = System.nanoTime();
     try {
       //noinspection NonAtomicOperationOnVolatileField only place where serverTick is modified
       serverTick++;
@@ -148,10 +157,45 @@ public final class AuthoritativeServerLoop {
       LOGGER.fatal("Unexpected error in server loop", t);
       stop();
     }
+    long tickEnd = System.nanoTime();
+    tickTimesNs[timingIndex] = tickEnd - tickStart;
   }
 
   private void sendSnapshot() {
+    long snapshotStart = System.nanoTime();
     net.connectedClients().forEach(this::sendSnapshotToClient);
+    long snapshotEnd = System.nanoTime();
+    snapshotTimesNs[timingIndex] = snapshotEnd - snapshotStart;
+
+    timingIndex = (timingIndex + 1) % TIMING_PRINT_INTERVAL;
+    if (timingFilled < TIMING_PRINT_INTERVAL) timingFilled++;
+
+    if (PRINT_TIMING && timingFilled == TIMING_PRINT_INTERVAL) {
+      long sumTickNs = 0, sumSnapshotNs = 0;
+      for (int i = 0; i < TIMING_PRINT_INTERVAL; i++) {
+        sumTickNs += tickTimesNs[i];
+        sumSnapshotNs += snapshotTimesNs[i];
+      }
+      long avgTickNs = sumTickNs / TIMING_PRINT_INTERVAL;
+      long avgSnapshotNs = sumSnapshotNs / TIMING_PRINT_INTERVAL;
+      long avgTotalNs = avgTickNs + avgSnapshotNs;
+      double avgTickMs = avgTickNs / 1_000_000.0;
+      double avgSnapshotMs = avgSnapshotNs / 1_000_000.0;
+      double avgTotalMs = avgTotalNs / 1_000_000.0;
+      System.out.printf(
+          "[ServerLoop Timing] avgTick=%d ns (%.3f ms), avgSnapshot=%d ns (%.3f ms), avgTotal=%d ns (%.3f ms) over last %d cycles%n",
+          avgTickNs,
+          avgTickMs,
+          avgSnapshotNs,
+          avgSnapshotMs,
+          avgTotalNs,
+          avgTotalMs,
+          TIMING_PRINT_INTERVAL);
+
+      // Reset buffers and counters
+      timingFilled = 0;
+      timingIndex = 0;
+    }
   }
 
   /**
