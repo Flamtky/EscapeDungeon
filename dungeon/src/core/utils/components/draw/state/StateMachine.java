@@ -381,14 +381,17 @@ public class StateMachine implements Serializable {
   /** Updates the current state and evaluates epsilon transitions. */
   public void update() {
     currentState.update();
-    List<EpsilonTransition> epsilonTransitions = getEpsilonTransitionList(currentState);
+
+    // TODO: Will maybe removed later on...
+    // TODO: This only breaks chest animations
+    /*List<EpsilonTransition> epsilonTransitions = getEpsilonTransitionList(currentState);
     for (int i = 0; i < epsilonTransitions.size(); i++) {
       EpsilonTransition transition = epsilonTransitions.get(i);
       if (transition.function().apply(currentState)) {
         Object data = transition.data() != null ? transition.data().get() : null;
         changeState(transition.targetState(), data);
       }
-    }
+    }*/
   }
 
   /** Resets the state machine to the default state (first state in the list). */

@@ -1,5 +1,7 @@
 package contrib.systems;
 
+import static contrib.hud.UIUtils.defaultSkin;
+
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import contrib.components.BarDisplayable;
 import contrib.utils.AttributeBarUtil;
@@ -38,6 +40,10 @@ public final class AttributeBarSystem extends System {
    */
   private final Map<Integer, List<BarEntry>> barCache = new HashMap<>();
 
+  static {
+    defaultSkin(); // ensure skin is loaded
+  }
+
   /**
    * Creates a new {@code AttributeBarSystem}.
    *
@@ -65,7 +71,7 @@ public final class AttributeBarSystem extends System {
    */
   @Override
   public void execute() {
-    filteredEntityStream().forEach(this::updateBarsForEntity);
+    filteredEntityStream().parallel().forEach(this::updateBarsForEntity);
   }
 
   private void updateBarsForEntity(Entity entity) {

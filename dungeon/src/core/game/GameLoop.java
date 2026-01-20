@@ -44,10 +44,7 @@ import core.sound.player.GdxSoundPlayer;
 import core.sound.player.ISoundPlayer;
 import core.sound.player.NoSoundPlayer;
 import core.systems.*;
-import core.utils.Direction;
-import core.utils.IVoidFunction;
-import core.utils.Point;
-import core.utils.Tuple;
+import core.utils.*;
 import core.utils.components.MissingComponentException;
 import core.utils.logging.DungeonLogger;
 import java.util.*;
@@ -362,7 +359,7 @@ public final class GameLoop extends ScreenAdapter {
           LOGGER.info("Received EntitySpawnEvent event: " + event.entityId());
 
           // check if the entity already exists
-          if (Game.allEntities().anyMatch(e -> e.id() == event.entityId())) {
+          if (EntityIdProvider.isRegistered(event.entityId())) {
             LOGGER.warn(
                 "Received spawn event for already existing entity with ID: " + event.entityId());
             return;
