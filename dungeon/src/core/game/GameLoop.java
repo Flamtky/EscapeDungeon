@@ -422,8 +422,7 @@ public final class GameLoop extends ScreenAdapter {
                   + event.entityId()
                   + ", reason: "
                   + event.reason());
-          Entity entity =
-              Game.allEntities().filter(e -> e.id() == event.entityId()).findFirst().orElse(null);
+          Entity entity = Game.findEntityById(event.entityId()).orElse(null);
           if (entity == null) {
             LOGGER.warn("Received despawn event for unknown entity with ID: " + event.entityId());
             return;

@@ -205,10 +205,14 @@ public class DialogFactory {
     UIComponent ui = show(ctx, targetIds);
 
     // Register callback
-    ui.registerCallback(DialogContextKeys.ON_CONFIRM, data -> UIUtils.closeDialog(ui, true, true));
+    ui.registerCallback(
+        DialogContextKeys.ON_CONFIRM,
+        data -> {
+          onConfirm.execute();
+          UIUtils.closeDialog(ui);
+        });
 
-    // Default onClose behavior (e.g. when pressing ESC)
-    ui.onClose(uic -> onConfirm.execute());
+    ui.registerCallback(DialogContextKeys.ON_CLOSE, data -> onConfirm.execute());
 
     return ui;
   }
@@ -239,12 +243,15 @@ public class DialogFactory {
         DialogContextKeys.ON_YES,
         data -> {
           onYes.execute();
-          UIUtils.closeDialog(ui, true, false);
+          UIUtils.closeDialog(ui);
         });
-    ui.registerCallback(DialogContextKeys.ON_NO, data -> UIUtils.closeDialog(ui, true, true));
-
-    // Default onClose behavior (e.g. when pressing ESC)
-    ui.onClose(uic -> onNo.execute());
+    ui.registerCallback(
+        DialogContextKeys.ON_NO,
+        data -> {
+          onNo.execute();
+          UIUtils.closeDialog(ui);
+        });
+    ui.registerCallback(DialogContextKeys.ON_CLOSE, data -> onNo.execute());
 
     return ui;
   }
@@ -254,7 +261,7 @@ public class DialogFactory {
    *
    * @param text The message to display in the dialog body
    * @param title The dialog window title
-   * @param onConfirm Callback executed when the confirm button is pressed (can be null)
+   * @param onConfirm Callback executed when the confirm button is pressed
    * @param confirmLabel Label for the confirm button (uses default if null)
    * @param cancelLabel Label for the cancel button (no cancel button if null)
    * @param additionalButtons List of additional button labels (can be null)
@@ -281,15 +288,13 @@ public class DialogFactory {
 
     UIComponent ui = show(builder.build(), targetEntityIds);
 
-    // Register callbacks
-    if (onConfirm != null) {
-      ui.registerCallback(
-          DialogContextKeys.ON_CONFIRM,
-          data -> {
-            onConfirm.execute();
-            UIUtils.closeDialog(ui, true);
-          });
-    }
+    ui.registerCallback(
+        DialogContextKeys.ON_CONFIRM,
+        data -> {
+          onConfirm.execute();
+          UIUtils.closeDialog(ui);
+        });
+    ui.registerCallback(DialogContextKeys.ON_CLOSE, data -> onConfirm.execute());
 
     return ui;
   }

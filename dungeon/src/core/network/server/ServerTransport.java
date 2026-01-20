@@ -4,9 +4,7 @@ import static core.network.codec.NetworkCodec.deserialize;
 import static core.network.codec.NetworkCodec.serialize;
 import static core.network.config.NetworkConfig.*;
 
-import contrib.components.UIComponent;
 import contrib.entities.HeroController;
-import contrib.hud.UIUtils;
 import contrib.hud.inventory.InventoryGUI;
 import core.Entity;
 import core.Game;
@@ -795,26 +793,13 @@ public final class ServerTransport {
       return;
     }
 
-    // 3. Handle CLOSED response type (user closed dialog without selecting an option)
-    if (msg.responseType() == DialogResponseMessage.ResponseType.CLOSED) {
-      // Remove UIComponent from the dialog entity
-      int entityId = tracker.getEntityId(dialogId);
-      if (entityId >= 0) {
-        Game.findEntityById(entityId)
-            .flatMap(e -> e.fetch(UIComponent.class))
-            .ifPresent(UIUtils::closeDialog);
-      }
-      tracker.closeDialog(dialogId, false);
-      return;
-    }
-
-    // 4. Try to claim (first-responder wins)
+    // 3. Try to claim (first-responder wins)
     if (!tracker.tryClaimDialog(dialogId, clientId)) {
       LOGGER.debug("Dialog {} already claimed by another client, ignoring response", dialogId);
       return;
     }
 
-    // 5. Execute callback by key from DialogTracker
+    // 4. Execute callback by key from DialogTracker
     Optional<Consumer<Serializable>> callbackOpt =
         DialogTracker.instance().getCallback(dialogId, msg.callbackKey());
     if (callbackOpt.isPresent()) {

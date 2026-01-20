@@ -293,7 +293,7 @@ public class CraftingGUI extends CombinableGUI implements IInventoryHolder {
           craftingGUI.cancel();
           UIUtils.closeDialog(uiComponent);
         });
-    uiComponent.onClose(ui -> craftingGUI.cancel());
+    uiComponent.registerCallback(DialogContextKeys.ON_CLOSE, data -> craftingGUI.cancel());
   }
 
   @Override

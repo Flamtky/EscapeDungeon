@@ -71,7 +71,7 @@ public final class AttributeBarSystem extends System {
    */
   @Override
   public void execute() {
-    filteredEntityStream().parallel().forEach(this::updateBarsForEntity);
+    filteredEntityStream().forEach(this::updateBarsForEntity);
   }
 
   private void updateBarsForEntity(Entity entity) {

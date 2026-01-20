@@ -104,19 +104,11 @@ public final class HudSystem extends System {
 
     Game.stage()
         .ifPresentOrElse(
-            stage -> {
-              addDialogToStage(dialog, stage);
-              addMapping(entity, dialog, component);
-              DialogTracker.instance().registerDialog(component);
-            },
-            () -> {
-              // Headless mode,
-              if (PreRunConfiguration.multiplayerEnabled()
-                  && PreRunConfiguration.isNetworkServer()) {
-                sendDialogToClients(entity, component, affectedIds);
-                addMapping(entity, dialog, component);
-              }
-            });
+            stage -> addDialogToStage(dialog, stage),
+            () -> sendDialogToClients(entity, component, affectedIds));
+
+    addMapping(entity, dialog, component);
+    DialogTracker.instance().registerDialog(component);
   }
 
   /**
@@ -139,8 +131,6 @@ public final class HudSystem extends System {
     if (clientIds.isEmpty()) {
       return; // No clients to send to
     }
-
-    DialogTracker.instance().registerDialog(component);
 
     // Send dialog to all target clients
     DialogShowMessage msg =

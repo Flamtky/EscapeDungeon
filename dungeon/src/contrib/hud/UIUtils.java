@@ -12,6 +12,8 @@ import contrib.hud.elements.GUICombination;
 import core.Entity;
 import core.Game;
 import core.components.PlayerComponent;
+import core.game.PreRunConfiguration;
+import core.network.server.DialogTracker;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
 import core.utils.logging.DungeonLogger;
@@ -204,21 +206,14 @@ public final class UIUtils {
   /**
    * Closes the dialog associated with the given UIComponent and optionally deletes its owner.
    *
-   * <p>This method removes the UIComponent from its owner entity and optionally removes the owner
-   * entity from the game. If the owner of the UIComponent has a PlayerComponent, the number of open
-   * dialogs is decremented. All target entities are notified of the dialog closure.
+   * <p>This method removes the UIComponent from its owner entity and removes the owner entity from
+   * the game if the owner has no more Components after the UIComponent is removed. If the owner of
+   * the UIComponent has a PlayerComponent, the number of open dialogs is decremented. All target
+   * entities are notified of the dialog closure.
    *
    * @param uiComponent the UIComponent whose dialog is to be closed
-   * @param deleteOwner whether to remove the owner entity from the game after closing the dialog
-   * @param callDefaultClose whether to call the onClose (default close behavior) callback of the
-   *     UIComponent
    */
-  public static void closeDialog(
-      UIComponent uiComponent, boolean deleteOwner, boolean callDefaultClose) {
-    if (callDefaultClose) {
-      uiComponent.onClose().accept(uiComponent); // onClose callback
-    }
-
+  public static void closeDialog(UIComponent uiComponent) {
     try {
       Entity ownerEntity = uiComponent.dialogContext().ownerEntity();
       ownerEntity.remove(UIComponent.class);
@@ -231,8 +226,12 @@ public final class UIUtils {
       }
       LOGGER.debug("Closed dialog on entity {}", ownerEntity.id());
 
-      if (deleteOwner) {
+      if (ownerEntity.componentStream().toList().isEmpty()) {
         Game.remove(ownerEntity);
+      }
+
+      if (PreRunConfiguration.isNetworkServer()) {
+        DialogTracker.instance().closeDialog(uiComponent.dialogContext().dialogId(), true);
       }
 
       if (uiComponent.dialog() instanceof Disposable disposable) {
@@ -241,33 +240,5 @@ public final class UIUtils {
     } catch (DialogCreationException e) {
       LOGGER.warn("Could not close dialog: {}", e.getMessage());
     }
-  }
-
-  /**
-   * Closes the dialog associated with the given UIComponent and optionally deletes its owner.
-   *
-   * <p>This method removes the UIComponent from its owner entity and optionally removes the owner
-   * entity from the game. If the owner of the UIComponent has a PlayerComponent, the number of open
-   * dialogs is decremented. All target entities are notified of the dialog closure.
-   *
-   * @param uiComponent the UIComponent whose dialog is to be closed
-   * @param deleteOwner whether to remove the owner entity from the game after closing the dialog
-   */
-  public static void closeDialog(UIComponent uiComponent, boolean deleteOwner) {
-    closeDialog(uiComponent, deleteOwner, true);
-  }
-
-  /**
-   * Closes the dialog associated with the given UIComponent.
-   *
-   * <p>If the owner of the UIComponent has a PlayerComponent, the number of open dialogs is
-   * decremented.
-   *
-   * <p>By default, the owner entity is not deleted.
-   *
-   * @param uiComponent the UIComponent whose dialog is to be closed
-   */
-  public static void closeDialog(UIComponent uiComponent) {
-    closeDialog(uiComponent, false);
   }
 }

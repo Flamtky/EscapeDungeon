@@ -5,6 +5,7 @@ import contrib.configuration.KeyboardConfig;
 import contrib.hud.DialogUtils;
 import contrib.hud.UIUtils;
 import contrib.hud.dialogs.DialogCallbackResolver;
+import contrib.hud.dialogs.DialogContextKeys;
 import contrib.hud.inventory.InventoryGUI;
 import contrib.systems.HealthSystem;
 import contrib.systems.HudSystem;
@@ -404,10 +405,13 @@ public final class HeroBuilder {
                                 // For network dialogs (received from server), send close message
                                 if (component.dialogContext() != null) {
                                   String dialogId = component.dialogContext().dialogId();
-                                  DialogCallbackResolver.sendDialogClosed(dialogId);
+                                  DialogCallbackResolver.createButtonCallback(
+                                          dialogId, DialogContextKeys.ON_CLOSE)
+                                      .accept(null);
+                                } else {
+                                  // Remove the UI component
+                                  UIUtils.closeDialog(component);
                                 }
-                                // Remove the UI component
-                                UIUtils.closeDialog(component);
                               }
                             }))),
         false,

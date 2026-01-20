@@ -3,6 +3,7 @@ package mushRoom.modules.qte;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import contrib.hud.UIUtils;
 import contrib.hud.dialogs.*;
+import contrib.systems.EventScheduler;
 import core.Entity;
 import core.Game;
 import mushRoom.modules.EscapeRoomDialogTypes;
@@ -13,6 +14,9 @@ import mushRoom.modules.EscapeRoomDialogTypes;
  * <p>Handles registration of the dialog type and provides methods to open the minigame.
  */
 public final class FollowingIndicatorDialog {
+
+  /** Delay after success/failure before closing. */
+  private static final long DELAY_AFTER_END = 2000;
 
   static {
     DialogFactory.register(
@@ -43,15 +47,19 @@ public final class FollowingIndicatorDialog {
             .build();
 
     var ui = DialogFactory.show(ctx, user.id());
-    ui.registerCallback(DialogContextKeys.ON_CONFIRM, data -> onSuccess.run());
-    ui.registerCallback(DialogContextKeys.ON_CANCEL, data -> onFailure.run());
-
-    ui.onClose(
-        (uic) -> {
-          onFailure.run();
-          // Dispose when dialog closes
-          UIUtils.closeDialog(ui, true, false);
+    ui.registerCallback(
+        DialogContextKeys.ON_CONFIRM,
+        data -> {
+          onSuccess.run();
+          EventScheduler.scheduleAction(() -> UIUtils.closeDialog(ui), DELAY_AFTER_END);
         });
+    ui.registerCallback(
+        DialogContextKeys.ON_CANCEL,
+        data -> {
+          onFailure.run();
+          EventScheduler.scheduleAction(() -> UIUtils.closeDialog(ui), DELAY_AFTER_END);
+        });
+    ui.registerCallback(DialogContextKeys.ON_CLOSE, data -> onFailure.run());
   }
 
   public static Group build(DialogContext dialogContext) {
