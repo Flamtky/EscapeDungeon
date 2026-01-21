@@ -102,6 +102,11 @@ public class StaminaExhaustionSystem extends System {
                     new IllegalStateException(
                         "Entity missing VelocityComponent in StaminaExhaustionSystem"));
 
+    if (entity.isPresent(SleepingComponent.class)) {
+      // Do not process exhaustion for sleeping entities
+      return;
+    }
+
     float currentStamina = stamina.currentAmount();
     float maxStamina = stamina.maxAmount();
     float recoveryThreshold = maxStamina * RECOVERY_THRESHOLD_PERCENT;
