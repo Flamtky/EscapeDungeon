@@ -105,8 +105,8 @@ public class DungeonAnalyticsAPI {
   }
 
   /**
-   * Logs an xAPI statement documenting an event during the escape room. This operation is executed
-   * asynchronously and does not block the caller.
+   * Logs an xAPI statement documenting an event during the escape room without any context. This
+   * operation is executed asynchronously and does not block the caller.
    *
    * @param ac The AnalyticsComponent containing session and player info.
    * @param verb The action performed (e.g., "solved", "attempted").
@@ -115,6 +115,25 @@ public class DungeonAnalyticsAPI {
    */
   public static void logXApiStatement(
       AnalyticsComponent ac, Verb verb, String objectId, Map<String, Object> resultJsonMap) {
+    logXApiStatement(ac, verb, objectId, resultJsonMap, null);
+  }
+
+  /**
+   * Logs an xAPI statement documenting an event during the escape room. This operation is executed
+   * asynchronously and does not block the caller.
+   *
+   * @param ac The AnalyticsComponent containing session and player info.
+   * @param verb The action performed (e.g., "solved", "attempted").
+   * @param objectId The target of the action (e.g., "puzzle_01").
+   * @param resultJsonMap JSON containing metrics, skill tags, and pyramid data.
+   * @param context JSON containing additional context for the statement. Can be null.
+   */
+  public static void logXApiStatement(
+      AnalyticsComponent ac,
+      Verb verb,
+      String objectId,
+      Map<String, Object> resultJsonMap,
+      Map<String, Object> context) {
     if (!ENABLED) {
       return;
     }
@@ -122,8 +141,8 @@ public class DungeonAnalyticsAPI {
         () -> {
           var sql =
               """
-              INSERT INTO xapi_statements (session_id, player_id, verb, object_id, result)
-              VALUES (?, ?, ?, ?, ?::jsonb)
+              INSERT INTO xapi_statements (session_id, player_id, verb, object_id, result, context)
+              VALUES (?, ?, ?, ?, ?::jsonb, ?::jsonb)
               """;
 
           try (Connection conn = DatabaseConnector.getConnection();
@@ -133,6 +152,7 @@ public class DungeonAnalyticsAPI {
             pstmt.setString(3, verb.toString());
             pstmt.setString(4, objectId);
             pstmt.setString(5, JsonHandler.writeJson(resultJsonMap, false));
+            pstmt.setString(6, context == null ? null : JsonHandler.writeJson(context, false));
             pstmt.executeUpdate();
           } catch (SQLException e) {
             LOGGER.error("Failed to log xAPI statement: " + e.getMessage(), e);
