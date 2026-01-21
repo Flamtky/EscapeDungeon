@@ -1,11 +1,13 @@
 package analytics;
 
 import contrib.entities.CharacterClass;
+import core.Game;
 import core.components.AnalyticsComponent;
 import core.network.server.ClientState;
 import core.utils.JsonHandler;
 import core.utils.logging.DungeonLogger;
 import java.sql.*;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -31,7 +33,7 @@ public class DungeonAnalyticsAPI {
 
   /**
    * Registers a new player or updates an existing player's Hexad profile. This operation is
-   * executed asynchronously and does not block the caller.
+   * synchronous and blocks until the operation is complete.
    *
    * @param playerState The client's state containing player identifiers.
    * @param characterClass The player's Hexad character class.
@@ -40,32 +42,29 @@ public class DungeonAnalyticsAPI {
     if (!ENABLED) {
       return;
     }
-    EXECUTOR.submit(
-        () -> {
-          var sql =
-              """
-              INSERT INTO players (player_id, hexad_primary_type, hexad_scores)
-              VALUES (?, ?, ?::jsonb)
-              ON CONFLICT (player_id) DO UPDATE
-              SET hexad_primary_type = EXCLUDED.hexad_primary_type,
-                  hexad_scores = EXCLUDED.hexad_scores;
-              """;
+    var sql =
+        """
+        INSERT INTO players (player_id, hexad_primary_type, hexad_scores)
+        VALUES (?, ?, ?::jsonb)
+        ON CONFLICT (player_id) DO UPDATE
+        SET hexad_primary_type = EXCLUDED.hexad_primary_type,
+            hexad_scores = EXCLUDED.hexad_scores;
+        """;
 
-          final Map<CharacterClass, String> classToType =
-              Map.of(
-                  CharacterClass.ROGUE, "Achiever",
-                  CharacterClass.APPRENTICE, "Socialiser");
+    final Map<CharacterClass, String> classToType =
+        Map.of(
+            CharacterClass.ROGUE, "Achiever",
+            CharacterClass.APPRENTICE, "Socialiser");
 
-          try (Connection conn = DatabaseConnector.getConnection();
-              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, stateToId(playerState));
-            pstmt.setString(2, classToType.getOrDefault(characterClass, "unknown"));
-            pstmt.setString(3, "{}"); // TODO: Replace with actual Hexad scores JSON
-            pstmt.executeUpdate();
-          } catch (SQLException e) {
-            LOGGER.error("Failed to upsert player profile: " + e.getMessage(), e);
-          }
-        });
+    try (Connection conn = DatabaseConnector.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(sql)) {
+      pstmt.setString(1, stateToId(playerState));
+      pstmt.setString(2, classToType.getOrDefault(characterClass, "unknown"));
+      pstmt.setString(3, "{}"); // TODO: Replace with actual Hexad scores JSON
+      pstmt.executeUpdate();
+    } catch (SQLException e) {
+      LOGGER.error("Failed to upsert player profile: " + e.getMessage(), e);
+    }
   }
 
   /**
@@ -137,6 +136,23 @@ public class DungeonAnalyticsAPI {
     if (!ENABLED) {
       return;
     }
+
+    resultJsonMap = resultJsonMap == null ? Map.of() : resultJsonMap;
+
+    context = context == null ? new HashMap<>() : new HashMap<>(context);
+
+    var riddleSystem = Game.systems().get(RiddleAnalysisSystem.class);
+    if (riddleSystem instanceof RiddleAnalysisSystem riddleAnalysisSystem) {
+      var currentRiddle =
+          riddleAnalysisSystem.currentRiddle(ac.state().playerEntity().orElseThrow());
+      if (currentRiddle != null) {
+        context.put("riddle", currentRiddle.name());
+      }
+    }
+
+    final Map<String, Object> finalResultJsonMap = resultJsonMap;
+    final Map<String, Object> finalContext = context;
+
     EXECUTOR.submit(
         () -> {
           var sql =
@@ -151,8 +167,8 @@ public class DungeonAnalyticsAPI {
             pstmt.setString(2, stateToId(ac.state()));
             pstmt.setString(3, verb.toString());
             pstmt.setString(4, objectId);
-            pstmt.setString(5, JsonHandler.writeJson(resultJsonMap, false));
-            pstmt.setString(6, context == null ? null : JsonHandler.writeJson(context, false));
+            pstmt.setString(5, JsonHandler.writeJson(finalResultJsonMap, false));
+            pstmt.setString(6, JsonHandler.writeJson(finalContext, false));
             pstmt.executeUpdate();
           } catch (SQLException e) {
             LOGGER.error("Failed to log xAPI statement: " + e.getMessage(), e);
@@ -221,12 +237,13 @@ public class DungeonAnalyticsAPI {
     OPENED("opened"),
     CRAFTED("crafted"),
     SOLVED("solved"),
-    ATTEMPTED("attempted"),
+    TRIES("tries"),
     HINT_REQUESTED("hint_requested"),
     CAST_SKILL("cast_skill"),
     DROPPED("dropped"),
     MOVED_ITEM("moved_item"),
-    USED_ITEM("used_item");
+    USED_ITEM("used_item"),
+    LEFT("left");
 
     private final String verbString;
 

@@ -1,5 +1,6 @@
 package demoDungeon.level;
 
+import analytics.DungeonAnalyticsAPI;
 import com.badlogic.gdx.graphics.Color;
 import contrib.components.*;
 import contrib.components.CollideComponent;
@@ -22,10 +23,7 @@ import contrib.utils.components.ai.idle.PatrolWalk;
 import contrib.utils.components.skill.Skill;
 import core.Entity;
 import core.Game;
-import core.components.DrawComponent;
-import core.components.InputComponent;
-import core.components.PositionComponent;
-import core.components.VelocityComponent;
+import core.components.*;
 import core.configuration.KeyboardConfig;
 import core.level.DungeonLevel;
 import core.level.Tile;
@@ -41,6 +39,7 @@ import core.utils.Vector2;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.path.SimpleIPath;
 import escapeDungeon.components.AxeComponent;
+import escapeDungeon.components.EscapedComponent;
 import escapeDungeon.components.IceMovementComponent;
 import escapeDungeon.items.*;
 import escapeDungeon.skill.SprintSkill;
@@ -131,6 +130,8 @@ public class MADungeonRoom extends DungeonLevel {
           CharacterClass.ROGUE, SprintSkill.class
           // Add other mappings as needed
           );
+
+  private boolean escaped = false;
 
   /**
    * Creates a new Demo Level.
@@ -348,29 +349,43 @@ public class MADungeonRoom extends DungeonLevel {
     createChests();
     initGuards();
     Game.add(MiscFactory.newCraftingCauldron(getPoint("crafting0")));
-
-    TimerAPI.start(); // TODO: start if (all) player joined?
   }
+
+  /* TODO: todos
+   * 1. Timer -> done
+   * 2. Ice controls analysis -> done
+   * 3. Schiebe rätsel analysis -> done
+   * 4. Guard analysis (wenn gesehen, wenn gefangen, wenn verloren)
+   * 5. UI minigames analysis
+   * 6. Dialog analysis
+   * 7. Stamina analysis (wenn leer, wenn schlafen)
+   */
 
   @Override
   protected void onTick() {
     if (!Game.isHeadless()) {
       updateTorchShader();
     }
+
+    if (!TimerAPI.isRunning()) {
+      var playerCount = Game.allPlayers().count();
+      if (playerCount >= 2) {
+        TimerAPI.start();
+      }
+    }
+
     Game.allPlayers()
         .forEach(
             player -> {
-              if (player.fetch(IceMovementComponent.class).isEmpty()) {
-                iceControls(player);
-              }
+              iceControls(player); // TODO: analytics
               checkEscape(player);
 
               // give skills to classes
               classToSkillMap.forEach(
-                  (Ch, skillCls) -> {
+                  (charClass, skillCls) -> {
                     if (player
                         .fetch(CharacterClassComponent.class)
-                        .map(cc -> cc.characterClass() == Ch)
+                        .map(cc -> cc.characterClass() == charClass)
                         .orElse(false)) {
                       player
                           .fetch(SkillComponent.class)
@@ -388,6 +403,11 @@ public class MADungeonRoom extends DungeonLevel {
                     }
                   });
             });
+
+    if (!escaped
+        && Game.allPlayers().allMatch(player -> player.isPresent(EscapedComponent.class))) {
+      Game.allPlayers().forEach(this::escaped);
+    }
   }
 
   private void createChests() {
@@ -771,8 +791,6 @@ public class MADungeonRoom extends DungeonLevel {
     }
   }
 
-  private final Set<Integer> initLightEntityIds = new HashSet<>();
-
   private void createIcePuzzleEntities() {
     listPointsIndexed("snow_Wall")
         .forEach(
@@ -795,6 +813,8 @@ public class MADungeonRoom extends DungeonLevel {
               Game.add(snowWall);
             });
   }
+
+  private final Set<Integer> initLightEntityIds = new HashSet<>();
 
   private void updateTorchShader() {
     Game.levelEntities()
@@ -886,6 +906,10 @@ public class MADungeonRoom extends DungeonLevel {
     InputComponent ic = hero.fetch(InputComponent.class).orElseThrow();
     Tile currentTile = Game.tileAt(currentPos).orElseThrow();
 
+    if (!hero.isPresent(IceMovementComponent.class)) {
+      return;
+    }
+
     if (currentTile.designLabel() == DesignLabel.ICE) {
       if (hero.fetch(FlyComponent.class).isEmpty()) {
         hero.add(new FlyComponent());
@@ -965,8 +989,27 @@ public class MADungeonRoom extends DungeonLevel {
               float x = pc.position().x();
               float y = pc.position().y();
               if (x <= 1 || x >= 99 || y <= 0 || y >= 188) {
-                DialogUtils.showTextPopup("Du bist entkommen!", "ENTKOMMEN!", Game::exit);
+                player.add(new EscapedComponent());
+              } else {
+                player.remove(EscapedComponent.class);
               }
             });
+  }
+
+  private void escaped(Entity player) {
+    escaped = true;
+
+    player
+        .fetch(AnalyticsComponent.class)
+        .ifPresent(
+            ac -> {
+              DungeonAnalyticsAPI.logXApiStatement(
+                  ac,
+                  DungeonAnalyticsAPI.Verb.SOLVED,
+                  this.levelName,
+                  Map.of("totalTime", String.valueOf(TimerAPI.elapsedSeconds())));
+            });
+
+    DialogUtils.showTextPopup("Du bist entkommen!", "ENTKOMMEN!", Game::exit);
   }
 }
