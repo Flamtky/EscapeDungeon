@@ -13,9 +13,7 @@ import core.Entity;
 import core.Game;
 import core.utils.IVoidFunction;
 import core.utils.logging.DungeonLogger;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -140,6 +138,8 @@ public class DialogFactory {
     UIComponent ui = new UIComponent(context, willPause, canBeClosed, targetEntityIds);
     ownerEntity.add(ui);
 
+    UIUtils.analyticsOpenDialog(context, targetEntityIds);
+
     return ui;
   }
 
@@ -156,7 +156,7 @@ public class DialogFactory {
    *     found after creation
    */
   public static UIComponent show(final DialogContext context, boolean canBeClosed) {
-    return show(context, true, canBeClosed, new int[0]);
+    return show(context, true, canBeClosed);
   }
 
   /**

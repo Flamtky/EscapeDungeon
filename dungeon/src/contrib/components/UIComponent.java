@@ -23,6 +23,7 @@ public final class UIComponent implements Component {
   private final boolean canBeClosed;
   private final int[] targetEntityIds;
   private final DialogContext dialogContext;
+  private final long createdAt;
 
   /** Server-side callbacks map. Keys match callback keys sent by clients. */
   private final Map<String, Consumer<Serializable>> callbacks = new HashMap<>();
@@ -47,6 +48,7 @@ public final class UIComponent implements Component {
     this.willPauseGame = willPauseGame;
     this.canBeClosed = canBeClosed;
     this.targetEntityIds = targetEntityIds;
+    this.createdAt = System.currentTimeMillis();
   }
 
   /**
@@ -146,6 +148,15 @@ public final class UIComponent implements Component {
    */
   public DialogContext dialogContext() {
     return dialogContext;
+  }
+
+  /**
+   * Get the creation timestamp of this UIComponent.
+   *
+   * @return the creation timestamp in milliseconds
+   */
+  public long createdAt() {
+    return createdAt;
   }
 
   /**

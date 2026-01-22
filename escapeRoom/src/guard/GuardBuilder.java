@@ -167,7 +167,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         return false;
       }
 
-      if (ac.alertness() >= threshold) {
+      if (ac.alertness() >= threshold && !triggered) {
         triggered = true;
         lastTriggeredTime = System.currentTimeMillis();
         DungeonAnalyticsAPI.logXApiStatement(
@@ -179,7 +179,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         return true;
       }
 
-      if (!stayOnceTriggered && ac.alertness() <= lowerThreshold) {
+      if (!stayOnceTriggered && ac.alertness() <= lowerThreshold && triggered) {
         triggered = false;
         DungeonAnalyticsAPI.logXApiStatement(
             player.fetch(AnalyticsComponent.class).orElseThrow(),

@@ -1,5 +1,6 @@
 package contrib.hud;
 
+import analytics.DungeonAnalyticsAPI;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -7,16 +8,20 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Disposable;
 import contrib.components.InventoryComponent;
 import contrib.components.UIComponent;
+import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogCreationException;
 import contrib.hud.elements.GUICombination;
 import core.Entity;
 import core.Game;
+import core.components.AnalyticsComponent;
 import core.components.PlayerComponent;
 import core.game.PreRunConfiguration;
 import core.network.server.DialogTracker;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
 import core.utils.logging.DungeonLogger;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -234,11 +239,65 @@ public final class UIUtils {
         DialogTracker.instance().closeDialog(uiComponent.dialogContext().dialogId(), true);
       }
 
+      analyticsCloseDialog(uiComponent);
+
       if (uiComponent.dialog() instanceof Disposable disposable) {
         disposable.dispose();
       }
     } catch (DialogCreationException e) {
       LOGGER.warn("Could not close dialog: {}", e.getMessage());
     }
+  }
+
+  /**
+   * Logs the opening of a dialog for analytics purposes.
+   *
+   * @param context the dialog context
+   * @param targetEntityIds the target entity IDs for which the dialog is opened
+   */
+  public static void analyticsOpenDialog(DialogContext context, int[] targetEntityIds) {
+    Arrays.stream(targetEntityIds)
+        .mapToObj(Game::findEntityById)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .filter(entity -> entity.isPresent(AnalyticsComponent.class))
+        .forEach(
+            player ->
+                DungeonAnalyticsAPI.logXApiStatement(
+                    player.fetch(AnalyticsComponent.class).orElseThrow(),
+                    DungeonAnalyticsAPI.Verb.SEES,
+                    "dialog:" + context.dialogType().toString(),
+                    Map.of(
+                        "attributes",
+                        context.attributes().toString(),
+                        "targetIds",
+                        Arrays.toString(targetEntityIds))));
+  }
+
+  /**
+   * Logs the closing of a dialog for analytics purposes.
+   *
+   * @param uiComponent the UIComponent whose dialog is being closed
+   */
+  public static void analyticsCloseDialog(UIComponent uiComponent) {
+    int[] targetEntityIds = uiComponent.targetEntityIds();
+    Arrays.stream(targetEntityIds)
+        .mapToObj(Game::findEntityById)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .filter(entity -> entity.isPresent(AnalyticsComponent.class))
+        .forEach(
+            player ->
+                DungeonAnalyticsAPI.logXApiStatement(
+                    player.fetch(AnalyticsComponent.class).orElseThrow(),
+                    DungeonAnalyticsAPI.Verb.CLOSES,
+                    "dialog:" + uiComponent.dialogContext().dialogType().toString(),
+                    Map.of(
+                        "attributes",
+                        uiComponent.dialogContext().attributes().toString(),
+                        "targetIds",
+                        Arrays.toString(targetEntityIds),
+                        "durationMs",
+                        System.currentTimeMillis() - uiComponent.createdAt())));
   }
 }

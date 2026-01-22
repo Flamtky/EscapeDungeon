@@ -17,6 +17,7 @@ import core.Entity;
 import core.Game;
 import core.game.WindowEventManager;
 import core.utils.FontHelper;
+import core.utils.Tuple;
 import core.utils.logging.DungeonLogger;
 import java.util.Objects;
 import java.util.Random;
@@ -489,5 +490,14 @@ public class FollowingIndicatorUI extends Group implements Disposable {
   @Override
   public void dispose() {
     // Fonts are managed by FontHelper, no need to dispose
+  }
+
+  /**
+   * Gets the number of successes and failures as an {@link core.utils.Tuple} (successes, failures).
+   *
+   * @return Tuple of (successCount, failCount)
+   */
+  public Tuple<Integer, Integer> getResults() {
+    return Tuple.of(successCount, failCount);
   }
 }

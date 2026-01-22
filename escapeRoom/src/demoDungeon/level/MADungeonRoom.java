@@ -351,16 +351,6 @@ public class MADungeonRoom extends DungeonLevel {
     Game.add(MiscFactory.newCraftingCauldron(getPoint("crafting0")));
   }
 
-  /* TODO: todos
-   * 1. Timer -> done
-   * 2. Ice controls analysis -> done
-   * 3. Schiebe rätsel analysis -> done
-   * 4. Guard analysis (wenn gesehen, wenn gefangen, wenn verloren) -> done
-   * 5. UI minigames analysis
-   * 6. Dialog analysis
-   * 7. Stamina analysis (wenn leer, wenn schlafen)
-   */
-
   @Override
   protected void onTick() {
     if (!Game.isHeadless()) {

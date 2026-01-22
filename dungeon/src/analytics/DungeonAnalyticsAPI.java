@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
  */
 public class DungeonAnalyticsAPI {
 
-  private static final boolean ENABLED = true;
+  private static final boolean ENABLED = Game.isHeadless();
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(DungeonAnalyticsAPI.class);
   private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4);
 
@@ -255,7 +255,12 @@ public class DungeonAnalyticsAPI {
     DETECTED("detected"),
     LOST_DETECTION("lost_detection"),
     CAPTURED("captured"),
-    RELEASED("released");
+    RELEASED("released"),
+    SEES("sees"),
+    CLOSES("closes"),
+    FAILED("failed"),
+    EXHAUSTED("exhausted"),
+    RECOVERED("recovered");
 
     private final String verbString;
 

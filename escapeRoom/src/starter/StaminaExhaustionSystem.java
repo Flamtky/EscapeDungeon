@@ -1,8 +1,10 @@
 package starter;
 
+import analytics.DungeonAnalyticsAPI;
 import contrib.components.StaminaComponent;
 import core.Entity;
 import core.System;
+import core.components.AnalyticsComponent;
 import core.components.VelocityComponent;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,13 +43,15 @@ public class StaminaExhaustionSystem extends System {
    * The stamina percentage (0.0 to 1.0) of max stamina at which an exhausted entity recovers. The
    * entity must reach this percentage of their max stamina to exit the exhausted state.
    */
-  private static final float RECOVERY_THRESHOLD_PERCENT = 0.05f;
+  private static final float RECOVERY_THRESHOLD_PERCENT = 0.90f;
 
   /**
    * Map storing the original maximum speed for each entity. Used to restore speed when the entity
    * recovers from exhaustion.
    */
   private final Map<Entity, Float> originalSpeeds = new HashMap<>();
+
+  private final Map<Entity, Long> exhaustionTimestamps = new HashMap<>();
 
   /**
    * Creates a new {@code StaminaExhaustionSystem}.
@@ -139,6 +143,7 @@ public class StaminaExhaustionSystem extends System {
     // Store original speed if not already stored
     if (!originalSpeeds.containsKey(entity)) {
       originalSpeeds.put(entity, velocity.maxSpeed());
+      exhaustionTimestamps.put(entity, java.lang.System.currentTimeMillis());
     }
 
     // Apply speed reduction
@@ -150,6 +155,14 @@ public class StaminaExhaustionSystem extends System {
 
     // Call hook for subclasses
     onBecomeExhausted(entity, stamina);
+
+    DungeonAnalyticsAPI.logXApiStatement(
+        entity.fetch(AnalyticsComponent.class).orElseThrow(),
+        DungeonAnalyticsAPI.Verb.EXHAUSTED,
+        "stamina_exhaustion",
+        Map.of(
+            "stamina", stamina.currentAmount(),
+            "max_stamina", stamina.maxAmount()));
   }
 
   /**
@@ -174,6 +187,17 @@ public class StaminaExhaustionSystem extends System {
 
     // Call hook for subclasses
     onRecoverFromExhaustion(entity, stamina);
+
+    long exhaustionStartTime = exhaustionTimestamps.remove(entity);
+    long exhaustionDurationMs = java.lang.System.currentTimeMillis() - exhaustionStartTime;
+    DungeonAnalyticsAPI.logXApiStatement(
+        entity.fetch(AnalyticsComponent.class).orElseThrow(),
+        DungeonAnalyticsAPI.Verb.RECOVERED,
+        "stamina_recovery",
+        Map.of(
+            "stamina", stamina.currentAmount(),
+            "max_stamina", stamina.maxAmount(),
+            "exhaustion_duration_ms", exhaustionDurationMs));
   }
 
   /**

@@ -69,7 +69,7 @@ public class LockPickUI extends Group implements Disposable {
   };
 
   /** The amount of attempts to try to pick the lock. */
-  private static final int ATTEMPTS = 3;
+  public static final int ATTEMPTS = 3;
 
   private static final Color SELECTED_TINT = new Color(1f, 1f, 1f, 1f);
   private static final Color UNSELECTED_TINT = new Color(0.7f, 0.7f, 0.7f, 1f);
@@ -747,5 +747,14 @@ public class LockPickUI extends Group implements Disposable {
     for (Texture texture : ringTextures) {
       texture.dispose();
     }
+  }
+
+  /**
+   * Gets the number of attempts made so far.
+   *
+   * @return The number of attempts used
+   */
+  public int getAttempt() {
+    return ATTEMPTS - remainingAttempts;
   }
 }
