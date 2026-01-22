@@ -1,6 +1,7 @@
 package analytics;
 
 import contrib.components.AttachmentComponent;
+import contrib.components.IllegalComponent;
 import contrib.entities.CharacterClass;
 import core.Game;
 import core.components.AnalyticsComponent;
@@ -156,6 +157,19 @@ public class DungeonAnalyticsAPI {
         .map(e -> e.fetch(AttachmentComponent.class).isPresent())
         .orElse(false)) {
       context.put("captured", true);
+    }
+
+    if (ac.state()
+        .playerEntity()
+        .map(e -> e.fetch(IllegalComponent.class).isPresent())
+        .orElse(false)) {
+      context.put(
+          "illegal",
+          ac.state()
+              .playerEntity()
+              .flatMap(e -> e.fetch(IllegalComponent.class))
+              .map(IllegalComponent::isIllegal)
+              .orElse(false));
     }
 
     final Map<String, Object> finalResultJsonMap = resultJsonMap;

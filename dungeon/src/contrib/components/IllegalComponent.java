@@ -1,4 +1,4 @@
-package starter;
+package contrib.components;
 
 import core.Component;
 import java.io.Serializable;
@@ -12,7 +12,6 @@ import java.util.Set;
  * authorized to be in area or is doing something they shouldn't be doing.
  *
  * @param reasons The list of reasons why the player is considered illegal.
- * @see guard.GuardDetectionSystem
  */
 public record IllegalComponent(Set<Reason> reasons) implements Component, Serializable {
 
