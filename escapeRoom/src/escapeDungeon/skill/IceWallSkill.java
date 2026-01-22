@@ -48,7 +48,7 @@ public class IceWallSkill extends CursorSkill {
                       .filter(
                           deco ->
                               deco.fetch(DecoComponent.class)
-                                  .map(decoComp -> decoComp.type() == Deco.FlagIndia)
+                                  .map(decoComp -> decoComp.type() == Deco.IceWall)
                                   .orElse(false))
                       .forEach(Game::remove);
                 } else if (tile.levelElement() == LevelElement.FLOOR) {
@@ -61,7 +61,7 @@ public class IceWallSkill extends CursorSkill {
                     if (Game.entityAtPoint(point).noneMatch(e -> e.name().contains("hero"))) {
                       tile.levelElement(LevelElement.HOLE);
                       tile.refreshTexture();
-                      var iceWallEntity = DecoFactory.createDeco(tile.position(), Deco.FlagIndia);
+                      var iceWallEntity = DecoFactory.createDeco(tile.position(), Deco.IceWall);
                       Game.add(iceWallEntity);
                     }
                   }

@@ -6,6 +6,8 @@ import contrib.crafting.CraftingIngredient;
 import contrib.crafting.CraftingResult;
 import contrib.crafting.Recipe;
 import contrib.entities.MiscFactory;
+import contrib.entities.deco.Deco;
+import contrib.entities.deco.DecoFactory;
 import contrib.hud.DialogUtils;
 import contrib.item.concreteItem.*;
 import contrib.modules.interaction.IInteractable;
@@ -22,13 +24,12 @@ import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
 import core.systems.DrawSystem;
 import core.utils.*;
-import core.utils.components.MissingComponentException;
 import core.utils.components.draw.shader.ColorGradeShader;
+import escapeDungeon.items.*;
 import guard.GuardBuilder;
 import hint.*;
-import mobs.EscapeRoomMonsterBuilder;
-
 import java.util.*;
+import mobs.EscapeRoomMonsterBuilder;
 
 /**
  * The Demolevel.
@@ -37,11 +38,11 @@ import java.util.*;
  */
 public class Tutorial extends DungeonLevel {
 
-  private PositionComponent playerPc;
-
   private final Tuple<Point[], PatrolWalk.MODE>[] guardCheckPoints;
 
+  private boolean[] showDialogs = {true, true, true, true};
 
+  Map<Entity, boolean[]> enteredAreas = new HashMap<>();
 
   /**
    * Creates a new Demo Level.
@@ -55,39 +56,59 @@ public class Tutorial extends DungeonLevel {
     super(layout, designLabel, namedPoints, "Demo");
 
     changeTileDesignLabel(
-      getPoint("castle11").toCoordinate(),
-      getPoint("castle12").toCoordinate(),
-      DesignLabel.GREYCASTLE);
+        getPoint("beige11").toCoordinate(),
+        getPoint("beige12").toCoordinate(),
+        DesignLabel.BEIGECASTLE);
     changeTileDesignLabel(
-      getPoint("castle21").toCoordinate(),
-      getPoint("castle22").toCoordinate(),
-      DesignLabel.GREYCASTLE);
+        getPoint("castle11").toCoordinate(),
+        getPoint("castle12").toCoordinate(),
+        DesignLabel.GREYCASTLE);
+    changeTileDesignLabel(
+        getPoint("castle21").toCoordinate(),
+        getPoint("castle22").toCoordinate(),
+        DesignLabel.GREYCASTLE);
 
     refreshLevelTextures();
 
     guardCheckPoints =
-      new Tuple[] {
-        // 8
-        Tuple.of(
-          new Point[] {
-            getPoint("guard_cp1"),
-            getPoint("guard_cp2"),
-          },
-          PatrolWalk.MODE.BACK_AND_FORTH),
-        // 9
-      };
+        new Tuple[] {
+          Tuple.of(
+              new Point[] {
+                getPoint("guard_cp1"), getPoint("guard_cp2"),
+              },
+              PatrolWalk.MODE.BACK_AND_FORTH),
+          Tuple.of(
+              new Point[] {
+                getPoint("guard_cp2"), getPoint("guard_cp1"),
+              },
+              PatrolWalk.MODE.BACK_AND_FORTH),
+          Tuple.of(
+              new Point[] {
+                getPoint("guard_cp1"), getPoint("guard_cp2"),
+              },
+              PatrolWalk.MODE.BACK_AND_FORTH),
+          Tuple.of(
+              new Point[] {
+                getPoint("guard_cp1"), getPoint("guard_cp2"),
+              },
+              PatrolWalk.MODE.BACK_AND_FORTH),
+        };
   }
 
   @Override
   protected void onFirstTick() {
-    Entity hero = Game.player().orElseThrow(MissingPlayerException::new);
-    playerPc =
-        hero.fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(hero, PositionComponent.class));
 
-    DialogUtils.showTextPopup(
-        "Es scheint als wäre der Weg vor dir versperrt, Untersuche deine Umgebung mit E oder der Rechten Maustaste und finde einen Weg um durch den Wald zu kommen.",
-        "Tutorial");
+    Game.allPlayers()
+        .forEach(
+            player -> {
+              DialogUtils.showTextPopup(
+                  "Ihr scheint getrennt worden zu sein. Findet einen Weg wieder zueinander zu finden.",
+                  "Tutorial",
+                  () -> {},
+                  player.id());
+              enteredAreas.put(player, new boolean[4]);
+            });
+
     DrawSystem ds = (DrawSystem) Game.systems().get(DrawSystem.class);
     ds.levelShaders()
         .add(
@@ -96,6 +117,12 @@ public class Tutorial extends DungeonLevel {
                 .region(new Rectangle(Vector2.of(getPoint("Test1")), Vector2.of(getPoint("Test2"))))
                 .transitionSize(1));
     Game.add(MiscFactory.newCraftingCauldron(getPoint("Cauldron1")));
+    Game.add(MiscFactory.newCraftingCauldron(getPoint("Cauldron2")));
+    Game.add(DecoFactory.createDeco(getPoint("Stone1"), Deco.Stone));
+    Game.add(DecoFactory.createDeco(getPoint("Stone2"), Deco.Stone));
+    Game.add(DecoFactory.createDeco(getPoint("Stone3"), Deco.Stone));
+    Game.add(DecoFactory.createDeco(getPoint("Stone4"), Deco.Stone));
+
     Entity stone = MiscFactory.newStone(getPoint("Stone1"), 0);
     stone
         .fetch(InteractionComponent.class)
@@ -128,32 +155,126 @@ public class Tutorial extends DungeonLevel {
     Game.add(stone);
     Game.add(
         MiscFactory.newChest(
-            Set.of(new ItemWoodenArrow(), new ItemResourceEgg()), getPoint("Kiste1")));
+            Set.of(new HammerHeadItem(), new StickItem(), new TutorialPotionItem()),
+            getPoint("Kiste1")));
+    Game.add(
+        MiscFactory.newChest(
+            Set.of(new HammerHeadItem(), new StickItem(), new TutorialPotionItem()),
+            getPoint("Chest2")));
     createCrafting();
   }
 
   private void createCrafting() {
-    CraftingIngredient[] recipeIngredient = {new ItemWoodenArrow(), new ItemResourceEgg()};
-    CraftingResult[] recipeResults = {new ItemHammer()};
+    Crafting.clearRecipes();
+    CraftingIngredient[] recipeIngredient = {new HammerHeadItem(), new StickItem()};
+    CraftingResult[] recipeResults = {new HammerItem()};
     Crafting.addRecipe(new Recipe(false, recipeIngredient, recipeResults));
   }
 
   private boolean guardsInitialized = false;
+  private boolean exitArea = true;
 
   @Override
   protected void onTick() {
 
-    float heroX = playerPc.position().x();
+    // DialogUtils.showTextPopup("Haben wir dich", "Gefangen", () -> Game.exit());
 
-    // If the player gets close enough to the boss, the boss escapes
-    if (heroX >= 50) {
-      if (!guardsInitialized) {
-        initGuards();
-        guardsInitialized = true;
-      }
+    Game.allPlayers()
+        .forEach(
+            player -> {
+              player
+                  .fetch(CollideComponent.class)
+                  .ifPresent(
+                      cc -> {
+                        Coordinate position = cc.collider().absoluteCenter().toCoordinate();
+                        if (showDialogs[0]
+                            && position.equals(getPoint("Trigger11").toCoordinate())) {
+                          DialogUtils.showTextPopup(
+                              "Der Weg vor dir scheint versperrt zu sein. Vielleicht finde ich in diesem Haus etwas um hier freizuräumen.",
+                              "Umschauen",
+                              () -> showDialogs[0] = false,
+                              player.id());
+                        }
+                        if (showDialogs[1]
+                            && position.equals(getPoint("Trigger12").toCoordinate())) {
+                          DialogUtils.showTextPopup(
+                              "Der Weg vor dir scheint versperrt zu sein. Vielleicht finde ich in diesem Haus etwas um hier freizuräumen.",
+                              "Umschauen",
+                              () -> showDialogs[1] = false,
+                              player.id());
+                        }
+                        if (showDialogs[2]
+                            && position.equals(getPoint("Trigger21").toCoordinate())) {
+                          DialogUtils.showTextPopup(
+                              "Da steht eine Kiste und ein Kessel zum Craften. Du kannst mit diesen interagieren indem du deine Maus auf diese bewegst und E drückst.",
+                              "Crafting",
+                              () -> {
+                                showDialogs[2] = false;
+                                DialogUtils.showTextPopup(
+                                    "Sammel die Items aus der Kiste ein und schau, was du damit im Kessel herstellen kannst.",
+                                    "Crafting",
+                                    () -> {},
+                                    player.id());
+                              },
+                              player.id());
+                        }
+                        if (showDialogs[3]
+                            && position.equals(getPoint("Trigger22").toCoordinate())) {
+                          DialogUtils.showTextPopup(
+                              "Da steht eine Kiste und ein Kessel zum Craften. Du kannst mit diesen interagieren indem du deine Maus auf diese bewegst und E drückst.",
+                              "Crafting",
+                              () -> {
+                                showDialogs[3] = false;
+                                DialogUtils.showTextPopup(
+                                    "Sammel die Items aus der Kiste ein und schau, was du damit im Kessel herstellen kannst.",
+                                    "Crafting",
+                                    () -> {},
+                                    player.id());
+                              },
+                              player.id());
+                        }
+                        if (!enteredAreas.get(player)[0]
+                            && position.equals(getPoint("Trigger31").toCoordinate())) {
+                          DialogUtils.showTextPopup(
+                              "Ich bin müde und der Weg ist versperrt. Die Betten sehen wirklich gut aus.",
+                              "Schlafen ..ZZzzz",
+                              () -> enteredAreas.get(player)[0] = true,
+                              player.id());
+                        }
+                        if (!enteredAreas.get(player)[1] && position.x() > 45) {
+                          enteredAreas.get(player)[1] = true;
+                          enteredAreas.forEach(
+                              (a, b) -> {
+                                exitArea = exitArea && b[1];
+                              });
+                          if (exitArea) {
+                            Game.tileAt(getPoint("hole1")).get().levelElement(LevelElement.SKIP);
+                            Game.tileAt(getPoint("hole2")).get().levelElement(LevelElement.SKIP);
+                            Game.tileAt(getPoint("hole3")).get().levelElement(LevelElement.SKIP);
+                            Game.tileAt(getPoint("hole4")).get().levelElement(LevelElement.SKIP);
+                            initGuards();
+                          }
+                        }
 
-      //DialogUtils.showTextPopup("Haben wir dich", "Gefangen", () -> Game.exit());
-    }
+                        player
+                            .fetch(AttachmentComponent.class)
+                            .ifPresent(
+                                ac -> {
+                                  if (position.x() >= 59) {
+                                    player.remove(AttachmentComponent.class);
+                                    player
+                                        .fetch(PositionComponent.class)
+                                        .ifPresent(
+                                            pos -> {
+                                              Game.tileAt(
+                                                      pos.coordinate().translate(Vector2.of(1, 0)))
+                                                  .get()
+                                                  .levelElement(LevelElement.EXIT);
+                                            });
+                                  }
+                                });
+                      });
+            });
   }
 
   private void initGuards() {
@@ -168,11 +289,11 @@ public class Tutorial extends DungeonLevel {
 
   private Entity createGuards(Tile[] patrolPoints, PatrolWalk.MODE mode) {
     return ((GuardBuilder) EscapeRoomMonsterBuilder.GUARD.builder())
-      .alertnessThreshold(100, 25, false)
-      .addToGame()
-      .speed(3.5f)
-      .idleAI(() -> new PatrolWalk(Arrays.asList(patrolPoints), 5_000, mode))
-      .build(this.getPoint("guard_cp0"));
+        .alertnessThreshold(100, 25, false)
+        .addToGame()
+        .speed(3.5f)
+        .idleAI(() -> new PatrolWalk(Arrays.asList(patrolPoints), 500, mode))
+        .build(this.getPoint("guard_cp0"));
   }
 
   private void changeTileDesignLabel(Coordinate a, Coordinate b, DesignLabel newDesignLabel) {

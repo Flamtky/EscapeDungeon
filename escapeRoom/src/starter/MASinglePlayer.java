@@ -96,6 +96,10 @@ public class MASinglePlayer {
     Item.registerItem(WaterPotionItem.class);
     Item.registerItem(WoodenBridgeItem.class);
     Item.registerItem(RopeItem.class);
+    Item.registerItem(EmptyBottleItem.class);
+    Item.registerItem(HammerHeadItem.class);
+    Item.registerItem(HammerItem.class);
+    Item.registerItem(TutorialPotionItem.class);
   }
 
   private static void configGame() throws IOException {

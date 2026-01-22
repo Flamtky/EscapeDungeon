@@ -230,7 +230,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         // Release player in cell
         FollowingIndicatorDialog.openFollowingIndicator(
             grabbedPlayer,
-            FollowingIndicatorDifficulty.MEDIUM,
+            FollowingIndicatorDifficulty.HARD,
             () -> {
               grabbedPlayer
                   .fetch(VelocityComponent.class)
@@ -242,27 +242,26 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
               guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(3.5f));
             },
             () ->
-              DialogUtils.showTextPopup(
-                  "Das hat nicht geklappt! Jetzt muss ich kurz warten, bis ich mich wieder bewegen darf.",
-                  "Einzelhaft",
-                  () -> {
-                    grabbedPlayer.remove(AttachmentComponent.class);
-                    guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
-                    guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(3.5f));
-                    EventScheduler.scheduleAction(
-                        () -> {
-                          grabbedPlayer
-                              .fetch(VelocityComponent.class)
-                              .ifPresent(vc -> vc.maxSpeed(oldMaxSpeed));
-                          grabbedPlayer
-                              .fetch(CollideComponent.class)
-                              .ifPresent(cc -> cc.isSolid(true));
-                          this.grabbedPlayer = null;
-                        },
-                        10000);
-                  },
-                  grabbedPlayer.id())
-            );
+                DialogUtils.showTextPopup(
+                    "Das hat nicht geklappt! Jetzt muss ich kurz warten, bis ich mich wieder bewegen darf.",
+                    "Einzelhaft",
+                    () -> {
+                      grabbedPlayer.remove(AttachmentComponent.class);
+                      guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
+                      guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(3.5f));
+                      EventScheduler.scheduleAction(
+                          () -> {
+                            grabbedPlayer
+                                .fetch(VelocityComponent.class)
+                                .ifPresent(vc -> vc.maxSpeed(oldMaxSpeed));
+                            grabbedPlayer
+                                .fetch(CollideComponent.class)
+                                .ifPresent(cc -> cc.isSolid(true));
+                            this.grabbedPlayer = null;
+                          },
+                          10000);
+                    },
+                    grabbedPlayer.id()));
         return;
       }
 

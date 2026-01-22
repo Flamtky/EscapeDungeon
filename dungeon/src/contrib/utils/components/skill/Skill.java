@@ -103,8 +103,8 @@ public abstract class Skill {
    */
   public final boolean execute(final Entity entity) {
     if (canBeUsedAgain() && checkResources(entity)) {
-      executeSkill(entity);
       consumeResources(entity);
+      executeSkill(entity);
       lastUsed = Instant.now();
       activateCoolDown();
       return true;
@@ -124,6 +124,7 @@ public abstract class Skill {
       int requiredAmount = entry.getValue();
       float currentAmount = resource.apply(caster);
       if (currentAmount < requiredAmount) {
+
         return false;
       }
     }
