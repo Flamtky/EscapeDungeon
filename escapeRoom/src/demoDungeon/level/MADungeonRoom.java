@@ -376,9 +376,9 @@ public class MADungeonRoom extends DungeonLevel {
         addLockpicking(MiscFactory.newChest(Set.of(new EmptyBottleItem()), getPoint("chest2"))));
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest3"))));
     Game.add(
-        addLockpicking(MiscFactory.newChest(Set.of(new WaterPotionItem()), getPoint("chest4"))));
+        addLockpicking(MiscFactory.newChest(Set.of(new EmptyBottleItem()), getPoint("chest4"))));
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new MetalItem()), getPoint("chest5"))));
-    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new LeafItem()), getPoint("chest6"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new MetalItem()), getPoint("chest6"))));
     Game.add(
         addLockpicking(MiscFactory.newChest(Set.of(new RingSilverItem()), getPoint("chest7"))));
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest0"))));
@@ -386,10 +386,10 @@ public class MADungeonRoom extends DungeonLevel {
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest10"))));
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest11"))));
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest12"))));
-    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new LeafItem()), getPoint("chest13"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new CoalItem()), getPoint("chest13"))));
     Game.add(
-        addLockpicking(MiscFactory.newChest(Set.of(new WaterPotionItem()), getPoint("chest14"))));
-    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new EnvelopeItem()), getPoint("chest15"))));
+        addLockpicking(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest14"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RopeItem()), getPoint("chest15"))));
     createTreeChest();
   }
 
@@ -990,7 +990,7 @@ public class MADungeonRoom extends DungeonLevel {
             pc -> {
               float x = pc.position().x();
               float y = pc.position().y();
-              if (x <= 1 || x >= 99 || y <= 0 || y >= 188) {
+              if (x <= 1 || x >= 188 || y <= 0 || y >= 99) {
                 DialogUtils.showTextPopup("Du bist entkommen!", "ENTKOMMEN!", Game::exit);
               }
             });

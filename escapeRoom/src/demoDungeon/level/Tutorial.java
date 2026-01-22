@@ -19,6 +19,7 @@ import core.Game;
 import core.components.PositionComponent;
 import core.level.DungeonLevel;
 import core.level.Tile;
+import core.level.loader.DungeonLoader;
 import core.level.utils.Coordinate;
 import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
@@ -172,7 +173,7 @@ public class Tutorial extends DungeonLevel {
   }
 
   private boolean guardsInitialized = false;
-  private boolean exitArea = true;
+  private int exitArea = 0;
 
   @Override
   protected void onTick() {
@@ -243,16 +244,21 @@ public class Tutorial extends DungeonLevel {
                         }
                         if (!enteredAreas.get(player)[1] && position.x() > 45) {
                           enteredAreas.get(player)[1] = true;
-                          enteredAreas.forEach(
-                              (a, b) -> {
-                                exitArea = exitArea && b[1];
-                              });
-                          if (exitArea) {
-                            Game.tileAt(getPoint("hole1")).get().levelElement(LevelElement.SKIP);
-                            Game.tileAt(getPoint("hole2")).get().levelElement(LevelElement.SKIP);
-                            Game.tileAt(getPoint("hole3")).get().levelElement(LevelElement.SKIP);
-                            Game.tileAt(getPoint("hole4")).get().levelElement(LevelElement.SKIP);
+                          exitArea++;
+                        }
+                        else if (enteredAreas.get(player)[1] && position.x() < 45) {
+                          enteredAreas.get(player)[1] = false;
+                          exitArea--;
+                        }
+
+                        if (exitArea == enteredAreas.size()) {
+                          Game.tileAt(getPoint("hole1")).get().levelElement(LevelElement.SKIP);
+                          Game.tileAt(getPoint("hole2")).get().levelElement(LevelElement.SKIP);
+                          Game.tileAt(getPoint("hole3")).get().levelElement(LevelElement.SKIP);
+                          Game.tileAt(getPoint("hole4")).get().levelElement(LevelElement.SKIP);
+                          if (!guardsInitialized) {
                             initGuards();
+                            guardsInitialized = true;
                           }
                         }
 
@@ -266,10 +272,7 @@ public class Tutorial extends DungeonLevel {
                                         .fetch(PositionComponent.class)
                                         .ifPresent(
                                             pos -> {
-                                              Game.tileAt(
-                                                      pos.coordinate().translate(Vector2.of(1, 0)))
-                                                  .get()
-                                                  .levelElement(LevelElement.EXIT);
+                                              DungeonLoader.loadNextLevel();
                                             });
                                   }
                                 });
