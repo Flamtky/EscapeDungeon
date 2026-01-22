@@ -355,7 +355,7 @@ public class MADungeonRoom extends DungeonLevel {
    * 1. Timer -> done
    * 2. Ice controls analysis -> done
    * 3. Schiebe rätsel analysis -> done
-   * 4. Guard analysis (wenn gesehen, wenn gefangen, wenn verloren)
+   * 4. Guard analysis (wenn gesehen, wenn gefangen, wenn verloren) -> done
    * 5. UI minigames analysis
    * 6. Dialog analysis
    * 7. Stamina analysis (wenn leer, wenn schlafen)

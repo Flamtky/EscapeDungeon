@@ -1,5 +1,6 @@
 package analytics;
 
+import contrib.components.AttachmentComponent;
 import contrib.entities.CharacterClass;
 import core.Game;
 import core.components.AnalyticsComponent;
@@ -150,6 +151,13 @@ public class DungeonAnalyticsAPI {
       }
     }
 
+    if (ac.state()
+        .playerEntity()
+        .map(e -> e.fetch(AttachmentComponent.class).isPresent())
+        .orElse(false)) {
+      context.put("captured", true);
+    }
+
     final Map<String, Object> finalResultJsonMap = resultJsonMap;
     final Map<String, Object> finalContext = context;
 
@@ -243,7 +251,11 @@ public class DungeonAnalyticsAPI {
     DROPPED("dropped"),
     MOVED_ITEM("moved_item"),
     USED_ITEM("used_item"),
-    LEFT("left");
+    LEFT("left"),
+    DETECTED("detected"),
+    LOST_DETECTION("lost_detection"),
+    CAPTURED("captured"),
+    RELEASED("released");
 
     private final String verbString;
 

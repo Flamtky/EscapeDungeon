@@ -1,5 +1,6 @@
 package guard;
 
+import analytics.DungeonAnalyticsAPI;
 import contrib.components.AIComponent;
 import contrib.components.AttachmentComponent;
 import contrib.components.CollideComponent;
@@ -10,12 +11,14 @@ import contrib.utils.components.ai.AIUtils;
 import contrib.utils.components.ai.fight.AIChaseBehaviour;
 import core.Entity;
 import core.Game;
+import core.components.AnalyticsComponent;
 import core.components.PositionComponent;
 import core.components.VelocityComponent;
 import core.level.utils.LevelUtils;
 import core.utils.Point;
 import core.utils.Vector2;
 import core.utils.components.path.SimpleIPath;
+import java.util.Map;
 import java.util.function.BiFunction;
 import mobs.EscapeRoomMonsterBuilder;
 import mushRoom.modules.qte.FollowingIndicatorDialog;
@@ -137,6 +140,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
     private final int lowerThreshold;
     private final boolean stayOnceTriggered;
     private boolean triggered = false;
+    private long lastTriggeredTime = 0;
 
     /**
      * Creates a GuardTransition with specified thresholds and behavior.
@@ -165,11 +169,28 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
 
       if (ac.alertness() >= threshold) {
         triggered = true;
+        lastTriggeredTime = System.currentTimeMillis();
+        DungeonAnalyticsAPI.logXApiStatement(
+            player.fetch(AnalyticsComponent.class).orElseThrow(),
+            DungeonAnalyticsAPI.Verb.DETECTED,
+            guard.name() + "#" + guard.id(),
+            Map.of("alertness", ac.alertness()),
+            null);
         return true;
       }
 
       if (!stayOnceTriggered && ac.alertness() <= lowerThreshold) {
         triggered = false;
+        DungeonAnalyticsAPI.logXApiStatement(
+            player.fetch(AnalyticsComponent.class).orElseThrow(),
+            DungeonAnalyticsAPI.Verb.LOST_DETECTION,
+            guard.name() + "#" + guard.id(),
+            Map.of(
+                "alertness",
+                ac.alertness(),
+                "duration_ms",
+                System.currentTimeMillis() - lastTriggeredTime),
+            null);
       }
 
       return triggered;
@@ -181,6 +202,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
     private static final float CLOSE_DISTANCE = 0.75f;
     private Entity grabbedPlayer = null;
     private float oldMaxSpeed = -1f;
+    private long capturedTime = 0;
 
     @Override
     public void accept(final Entity guard, final Entity player) {
@@ -203,6 +225,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
 
     private void grabPlayer(Entity guard, Entity player) {
       this.grabbedPlayer = player;
+      this.capturedTime = System.currentTimeMillis();
 
       var ac =
           new AttachmentComponent(
@@ -218,6 +241,15 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
                 vc.maxSpeed(0f);
               });
       player.fetch(CollideComponent.class).ifPresent(cc -> cc.isSolid(false));
+
+      var guardPos = EntityUtils.getPosition(guard);
+      var posData = Map.of("x", (int) guardPos.x(), "y", (int) guardPos.y());
+      DungeonAnalyticsAPI.logXApiStatement(
+          player.fetch(AnalyticsComponent.class).orElseThrow(),
+          DungeonAnalyticsAPI.Verb.CAPTURED,
+          guard.name() + "#" + guard.id(),
+          Map.of("position", posData),
+          null);
     }
 
     private void bringPlayerToCell(Entity guard) {
@@ -266,6 +298,14 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
                     },
                     grabbedPlayer.id()));
         guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(false));
+
+        DungeonAnalyticsAPI.logXApiStatement(
+            grabbedPlayer.fetch(AnalyticsComponent.class).orElseThrow(),
+            DungeonAnalyticsAPI.Verb.RELEASED,
+            guard.name() + "#" + guard.id(),
+            Map.of("time_captured_ms", System.currentTimeMillis() - capturedTime),
+            null);
+
         return;
       }
 
