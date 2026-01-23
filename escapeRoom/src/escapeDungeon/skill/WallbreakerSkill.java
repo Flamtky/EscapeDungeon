@@ -1,5 +1,6 @@
 package escapeDungeon.skill;
 
+import contrib.components.IllegalComponent;
 import contrib.systems.EventScheduler;
 import contrib.utils.components.skill.Resource;
 import contrib.utils.components.skill.cursorSkill.CursorSkill;
@@ -10,7 +11,6 @@ import core.utils.Point;
 import core.utils.Tuple;
 import mushRoom.modules.lockpick.LockPickDialog;
 import mushRoom.modules.lockpick.LockPickDifficulty;
-import starter.IllegalComponent;
 
 /** A skill that allows the caster to create or remove ice walls on ice-designated tiles. */
 public class WallbreakerSkill extends CursorSkill {

@@ -294,6 +294,7 @@ public final class InventoryComponent implements Component {
       LOGGER.warn("Tried to set item at invalid inventory index: {}", index);
       return false;
     }
+    if (this.inventory[index] == item) return true; // no change
     this.inventory[index % this.inventory.length] = item;
     if (item == null) return true; // do not call added on null items
 

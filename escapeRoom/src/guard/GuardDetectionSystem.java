@@ -2,6 +2,7 @@ package guard;
 
 import contrib.components.AttachmentComponent;
 import contrib.components.CollideComponent;
+import contrib.components.IllegalComponent;
 import contrib.utils.EntityUtils;
 import contrib.utils.RaycastUtil;
 import core.Entity;
@@ -13,7 +14,6 @@ import core.utils.Vector2;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collector;
-import starter.IllegalComponent;
 
 /**
  * System that handles guard detection of player entities.

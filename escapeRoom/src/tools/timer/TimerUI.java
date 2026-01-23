@@ -213,4 +213,13 @@ public class TimerUI extends Group {
   public void dispose() {
     // Font is managed by FontHelper, no disposal needed
   }
+
+  /**
+   * Returns whether the timer is currently running.
+   *
+   * <p>* @return true if the timer is running, false if it is stopped or not started
+   */
+  public boolean isRunning() {
+    return running;
+  }
 }

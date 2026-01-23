@@ -5,12 +5,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import contrib.components.UIComponent;
 import contrib.crafting.Crafting;
 import contrib.crafting.Recipe;
 import contrib.hud.UIUtils;
 import contrib.hud.dialogs.DialogContext;
-import contrib.hud.dialogs.DialogContextKeys;
 import contrib.hud.dialogs.DialogFactory;
 import contrib.item.Item;
 import core.Entity;
@@ -54,22 +52,10 @@ public class CraftingBookItem extends Item {
    * @param player the entity to open the crafting book for
    */
   public static void openCraftingBook(Entity player) {
-    DialogContext ctx =
-        DialogContext.builder()
-            .type(EscapeRoomDialogTypes.CRAFTING_BOOK)
-            .put(DialogContextKeys.OWNER_ENTITY, player.id())
-            .build();
+    DialogContext ctx = DialogContext.builder().type(EscapeRoomDialogTypes.CRAFTING_BOOK).build();
 
-    player.remove(UIComponent.class);
-    UIComponent uiComponent = new UIComponent(ctx, true, player.id());
-    uiComponent.onClose(
-        ui -> {
-          Group dialog = ui.dialog();
-          if (dialog instanceof CraftingBookUI craftingBookUI) {
-            craftingBookUI.dispose();
-          }
-        });
-    player.add(uiComponent);
+    DialogFactory.show(ctx, player.id());
+
     Sounds.OPEN_INVENTORY_SOUND.play();
   }
 

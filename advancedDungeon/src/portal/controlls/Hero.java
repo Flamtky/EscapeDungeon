@@ -173,7 +173,7 @@ public record Hero(Entity hero) {
    * geöffnet.
    */
   public void openInventory() {
-    HeroController.toggleInventory(hero);
+    HeroController.openInventory(hero);
   }
 
   /**

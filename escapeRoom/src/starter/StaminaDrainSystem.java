@@ -65,6 +65,7 @@ public class StaminaDrainSystem extends System {
   @Override
   public void execute() {
     filteredEntityStream(StaminaComponent.class, VelocityComponent.class)
+        .filter(e -> !e.isPresent(SleepingComponent.class)) // Skip sleeping entities
         .forEach(this::drainStamina);
   }
 

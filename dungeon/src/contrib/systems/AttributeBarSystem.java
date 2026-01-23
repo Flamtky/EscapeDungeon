@@ -1,5 +1,7 @@
 package contrib.systems;
 
+import static contrib.hud.UIUtils.defaultSkin;
+
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import contrib.components.BarDisplayable;
 import contrib.utils.AttributeBarUtil;
@@ -37,6 +39,10 @@ public final class AttributeBarSystem extends System {
    * BarDisplayable component reference, its ProgressBar, and vertical offset.
    */
   private final Map<Integer, List<BarEntry>> barCache = new HashMap<>();
+
+  static {
+    defaultSkin(); // ensure skin is loaded
+  }
 
   /**
    * Creates a new {@code AttributeBarSystem}.

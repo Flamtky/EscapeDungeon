@@ -22,6 +22,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
 import contrib.crafting.Recipe;
 import contrib.item.Item;
 import core.Game;
@@ -38,7 +39,7 @@ import mushRoom.Sounds;
  * <p>Displays crafting recipes in a book format with navigation between pages. Each recipe shows
  * the result item and required ingredients with tooltips on hover.
  */
-public class CraftingBookUI extends Group {
+public class CraftingBookUI extends Group implements Disposable {
 
   // Layout configuration
   private static final int RECIPES_PER_PAGE = 3;
@@ -541,6 +542,7 @@ public class CraftingBookUI extends Group {
   }
 
   /** Disposes of textures and resources created by this UI component. */
+  @Override
   public void dispose() {
     if (windowRefreshListener != null) {
       WindowEventManager.unregisterWindowRefreshListener(windowRefreshListener);

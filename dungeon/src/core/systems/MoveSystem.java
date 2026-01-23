@@ -3,6 +3,7 @@ package core.systems;
 import analytics.DungeonAnalyticsAPI;
 import contrib.components.CollideComponent;
 import contrib.components.SprintComponent;
+import contrib.components.StaminaComponent;
 import contrib.systems.CollisionSystem;
 import contrib.systems.PositionSync;
 import contrib.utils.components.collide.Collider;
@@ -211,7 +212,14 @@ public class MoveSystem extends System {
                           "direction",
                           finalVelocity.direction().toString(),
                           "pos",
-                          posData));
+                          posData,
+                          "stamina",
+                          data.e
+                              .fetch(StaminaComponent.class)
+                              .map(StaminaComponent::currentAmount)
+                              .map(s -> String.format("%.2f", s))
+                              .orElse("N/A")),
+                      null);
                 });
       }
     }

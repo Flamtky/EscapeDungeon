@@ -129,7 +129,9 @@ public record InputMessage(
      *
      * <p>The point x coordinate represents the inventory slot index of the item to be used.
      */
-    INV_USE(7);
+    INV_USE(7),
+    /** Toggle the visibility of the inventory UI. */
+    TOGGLE_INVENTORY(8);
 
     private final byte value;
 

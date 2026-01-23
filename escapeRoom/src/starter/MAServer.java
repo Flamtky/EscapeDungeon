@@ -1,5 +1,6 @@
 package starter;
 
+import analytics.RiddleAnalysisSystem;
 import contrib.crafting.Crafting;
 import contrib.entities.CharacterClass;
 import contrib.entities.EntityFactory;
@@ -117,6 +118,7 @@ public class MAServer {
     Game.add(new IllegalSystem());
     Game.add(new BedSleepSystem());
     Game.add(new TimerSystem());
+    Game.add(new RiddleAnalysisSystem());
   }
 
   private static void onFrame() {

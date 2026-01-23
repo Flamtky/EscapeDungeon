@@ -1,5 +1,6 @@
 package contrib.hud;
 
+import analytics.DungeonAnalyticsAPI;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -7,14 +8,20 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Disposable;
 import contrib.components.InventoryComponent;
 import contrib.components.UIComponent;
+import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogCreationException;
 import contrib.hud.elements.GUICombination;
 import core.Entity;
 import core.Game;
+import core.components.AnalyticsComponent;
 import core.components.PlayerComponent;
+import core.game.PreRunConfiguration;
+import core.network.server.DialogTracker;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
 import core.utils.logging.DungeonLogger;
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -179,6 +186,14 @@ public final class UIUtils {
   }
 
   /**
+   * Retrieves the first {@link InventoryComponent} from the given {@link UIComponent}'s dialog, if
+   * it is a {@link GUICombination}.
+   */
+  public static Optional<InventoryComponent> getFirstInventoryFromUI(UIComponent ui) {
+    return getInventoriesFromUI(ui).findFirst();
+  }
+
+  /**
    * Recursively searches for an Actor of the specified type within the given Group and its
    * subgroups.
    *
@@ -204,21 +219,14 @@ public final class UIUtils {
   /**
    * Closes the dialog associated with the given UIComponent and optionally deletes its owner.
    *
-   * <p>This method removes the UIComponent from its owner entity and optionally removes the owner
-   * entity from the game. If the owner of the UIComponent has a PlayerComponent, the number of open
-   * dialogs is decremented. All target entities are notified of the dialog closure.
+   * <p>This method removes the UIComponent from its owner entity and removes the owner entity from
+   * the game if the owner has no more Components after the UIComponent is removed. If the owner of
+   * the UIComponent has a PlayerComponent, the number of open dialogs is decremented. All target
+   * entities are notified of the dialog closure.
    *
    * @param uiComponent the UIComponent whose dialog is to be closed
-   * @param deleteOwner whether to remove the owner entity from the game after closing the dialog
-   * @param callDefaultClose whether to call the onClose (default close behavior) callback of the
-   *     UIComponent
    */
-  public static void closeDialog(
-      UIComponent uiComponent, boolean deleteOwner, boolean callDefaultClose) {
-    if (callDefaultClose) {
-      uiComponent.onClose().accept(uiComponent); // onClose callback
-    }
-
+  public static void closeDialog(UIComponent uiComponent) {
     try {
       Entity ownerEntity = uiComponent.dialogContext().ownerEntity();
       ownerEntity.remove(UIComponent.class);
@@ -231,9 +239,15 @@ public final class UIUtils {
       }
       LOGGER.debug("Closed dialog on entity {}", ownerEntity.id());
 
-      if (deleteOwner) {
+      if (ownerEntity.componentStream().toList().isEmpty()) {
         Game.remove(ownerEntity);
       }
+
+      if (PreRunConfiguration.isNetworkServer()) {
+        DialogTracker.instance().closeDialog(uiComponent.dialogContext().dialogId(), true);
+      }
+
+      analyticsCloseDialog(uiComponent);
 
       if (uiComponent.dialog() instanceof Disposable disposable) {
         disposable.dispose();
@@ -244,30 +258,52 @@ public final class UIUtils {
   }
 
   /**
-   * Closes the dialog associated with the given UIComponent and optionally deletes its owner.
+   * Logs the opening of a dialog for analytics purposes.
    *
-   * <p>This method removes the UIComponent from its owner entity and optionally removes the owner
-   * entity from the game. If the owner of the UIComponent has a PlayerComponent, the number of open
-   * dialogs is decremented. All target entities are notified of the dialog closure.
-   *
-   * @param uiComponent the UIComponent whose dialog is to be closed
-   * @param deleteOwner whether to remove the owner entity from the game after closing the dialog
+   * @param context the dialog context
+   * @param targetEntityIds the target entity IDs for which the dialog is opened
    */
-  public static void closeDialog(UIComponent uiComponent, boolean deleteOwner) {
-    closeDialog(uiComponent, deleteOwner, true);
+  public static void analyticsOpenDialog(DialogContext context, int[] targetEntityIds) {
+    Integer[] targetEntityIdsInt = Arrays.stream(targetEntityIds).boxed().toArray(Integer[]::new);
+    Arrays.stream(targetEntityIds)
+        .mapToObj(Game::findEntityById)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .filter(entity -> entity.isPresent(AnalyticsComponent.class))
+        .forEach(
+            player ->
+                DungeonAnalyticsAPI.logXApiStatement(
+                    player.fetch(AnalyticsComponent.class).orElseThrow(),
+                    DungeonAnalyticsAPI.Verb.SEES,
+                    "dialog:" + context.dialogType().toString(),
+                    Map.of("attributes", context.attributes(), "targetIds", targetEntityIdsInt)));
   }
 
   /**
-   * Closes the dialog associated with the given UIComponent.
+   * Logs the closing of a dialog for analytics purposes.
    *
-   * <p>If the owner of the UIComponent has a PlayerComponent, the number of open dialogs is
-   * decremented.
-   *
-   * <p>By default, the owner entity is not deleted.
-   *
-   * @param uiComponent the UIComponent whose dialog is to be closed
+   * @param uiComponent the UIComponent whose dialog is being closed
    */
-  public static void closeDialog(UIComponent uiComponent) {
-    closeDialog(uiComponent, false);
+  public static void analyticsCloseDialog(UIComponent uiComponent) {
+    Integer[] targetEntityIds =
+        Arrays.stream(uiComponent.targetEntityIds()).boxed().toArray(Integer[]::new);
+    Arrays.stream(targetEntityIds)
+        .map(Game::findEntityById)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .filter(entity -> entity.isPresent(AnalyticsComponent.class))
+        .forEach(
+            player ->
+                DungeonAnalyticsAPI.logXApiStatement(
+                    player.fetch(AnalyticsComponent.class).orElseThrow(),
+                    DungeonAnalyticsAPI.Verb.CLOSES,
+                    "dialog:" + uiComponent.dialogContext().dialogType().toString(),
+                    Map.of(
+                        "attributes",
+                        uiComponent.dialogContext().attributes(),
+                        "targetIds",
+                        targetEntityIds,
+                        "durationMs",
+                        System.currentTimeMillis() - uiComponent.createdAt())));
   }
 }

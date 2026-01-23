@@ -1,6 +1,7 @@
 package starter;
 
 import com.badlogic.gdx.graphics.Color;
+import contrib.components.IllegalComponent;
 import core.Entity;
 import core.Game;
 import core.System;

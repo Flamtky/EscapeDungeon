@@ -67,8 +67,7 @@ public class DialogUtils {
             .build();
     UIComponent ui = new UIComponent(context, true, true, new int[] {});
 
-    // Default onClose behavior (e.g. when pressing ESC)
-    ui.onClose((uic) -> onClose.execute());
+    ui.registerCallback(DialogContextKeys.ON_CLOSE, (ignored) -> onClose.execute());
 
     dialogEntity.add(ui);
     Game.add(dialogEntity);

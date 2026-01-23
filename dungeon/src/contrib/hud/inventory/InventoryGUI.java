@@ -35,14 +35,11 @@ import core.utils.Vector2;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
 import core.utils.logging.DungeonLogger;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 /** WTF? . */
 public class InventoryGUI extends CombinableGUI implements IInventoryHolder {
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(InventoryGUI.class);
-  private static final Map<Integer, Boolean> inventoryOpenMap = new HashMap<>();
 
   private static final IPath FONT_FNT = new SimpleIPath("skin/myFont.fnt");
   private static final IPath FONT_PNG = new SimpleIPath("skin/myFont.png");
@@ -144,34 +141,6 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder {
   }
 
   /**
-   * Checks if the given player's inventory is currently open.
-   *
-   * @param player the player entity
-   * @return true if the inventory is open, false otherwise
-   */
-  public static boolean inPlayerInventory(Entity player) {
-    return inventoryOpenMap.getOrDefault(player.id(), false);
-  }
-
-  /**
-   * Retrieves the InventoryGUI associated with the given player's inventory, if it exists.
-   *
-   * @param player the player entity
-   * @return an Optional containing the InventoryGUI if found, or empty if not found
-   */
-  public static Optional<InventoryGUI> getPlayerInventoryGUI(Entity player) {
-    LOGGER.debug("Fetching InventoryGUI for player " + player.id() + ".");
-    return player
-        .fetch(UIComponent.class)
-        .flatMap(
-            uiComp ->
-                UIUtils.getInventoriesFromUI(uiComp)
-                    .filter(invComp -> isPlayersInventory(player, invComp))
-                    .map(InventoryGUI::new)
-                    .findFirst());
-  }
-
-  /**
    * Builds an InventoryDialog from the given DialogContext for a single inventory.
    *
    * @param ctx The dialog context containing the entity with the inventory component.
@@ -212,17 +181,6 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder {
         ctx.find(DialogContextKeys.SECONDARY_TITLE, String.class).orElse(otherEntity.name());
     InventoryGUI otherInventoryGUI = new InventoryGUI(otherTitle, otherInventory);
     return new GUICombination(inventoryGUI, otherInventoryGUI);
-  }
-
-  /**
-   * Sets whether the inventory is open for the given player.
-   *
-   * @param player the player entity
-   * @param open true if the inventory is open, false otherwise
-   */
-  public static void setInventoryOpen(Entity player, boolean open) {
-    LOGGER.debug("Setting inventory open state for player " + player.id() + " to " + open + ".");
-    inventoryOpenMap.put(player.id(), open);
   }
 
   @Override
@@ -494,20 +452,18 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder {
               @Override
               public boolean keyDown(InputEvent event, int keycode) {
                 Entity player = Game.player().orElseThrow();
-                if (inPlayerInventory(player)) {
-                  if (KeyboardConfig.USE_ITEM.value() == keycode) {
-                    if (Game.network().isServer()) {
-                      return HeroController.useItem(player, getSlotByMousePosition());
-                    } else {
-                      Game.network()
-                          .send(
-                              (short) 0,
-                              new InputMessage(
-                                  InputMessage.Action.INV_USE,
-                                  Vector2.of(getSlotByMousePosition(), 0)),
-                              true);
-                      return true;
-                    }
+                if (KeyboardConfig.USE_ITEM.value() == keycode) {
+                  if (Game.network().isServer()) {
+                    return HeroController.useItem(player, getSlotByMousePosition());
+                  } else {
+                    Game.network()
+                        .send(
+                            (short) 0,
+                            new InputMessage(
+                                InputMessage.Action.INV_USE,
+                                Vector2.of(getSlotByMousePosition(), 0)),
+                            true);
+                    return true;
                   }
                 }
                 return false;
@@ -517,22 +473,19 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder {
               public boolean touchDown(
                   InputEvent event, float x, float y, int pointer, int button) {
                 Entity player = Game.player().orElseThrow();
-                if (inPlayerInventory(player)) {
-                  if (KeyboardConfig.MOUSE_USE_ITEM.value() == button) {
-                    if (Game.network().isServer()) {
-                      return HeroController.useItem(player, getSlotByMousePosition());
-                    } else {
-                      Game.network()
-                          .send(
-                              (short) 0,
-                              new InputMessage(
-                                  InputMessage.Action.INV_USE,
-                                  Vector2.of(getSlotByMousePosition(), 0)),
-                              true);
-                      return true;
-                    }
+                if (KeyboardConfig.MOUSE_USE_ITEM.value() == button) {
+                  if (Game.network().isServer()) {
+                    return HeroController.useItem(player, getSlotByMousePosition());
+                  } else {
+                    Game.network()
+                        .send(
+                            (short) 0,
+                            new InputMessage(
+                                InputMessage.Action.INV_USE,
+                                Vector2.of(getSlotByMousePosition(), 0)),
+                            true);
+                    return true;
                   }
-                  return false;
                 }
 
                 UIComponent uiComponent =

@@ -194,4 +194,28 @@ public final class TimerAPI {
       ui.displayFormat(format);
     }
   }
+
+  /**
+   * Returns whether the timer is currently running.
+   *
+   * <p>On the server (including single-player), returns the authoritative running state. On
+   * clients, returns the local UI state.
+   *
+   * @return true if the timer is running, false if it is stopped or not started
+   */
+  public static boolean isRunning() {
+    if (PreRunConfiguration.isNetworkServer()) {
+      var timerSys = ECSManagement.systems().get(TimerSystem.class);
+      if (timerSys == null) {
+        return false;
+      }
+      return timerSys.isRunning();
+    } else {
+      TimerUI ui = TimerDialog.currentUI();
+      if (ui != null) {
+        return ui.isRunning();
+      }
+      return false;
+    }
+  }
 }

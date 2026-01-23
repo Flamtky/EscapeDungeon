@@ -12,13 +12,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Disposable;
-import contrib.components.UIComponent;
-import contrib.hud.UIUtils;
 import contrib.systems.EventScheduler;
 import core.Entity;
 import core.Game;
 import core.game.WindowEventManager;
 import core.utils.FontHelper;
+import core.utils.Tuple;
 import core.utils.logging.DungeonLogger;
 import java.util.Objects;
 import java.util.Random;
@@ -57,9 +56,6 @@ public class FollowingIndicatorUI extends Group implements Disposable {
 
   /** Indicator color. */
   private static final Color INDICATOR_COLOR = new Color(1f, 1f, 1f, 1f);
-
-  /** Delay after success/failure before closing. */
-  private static final long DELAY_AFTER_END = 2000;
 
   /** Delay before triggering success/failure callback. */
   private static final long DELAY_BEFORE_CALLBACK = 500;
@@ -341,14 +337,7 @@ public class FollowingIndicatorUI extends Group implements Disposable {
         isSuccess = true;
         titleLabel.setText(SUCCESS_TITLE_TEXT);
         inputEnabled = false;
-        EventScheduler.scheduleAction(
-            () -> {
-              onSuccess.run();
-              EventScheduler.scheduleAction(
-                  () -> owner.fetch(UIComponent.class).ifPresent(UIUtils::closeDialog),
-                  DELAY_AFTER_END);
-            },
-            DELAY_BEFORE_CALLBACK);
+        EventScheduler.scheduleAction(() -> onSuccess.run(), DELAY_BEFORE_CALLBACK);
         return;
       }
     } else {
@@ -369,14 +358,7 @@ public class FollowingIndicatorUI extends Group implements Disposable {
         isFailed = true;
         titleLabel.setText(FAILURE_TITLE_TEXT);
         inputEnabled = false;
-        EventScheduler.scheduleAction(
-            () -> {
-              onFailure.run();
-              EventScheduler.scheduleAction(
-                  () -> owner.fetch(UIComponent.class).ifPresent(UIUtils::closeDialog),
-                  DELAY_AFTER_END);
-            },
-            DELAY_BEFORE_CALLBACK);
+        EventScheduler.scheduleAction(() -> onFailure.run(), DELAY_BEFORE_CALLBACK);
         return;
       }
     }
@@ -507,7 +489,15 @@ public class FollowingIndicatorUI extends Group implements Disposable {
   /** Disposes of resources. */
   @Override
   public void dispose() {
-    System.out.println("Disposing FollowingIndicatorUI");
     // Fonts are managed by FontHelper, no need to dispose
+  }
+
+  /**
+   * Gets the number of successes and failures as an {@link core.utils.Tuple} (successes, failures).
+   *
+   * @return Tuple of (successCount, failCount)
+   */
+  public Tuple<Integer, Integer> getResults() {
+    return Tuple.of(successCount, failCount);
   }
 }

@@ -1,10 +1,10 @@
 package network;
 
+import contrib.components.IllegalComponent;
 import core.Entity;
 import core.network.DefaultSnapshotTranslator;
 import core.network.messages.s2c.EntityState;
 import guard.AlertnessComponent;
-import starter.IllegalComponent;
 
 /**
  * Custom SnapshotTranslator for the EscapeRoom subproject.

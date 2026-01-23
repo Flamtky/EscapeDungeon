@@ -262,7 +262,7 @@ public final class DrawSystem extends System implements Disposable {
    */
   @Override
   public void execute() {
-    filteredEntityStream().map(DSData::build).forEach(dsd -> dsd.dc.update());
+    entityDataCache.values().forEach(dsd -> dsd.dc.update());
 
     if (stableWidth == -1) {
       stableWidth = Game.windowWidth();
@@ -323,6 +323,7 @@ public final class DrawSystem extends System implements Disposable {
     for (Integer depth : sortedEntities.keySet()) {
       List<DSData> sortedGroup =
           sortedEntities.get(depth).stream()
+              .parallel()
               .map(DSData::build)
               .sorted(Comparator.comparingDouble((DSData d) -> -EntityUtils.getPosition(d.e).y()))
               .filter(this::shouldDraw)

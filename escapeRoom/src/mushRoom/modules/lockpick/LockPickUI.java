@@ -14,8 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
-import contrib.components.UIComponent;
-import contrib.hud.UIUtils;
 import contrib.systems.EventScheduler;
 import core.Entity;
 import core.Game;
@@ -71,12 +69,11 @@ public class LockPickUI extends Group implements Disposable {
   };
 
   /** The amount of attempts to try to pick the lock. */
-  private static final int ATTEMPTS = 3;
+  public static final int ATTEMPTS = 3;
 
   private static final Color SELECTED_TINT = new Color(1f, 1f, 1f, 1f);
   private static final Color UNSELECTED_TINT = new Color(0.7f, 0.7f, 0.7f, 1f);
   private static final Color GREYSCALE_TINT = new Color(0.5f, 0.5f, 0.5f, 1f);
-  private static final long DELAY_AFTER_END = 0; // milliseconds
   private static final long DELAY_BEFORE_CALLBACK = 500; // milliseconds
 
   // Font sizes
@@ -611,14 +608,7 @@ public class LockPickUI extends Group implements Disposable {
     instructionsLabel.setColor(Color.GREEN);
 
     isLocked = false;
-    EventScheduler.scheduleAction(
-        () -> {
-          triggerSuccess();
-          EventScheduler.scheduleAction(
-              () -> owner.fetch(UIComponent.class).ifPresent(UIUtils::closeDialog),
-              DELAY_AFTER_END);
-        },
-        DELAY_BEFORE_CALLBACK);
+    EventScheduler.scheduleAction(this::triggerSuccess, DELAY_BEFORE_CALLBACK);
   }
 
   private void showFailureFeedback(boolean finalFailure, int innermostMisalignedIndex) {
@@ -638,14 +628,7 @@ public class LockPickUI extends Group implements Disposable {
       instructionsLabel.setColor(Color.RED);
 
       isLocked = true;
-      EventScheduler.scheduleAction(
-          () -> {
-            // LockPickDialog triggers failure callback by closing
-            EventScheduler.scheduleAction(
-                () -> owner.fetch(UIComponent.class).ifPresent(UIUtils::closeDialog),
-                DELAY_AFTER_END);
-          },
-          DELAY_BEFORE_CALLBACK);
+      EventScheduler.scheduleAction(this::triggerFailure, DELAY_BEFORE_CALLBACK);
     } else {
       instructionsLabel.setText(WRONG_ALIGNMENT_TEXT);
       instructionsLabel.setColor(Color.RED);
@@ -764,5 +747,14 @@ public class LockPickUI extends Group implements Disposable {
     for (Texture texture : ringTextures) {
       texture.dispose();
     }
+  }
+
+  /**
+   * Gets the number of attempts made so far.
+   *
+   * @return The number of attempts used
+   */
+  public int getAttempt() {
+    return ATTEMPTS - remainingAttempts;
   }
 }

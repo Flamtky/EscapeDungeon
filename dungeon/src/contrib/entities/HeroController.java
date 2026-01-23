@@ -5,12 +5,11 @@ import contrib.components.*;
 import contrib.components.InventoryComponent;
 import contrib.components.SkillComponent;
 import contrib.components.UIComponent;
-import contrib.hud.IInventoryHolder;
 import contrib.hud.UIUtils;
 import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogContextKeys;
+import contrib.hud.dialogs.DialogFactory;
 import contrib.hud.dialogs.DialogType;
-import contrib.hud.inventory.InventoryGUI;
 import contrib.item.Item;
 import contrib.modules.interaction.InteractionComponent;
 import contrib.utils.EntityUtils;
@@ -26,7 +25,6 @@ import core.components.VelocityComponent;
 import core.configuration.KeyboardConfig;
 import core.level.utils.LevelUtils;
 import core.network.messages.c2s.InputMessage;
-import core.network.messages.c2s.InventoryUIMessage;
 import core.network.server.ClientState;
 import core.utils.*;
 import core.utils.components.MissingComponentException;
@@ -311,13 +309,30 @@ public class HeroController {
   }
 
   /**
-   * Toggles the inventory UI for the hero entity. If the inventory UI is currently open, it will be
-   * closed; if it is closed, it will be opened.
+   * Returns whether the inventory UI is currently open for the given hero entity.
    *
-   * @param hero the hero entity whose inventory UI is to be toggled
+   * @param hero the hero entity to check
+   * @return true if the inventory UI is open, false otherwise
    */
-  public static void toggleInventory(Entity hero) {
-    LOGGER.debug("Hero {} toggling inventory UI", hero.id());
+  public static boolean isInventoryOpen(Entity hero) {
+    Optional<UIComponent> uiComp = hero.fetch(UIComponent.class);
+    Optional<InventoryComponent> invComp = hero.fetch(InventoryComponent.class);
+
+    return uiComp.isPresent()
+        && invComp.isPresent()
+        && UIUtils.getFirstInventoryFromUI(uiComp.get())
+            .map(inv -> inv == invComp.get())
+            .orElse(false);
+  }
+
+  /**
+   * Opens the inventory UI for the hero entity. If the inventory UI is already open, it will do
+   * nothing.
+   *
+   * @param hero the hero entity whose inventory UI is to be opened
+   */
+  public static void openInventory(Entity hero) {
+    LOGGER.debug("Hero {} opening inventory UI", hero.id());
     Optional<InventoryComponent> invComp = hero.fetch(InventoryComponent.class);
     Optional<PlayerComponent> playerComp = hero.fetch(PlayerComponent.class);
     if (invComp.isEmpty() || playerComp.isEmpty()) {
@@ -335,7 +350,7 @@ public class HeroController {
     }
     var pc = playerComp.get();
 
-    if (pc.openDialogs() && !InventoryGUI.inPlayerInventory(hero)) {
+    if (pc.openDialogs() && !isInventoryOpen(hero)) {
       LOGGER.debug("Player {} has other dialogs open, cannot toggle inventory.", hero.id());
       hero.fetch(AnalyticsComponent.class)
           .ifPresent(
@@ -349,36 +364,14 @@ public class HeroController {
       return;
     }
 
-    boolean isUIOpen = false;
-    UIComponent uiComponent = hero.fetch(UIComponent.class).orElse(null);
-    if (uiComponent != null) {
-      UIUtils.closeDialog(uiComponent);
-    } else {
-      DialogContext context =
-          DialogContext.builder()
-              .type(DialogType.DefaultTypes.INVENTORY)
-              .put(DialogContextKeys.ENTITY, hero.id())
-              .put(DialogContextKeys.OWNER_ENTITY, hero.id())
-              .build();
-      UIComponent ui = new UIComponent(context, true, new int[] {hero.id()});
-      hero.add(ui);
-      isUIOpen = true;
-    }
-    LOGGER.trace("Inventory UI for hero {} is now {}", hero.id(), isUIOpen ? "open" : "closed");
+    DialogContext context =
+        DialogContext.builder()
+            .type(DialogType.DefaultTypes.INVENTORY)
+            .put(DialogContextKeys.ENTITY, hero.id())
+            .put(DialogContextKeys.OWNER_ENTITY, hero.id())
+            .build();
 
-    if (!Game.network().isServer()) {
-      Game.network().send((short) 0, new InventoryUIMessage(isUIOpen), true);
-    }
-    InventoryGUI.setInventoryOpen(hero, isUIOpen);
-    hero.fetch(AnalyticsComponent.class)
-        .ifPresent(
-            ac -> {
-              DungeonAnalyticsAPI.logXApiStatement(
-                  ac,
-                  DungeonAnalyticsAPI.Verb.OPENED,
-                  hero.name() + "#" + hero.id(),
-                  Map.of("success", true, "is_open", InventoryGUI.inPlayerInventory(hero)));
-            });
+    DialogFactory.show(context, hero.id()); // analytics inside DialogFactory
   }
 
   /**
@@ -475,8 +468,7 @@ public class HeroController {
       return false;
     }
 
-    Optional<InventoryComponent> playerInv =
-        InventoryGUI.getPlayerInventoryGUI(player).map(IInventoryHolder::inventoryComponent);
+    Optional<InventoryComponent> playerInv = UIUtils.getFirstInventoryFromUI(uiComp.get());
     if (playerInv.isEmpty()) {
       LOGGER.debug("No inventory GUI found for entity {}", player.id());
       player
@@ -780,19 +772,28 @@ public class HeroController {
           case NEXT_SKILL -> HeroController.changeSkill(playerEntity, true);
           case PREV_SKILL -> HeroController.changeSkill(playerEntity, false);
           case INTERACT -> HeroController.interact(playerEntity, msg.point());
+          case TOGGLE_INVENTORY -> {
+            if (isInventoryOpen(playerEntity))
+              playerEntity
+                  .fetch(UIComponent.class)
+                  .ifPresent(UIUtils::closeDialog); // Close inventory
+            else HeroController.openInventory(playerEntity);
+          }
           case INV_DROP -> {
-            Optional<InventoryComponent> invComp =
+            Optional<InventoryComponent> playerInv =
                 clientState
                     .playerEntity()
-                    .flatMap(InventoryGUI::getPlayerInventoryGUI)
-                    .map(InventoryGUI::inventoryComponent);
-            if (invComp.isEmpty()) {
+                    .map(e -> e.fetch(UIComponent.class))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .flatMap(UIUtils::getFirstInventoryFromUI);
+            if (playerInv.isEmpty()) {
               LOGGER.warn(
                   "No inventory component found for entity {} to drop item", playerEntity.id());
               break;
             }
             int itemIndex = (int) msg.point().x();
-            HeroController.dropItem(playerEntity, invComp.get(), itemIndex);
+            HeroController.dropItem(playerEntity, playerInv.get(), itemIndex);
           }
           case INV_MOVE -> {
             int fromIndex = (int) msg.point().x();

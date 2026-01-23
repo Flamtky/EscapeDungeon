@@ -23,11 +23,10 @@ public final class UIComponent implements Component {
   private final boolean canBeClosed;
   private final int[] targetEntityIds;
   private final DialogContext dialogContext;
+  private final long createdAt;
 
   /** Server-side callbacks map. Keys match callback keys sent by clients. */
   private final Map<String, Consumer<Serializable>> callbacks = new HashMap<>();
-
-  private Consumer<UIComponent> onClose = (uiComponent) -> {};
 
   private Group dialog = null;
 
@@ -49,6 +48,7 @@ public final class UIComponent implements Component {
     this.willPauseGame = willPauseGame;
     this.canBeClosed = canBeClosed;
     this.targetEntityIds = targetEntityIds;
+    this.createdAt = System.currentTimeMillis();
   }
 
   /**
@@ -91,28 +91,6 @@ public final class UIComponent implements Component {
       throw new IllegalArgumentException("key and callback must not be null");
     }
     callbacks.put(key, callback);
-    return this;
-  }
-
-  /**
-   * Returns the onClose callback.
-   *
-   * @return the onClose callback
-   */
-  public Consumer<UIComponent> onClose() {
-    return onClose;
-  }
-
-  /**
-   * Sets the onClose callback.
-   *
-   * @param onClose the onClose callback to set
-   * @return this UIComponent for method chaining
-   */
-  public UIComponent onClose(Consumer<UIComponent> onClose) {
-    if (onClose != null) {
-      this.onClose = onClose;
-    }
     return this;
   }
 
@@ -170,6 +148,15 @@ public final class UIComponent implements Component {
    */
   public DialogContext dialogContext() {
     return dialogContext;
+  }
+
+  /**
+   * Get the creation timestamp of this UIComponent.
+   *
+   * @return the creation timestamp in milliseconds
+   */
+  public long createdAt() {
+    return createdAt;
   }
 
   /**

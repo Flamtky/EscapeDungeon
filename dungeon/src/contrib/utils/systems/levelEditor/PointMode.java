@@ -63,10 +63,10 @@ public class PointMode extends LevelEditorMode {
               if (data instanceof String string && !string.isBlank()) {
                 getLevel().addNamedPoint(string, snapPos);
               }
-              UIUtils.closeDialog(dialogUI, true);
+              UIUtils.closeDialog(dialogUI);
             });
         dialogUI.registerCallback(
-            DialogContextKeys.ON_CANCEL, data -> UIUtils.closeDialog(dialogUI, true));
+            DialogContextKeys.ON_CANCEL, data -> UIUtils.closeDialog(dialogUI));
       }
     } else if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.RIGHT)) {
       Optional<String> clickedPoint = getOnPosition(cursorPos);

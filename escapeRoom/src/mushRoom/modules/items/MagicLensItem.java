@@ -1,8 +1,6 @@
 package mushRoom.modules.items;
 
 import contrib.components.InventoryComponent;
-import contrib.components.UIComponent;
-import contrib.hud.inventory.InventoryGUI;
 import contrib.item.Item;
 import core.Entity;
 import core.systems.DrawSystem;
@@ -84,10 +82,6 @@ public class MagicLensItem extends Item {
                 if (mlpps.enabled()) {
                   Sounds.MAGIC_LENS_ACTIVATED.play();
                 }
-              }
-
-              if (InventoryGUI.inPlayerInventory(player)) {
-                player.remove(UIComponent.class);
               }
             });
   }

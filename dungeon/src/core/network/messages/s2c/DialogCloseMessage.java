@@ -11,7 +11,7 @@ import java.io.Serial;
  *
  * @param dialogId the unique identifier of the dialog to close
  * @see DialogShowMessage
- * @see core.network.server.DialogTracker#closeDialog(String)
+ * @see core.network.server.DialogTracker#closeDialog(String, boolean)
  */
 public record DialogCloseMessage(String dialogId) implements NetworkMessage {
   @Serial private static final long serialVersionUID = 1L;
