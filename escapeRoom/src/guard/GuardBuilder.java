@@ -180,7 +180,6 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
 
     private static final float CLOSE_DISTANCE = 0.75f;
     private Entity grabbedPlayer = null;
-    private float oldMaxSpeed = -1f;
 
     @Override
     public void accept(final Entity guard, final Entity player) {
@@ -210,13 +209,6 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
               player.fetch(PositionComponent.class).orElseThrow(),
               guard.fetch(PositionComponent.class).orElseThrow());
       player.add(ac);
-      player
-          .fetch(VelocityComponent.class)
-          .ifPresent(
-              vc -> {
-                oldMaxSpeed = vc.maxSpeed();
-                vc.maxSpeed(0f);
-              });
       player.fetch(CollideComponent.class).ifPresent(cc -> cc.isSolid(false));
     }
 
@@ -231,11 +223,8 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         // Release player in cell
         FollowingIndicatorDialog.openFollowingIndicator(
             grabbedPlayer,
-            FollowingIndicatorDifficulty.MEDIUM,
+            FollowingIndicatorDifficulty.HARD,
             () -> {
-              grabbedPlayer
-                  .fetch(VelocityComponent.class)
-                  .ifPresent(vc -> vc.maxSpeed(oldMaxSpeed));
               grabbedPlayer.fetch(CollideComponent.class).ifPresent(cc -> cc.isSolid(true));
               grabbedPlayer.remove(AttachmentComponent.class);
               this.grabbedPlayer = null;
@@ -254,9 +243,6 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
                       guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(true));
                       EventScheduler.scheduleAction(
                           () -> {
-                            grabbedPlayer
-                                .fetch(VelocityComponent.class)
-                                .ifPresent(vc -> vc.maxSpeed(oldMaxSpeed));
                             grabbedPlayer
                                 .fetch(CollideComponent.class)
                                 .ifPresent(cc -> cc.isSolid(true));

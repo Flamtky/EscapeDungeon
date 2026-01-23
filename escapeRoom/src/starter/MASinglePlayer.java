@@ -18,6 +18,7 @@ import core.network.config.NetworkConfig;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoom;
+import demoDungeon.level.Tutorial;
 import escapeDungeon.items.*;
 import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
@@ -58,6 +59,7 @@ public class MASinglePlayer {
     Game.userOnSetup(
         () -> {
           setupMusic();
+          DungeonLoader.addLevel(Tuple.of("tutorial", Tutorial.class));
           DungeonLoader.addLevel(Tuple.of("maroom", MADungeonRoom.class));
           createSystems();
           createHero();
@@ -94,6 +96,10 @@ public class MASinglePlayer {
     Item.registerItem(WaterPotionItem.class);
     Item.registerItem(WoodenBridgeItem.class);
     Item.registerItem(RopeItem.class);
+    Item.registerItem(EmptyBottleItem.class);
+    Item.registerItem(HammerHeadItem.class);
+    Item.registerItem(HammerItem.class);
+    Item.registerItem(TutorialPotionItem.class);
   }
 
   private static void configGame() throws IOException {
