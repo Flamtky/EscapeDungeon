@@ -11,6 +11,7 @@ import contrib.components.UIComponent;
 import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogCreationException;
 import contrib.hud.elements.GUICombination;
+import contrib.hud.inventory.InventoryGUI;
 import core.Entity;
 import core.Game;
 import core.components.AnalyticsComponent;
@@ -194,6 +195,30 @@ public final class UIUtils {
   }
 
   /**
+   * Retrieves the InventoryGUI associated with the given player's inventory, if it exists.
+   *
+   * @param player the player entity
+   * @return an Optional containing the InventoryGUI if found, or empty if not found
+   */
+  public static Optional<InventoryGUI> getPlayerInventoryGUI(Entity player) {
+    Optional<UIComponent> uiComponentOpt =
+        player.fetch(UIComponent.class).filter(ui -> ui.dialog() instanceof GUICombination);
+    if (uiComponentOpt.isEmpty()) {
+      return Optional.empty();
+    }
+
+    Optional<InventoryComponent> playerInventory = player.fetch(InventoryComponent.class);
+    if (playerInventory.isEmpty()) {
+      return Optional.empty();
+    }
+
+    GUICombination guiCombination = (GUICombination) uiComponentOpt.get().dialog();
+    return findAllTypesInGroup(guiCombination, InventoryGUI.class)
+        .filter(inventoryGUI -> inventoryGUI.inventoryComponent() == playerInventory.get())
+        .findFirst();
+  }
+
+  /**
    * Recursively searches for an Actor of the specified type within the given Group and its
    * subgroups.
    *
@@ -214,6 +239,27 @@ public final class UIUtils {
       }
     }
     return Optional.empty();
+  }
+
+  /**
+   * Recursively searches for all Actors of the specified type within the given Group and its
+   * subgroups.
+   *
+   * @param dialog the Group to search within
+   * @param type the Class type of the Actors to find
+   * @param <T> the type of the Actors
+   * @return a stream of all found Actors of the specified type
+   */
+  public static <T> Stream<T> findAllTypesInGroup(Group dialog, Class<T> type) {
+    Stream.Builder<T> results = Stream.builder();
+    for (Actor actor : dialog.getChildren()) {
+      if (type.isInstance(actor)) {
+        results.add(type.cast(actor));
+      } else if (actor instanceof Group group) {
+        findAllTypesInGroup(group, type).forEach(results::add);
+      }
+    }
+    return results.build();
   }
 
   /**

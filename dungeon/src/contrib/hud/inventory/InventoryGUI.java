@@ -452,18 +452,20 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder {
               @Override
               public boolean keyDown(InputEvent event, int keycode) {
                 Entity player = Game.player().orElseThrow();
-                if (KeyboardConfig.USE_ITEM.value() == keycode) {
-                  if (Game.network().isServer()) {
-                    return HeroController.useItem(player, getSlotByMousePosition());
-                  } else {
-                    Game.network()
-                        .send(
-                            (short) 0,
-                            new InputMessage(
-                                InputMessage.Action.INV_USE,
-                                Vector2.of(getSlotByMousePosition(), 0)),
-                            true);
-                    return true;
+                if (UIUtils.getPlayerInventoryGUI(player).isPresent()) {
+                  if (KeyboardConfig.USE_ITEM.value() == keycode) {
+                    if (Game.network().isServer()) {
+                      return HeroController.useItem(player, getSlotByMousePosition());
+                    } else {
+                      Game.network()
+                          .send(
+                              (short) 0,
+                              new InputMessage(
+                                  InputMessage.Action.INV_USE,
+                                  Vector2.of(getSlotByMousePosition(), 0)),
+                              true);
+                      return true;
+                    }
                   }
                 }
                 return false;
@@ -473,19 +475,22 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder {
               public boolean touchDown(
                   InputEvent event, float x, float y, int pointer, int button) {
                 Entity player = Game.player().orElseThrow();
-                if (KeyboardConfig.MOUSE_USE_ITEM.value() == button) {
-                  if (Game.network().isServer()) {
-                    return HeroController.useItem(player, getSlotByMousePosition());
-                  } else {
-                    Game.network()
-                        .send(
-                            (short) 0,
-                            new InputMessage(
-                                InputMessage.Action.INV_USE,
-                                Vector2.of(getSlotByMousePosition(), 0)),
-                            true);
-                    return true;
+                if (UIUtils.getPlayerInventoryGUI(player).isPresent()) {
+                  if (KeyboardConfig.MOUSE_USE_ITEM.value() == button) {
+                    if (Game.network().isServer()) {
+                      return HeroController.useItem(player, getSlotByMousePosition());
+                    } else {
+                      Game.network()
+                          .send(
+                              (short) 0,
+                              new InputMessage(
+                                  InputMessage.Action.INV_USE,
+                                  Vector2.of(getSlotByMousePosition(), 0)),
+                              true);
+                      return true;
+                    }
                   }
+                  return false;
                 }
 
                 UIComponent uiComponent =
