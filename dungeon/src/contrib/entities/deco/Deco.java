@@ -2094,6 +2094,12 @@ public enum Deco {
       null,
       DepthLayer.Player.depth(),
       Category.ANIMATED),
+  TorchGrayAnimatedPlaced(
+      "spritesheets/FG_Cellar.png",
+      new AnimationConfig(new SpritesheetConfig(0, 416, 1, 4, 16, 16)).framesPerSprite(10),
+      null,
+      DepthLayer.Player.depth(),
+      Category.ANIMATED),
   /** A decoration. */
   TorchBeigeAnimated(
       "spritesheets/FG_Cellar.png",
@@ -4443,6 +4449,18 @@ public enum Deco {
       new AnimationConfig(new SpritesheetConfig(0, 0, 1, 1, 64, 32)),
       new Rectangle(2f, 1f, 0f, 0f),
       Category.FURNITURE),
+  /** A decoration. */
+  Stone(
+      "objects/stone/stone.png",
+      new AnimationConfig(new SpritesheetConfig(0, 32, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f),
+      Category.OTHER),
+  /** A decoration. */
+  IceWall(
+      "dungeon/ice/floor/floor_hole1.png",
+      new AnimationConfig(new SpritesheetConfig(0, 0, 1, 1, 16, 16)),
+      new Rectangle(1f, 1f, 0f, 0f),
+      Category.OTHER),
   ;
 
   /** Categories for organizing decorative objects in the level editor. */

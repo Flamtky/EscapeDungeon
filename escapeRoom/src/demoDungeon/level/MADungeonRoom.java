@@ -45,8 +45,14 @@ import escapeDungeon.items.*;
 import escapeDungeon.skill.SprintSkill;
 import guard.GuardBuilder;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import mobs.EscapeRoomMonsterBuilder;
 import mushRoom.Sounds;
+import mushRoom.modules.lockpick.LockPickDialog;
+import mushRoom.modules.lockpick.LockPickDifficulty;
 import mushRoom.shaders.TorchPostProcessing;
 import tools.timer.TimerAPI;
 
@@ -130,6 +136,10 @@ public class MADungeonRoom extends DungeonLevel {
           CharacterClass.ROGUE, SprintSkill.class
           // Add other mappings as needed
           );
+
+  ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+  ;
+  ScheduledFuture<?> timer;
 
   private boolean escaped = false;
 
@@ -349,6 +359,7 @@ public class MADungeonRoom extends DungeonLevel {
     createChests();
     initGuards();
     Game.add(MiscFactory.newCraftingCauldron(getPoint("crafting0")));
+    timer = scheduler.schedule(() -> {}, 10, TimeUnit.SECONDS);
   }
 
   @Override
@@ -401,23 +412,66 @@ public class MADungeonRoom extends DungeonLevel {
   }
 
   private void createChests() {
-    Game.add(MiscFactory.newChest(Set.of(new LeafItem()), getPoint("chest0")));
-    Game.add(MiscFactory.newChest(Set.of(new CoalItem()), getPoint("chest1")));
-    Game.add(MiscFactory.newChest(Set.of(new WaterPotionItem()), getPoint("chest2")));
-    Game.add(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest3")));
-    Game.add(MiscFactory.newChest(Set.of(new WaterPotionItem()), getPoint("chest4")));
-    Game.add(MiscFactory.newChest(Set.of(new MetalItem()), getPoint("chest5")));
-    Game.add(MiscFactory.newChest(Set.of(new LeafItem()), getPoint("chest6")));
-    Game.add(MiscFactory.newChest(Set.of(new RingSilverItem()), getPoint("chest7")));
-    Game.add(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest0")));
-    Game.add(MiscFactory.newChest(Set.of(new BlueGemItem()), getPoint("chest9")));
-    Game.add(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest10")));
-    Game.add(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest11")));
-    Game.add(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest12")));
-    Game.add(MiscFactory.newChest(Set.of(new LeafItem()), getPoint("chest13")));
-    Game.add(MiscFactory.newChest(Set.of(new WaterPotionItem()), getPoint("chest14")));
-    Game.add(MiscFactory.newChest(Set.of(new EnvelopeItem()), getPoint("chest15")));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new LeafItem()), getPoint("chest0"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new CoalItem()), getPoint("chest1"))));
+    Game.add(
+        addLockpicking(MiscFactory.newChest(Set.of(new EmptyBottleItem()), getPoint("chest2"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest3"))));
+    Game.add(
+        addLockpicking(MiscFactory.newChest(Set.of(new EmptyBottleItem()), getPoint("chest4"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new MetalItem()), getPoint("chest5"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new MetalItem()), getPoint("chest6"))));
+    Game.add(
+        addLockpicking(MiscFactory.newChest(Set.of(new RingSilverItem()), getPoint("chest7"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest0"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new BlueGemItem()), getPoint("chest9"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest10"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest11"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest12"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new CoalItem()), getPoint("chest13"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest14"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RopeItem()), getPoint("chest15"))));
     createTreeChest();
+  }
+
+  private Entity addLockpicking(Entity chest) {
+    chest
+        .fetch(InteractionComponent.class)
+        .ifPresent(
+            (ic) -> {
+              chest.remove(InteractionComponent.class);
+            });
+    chest.add(
+        new InteractionComponent(
+            () ->
+                new Interaction(
+                    (interacted, interactor) -> {
+                      LockPickDialog.openLockPick(
+                          interactor,
+                          LockPickDifficulty.MEDIUM,
+                          () -> {
+                            interactor
+                                .fetch(InventoryComponent.class)
+                                .ifPresent(
+                                    whoIc -> {
+                                      DialogContext context =
+                                          DialogContext.builder()
+                                              .type(DialogType.DefaultTypes.DUAL_INVENTORY)
+                                              .put(DialogContextKeys.ENTITY, interactor.id())
+                                              .put(
+                                                  DialogContextKeys.SECONDARY_ENTITY,
+                                                  interacted.id())
+                                              .put(DialogContextKeys.OWNER_ENTITY, interactor.id())
+                                              .build();
+                                      UIComponent ui =
+                                          new UIComponent(context, true, interactor.id());
+                                      interactor.add(ui);
+                                    });
+                          },
+                          null);
+                    })));
+
+    return chest;
   }
 
   private void createTreeChest() {
@@ -467,8 +521,11 @@ public class MADungeonRoom extends DungeonLevel {
                                             if (!ic.hasItem(StickItem.class)) {
                                               ic.add(new StickItem());
                                             }
-                                            if (!ic.hasItem(LeafItem.class)) {
+                                            if (!ic.hasItem(LeafItem.class) && timer.isDone()) {
                                               ic.add(new LeafItem());
+                                              timer =
+                                                  scheduler.schedule(
+                                                      () -> {}, 10, TimeUnit.SECONDS);
                                             }
                                           });
                                   DialogContext context =
@@ -978,7 +1035,7 @@ public class MADungeonRoom extends DungeonLevel {
             pc -> {
               float x = pc.position().x();
               float y = pc.position().y();
-              if (x <= 1 || x >= 99 || y <= 0 || y >= 188) {
+              if (x <= 1 || x >= 188 || y <= 0 || y >= 99) {
                 player.add(new EscapedComponent());
               } else {
                 player.remove(EscapedComponent.class);

@@ -74,7 +74,7 @@ public class LockPickUI extends Group implements Disposable {
   private static final Color SELECTED_TINT = new Color(1f, 1f, 1f, 1f);
   private static final Color UNSELECTED_TINT = new Color(0.7f, 0.7f, 0.7f, 1f);
   private static final Color GREYSCALE_TINT = new Color(0.5f, 0.5f, 0.5f, 1f);
-  private static final long DELAY_BEFORE_CALLBACK = 250; // milliseconds
+  private static final long DELAY_BEFORE_CALLBACK = 500; // milliseconds
 
   // Font sizes
   private static final int TITLE_FONT_SIZE = 32;

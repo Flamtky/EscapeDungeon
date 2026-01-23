@@ -1,7 +1,5 @@
 package escapeDungeon.items;
 
-import contrib.components.InventoryComponent;
-import contrib.components.StaminaComponent;
 import contrib.item.Item;
 import core.Entity;
 import core.utils.components.draw.animation.Animation;
@@ -9,14 +7,14 @@ import core.utils.components.path.SimpleIPath;
 import mushRoom.Sounds;
 
 /** An AxeItem can be used to chop down certain trees. */
-public class StaminaPotionItem extends Item {
+public class HammerHeadItem extends Item {
 
-  private static final String PATH = "items/rpg/potion_lightgreen.png";
+  private static final String PATH = "items/resource/basalt.png";
 
   /** Constructs a new AxeItem. */
-  public StaminaPotionItem() {
+  public HammerHeadItem() {
     super(
-        "Ausdauertrank",
+        "Hammerkopf",
         "Damit können bestimmte Bäume gefällt werden.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
@@ -24,13 +22,7 @@ public class StaminaPotionItem extends Item {
 
   @Override
   public void use(Entity user) {
-    user.fetch(StaminaComponent.class).ifPresent(sc -> sc.restore(50));
-    user.fetch(InventoryComponent.class)
-        .ifPresent(
-            (ic -> {
-              ic.remove(this);
-              ic.add(new EmptyBottleItem());
-            }));
+    // Nothing
   }
 
   @Override
