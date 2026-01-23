@@ -12,6 +12,7 @@ import contrib.hud.dialogs.DialogFactory;
 import contrib.hud.dialogs.DialogType;
 import contrib.item.Item;
 import contrib.modules.interaction.InteractionComponent;
+import contrib.systems.HudSystem;
 import contrib.utils.EntityUtils;
 import contrib.utils.components.skill.Skill;
 import contrib.utils.components.skill.cursorSkill.CursorSkill;
@@ -61,9 +62,8 @@ public class HeroController {
    *
    * @param hero the hero entity to move
    * @param direction the direction to move the hero
-   * @param speed the speed vector to scale the movement force
    */
-  public static void moveHero(Entity hero, Direction direction, Vector2 speed) {
+  public static void moveHero(Entity hero, Direction direction) {
     LOGGER.debug("Moving hero {} in direction {}", hero.id(), direction);
 
     if (hero.fetch(InputComponent.class).map(InputComponent::deactivateControls).orElse(false)) {
@@ -124,10 +124,9 @@ public class HeroController {
             .orElseThrow(() -> MissingComponentException.build(hero, VelocityComponent.class));
 
     Optional<Vector2> existingForceOpt = vc.force(MOVEMENT_ID);
-    Vector2 newForce = speed.scale(direction);
 
     Vector2 updatedForce =
-        existingForceOpt.map(existing -> existing.add(newForce)).orElse(newForce);
+        existingForceOpt.map(existing -> existing.add(direction)).orElse(direction);
 
     if (updatedForce.lengthSquared() > 0) {
       // When moving diagonally, this function is called once per axis. On the first call, only the
@@ -135,7 +134,8 @@ public class HeroController {
       // moving axes.
       // TODO: Inputs should be batched and calculated together (explanation in PR #2724)
       Vector2 unitSpeed =
-          Vector2.of(direction.x() != 0 ? speed.x() : 0, direction.y() != 0 ? speed.y() : 0);
+          Vector2.of(
+              direction.x() != 0 ? direction.x() : 0, direction.y() != 0 ? direction.y() : 0);
       updatedForce = updatedForce.normalize().scale(unitSpeed.length());
       vc.applyForce(MOVEMENT_ID, updatedForce);
     }
@@ -759,60 +759,58 @@ public class HeroController {
         continue;
       }
 
-      // Apply input
-      try {
-        switch (msg.action()) {
-          case MOVE -> {
-            CharacterClass heroClass =
-                playerEntity.fetch(CharacterClassComponent.class).orElseThrow().characterClass();
-            HeroController.moveHero(
-                playerEntity, Vector2.of(msg.point()).direction(), heroClass.speed());
-          }
-          case CAST_SKILL -> HeroController.useSkill(playerEntity, msg.point());
-          case NEXT_SKILL -> HeroController.changeSkill(playerEntity, true);
-          case PREV_SKILL -> HeroController.changeSkill(playerEntity, false);
-          case INTERACT -> HeroController.interact(playerEntity, msg.point());
-          case TOGGLE_INVENTORY -> {
-            if (isInventoryOpen(playerEntity))
-              playerEntity
-                  .fetch(UIComponent.class)
-                  .ifPresent(UIUtils::closeDialog); // Close inventory
-            else HeroController.openInventory(playerEntity);
-          }
-          case INV_DROP -> {
-            Optional<InventoryComponent> playerInv =
-                clientState
-                    .playerEntity()
-                    .map(e -> e.fetch(UIComponent.class))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .flatMap(UIUtils::getFirstInventoryFromUI);
-            if (playerInv.isEmpty()) {
-              LOGGER.warn(
-                  "No inventory component found for entity {} to drop item", playerEntity.id());
-              break;
-            }
-            int itemIndex = (int) msg.point().x();
-            HeroController.dropItem(playerEntity, playerInv.get(), itemIndex);
-          }
-          case INV_MOVE -> {
-            int fromIndex = (int) msg.point().x();
-            int toIndex = (int) msg.point().y();
-            HeroController.moveItem(playerEntity, fromIndex, toIndex);
-          }
-          case INV_USE -> {
-            int itemIndex = (int) msg.point().x();
-            HeroController.useItem(playerEntity, itemIndex);
-          }
-          default -> LOGGER.warn("Unknown action {} for client {}", msg.action(), clientState);
+      var hudSys = Game.systems().get(HudSystem.class);
+      if ((hudSys instanceof HudSystem hudSystem && !hudSystem.hasOpenPausingUI(playerEntity))
+          || msg.action().ignorePause()) {
+        try {
+          applyInput(clientState, msg, playerEntity);
+        } catch (Exception e) {
+          LOGGER.error("Failed to apply input for client {}: {}", clientState, e.getMessage(), e);
         }
-        // On success: Update processed seq and activity
-        clientState.updateProcessedSeq(msg.sequence());
-        clientState.updateLastActivity();
-        LOGGER.trace("Applied input for client {} (action: {})", clientState, msg.action());
-      } catch (Exception e) {
-        LOGGER.error("Failed to apply input for client {}: {}", clientState, e.getMessage(), e);
       }
+      clientState.updateProcessedSeq(msg.sequence());
+      clientState.updateLastActivity();
     }
+  }
+
+  private static void applyInput(ClientState clientState, InputMessage msg, Entity playerEntity) {
+    switch (msg.action()) {
+      case MOVE -> HeroController.moveHero(playerEntity, Vector2.of(msg.point()).direction());
+      case CAST_SKILL -> HeroController.useSkill(playerEntity, msg.point());
+      case NEXT_SKILL -> HeroController.changeSkill(playerEntity, true);
+      case PREV_SKILL -> HeroController.changeSkill(playerEntity, false);
+      case INTERACT -> HeroController.interact(playerEntity, msg.point());
+      case TOGGLE_INVENTORY -> {
+        if (isInventoryOpen(playerEntity))
+          playerEntity.fetch(UIComponent.class).ifPresent(UIUtils::closeDialog); // Close inventory
+        else HeroController.openInventory(playerEntity);
+      }
+      case INV_DROP -> {
+        Optional<InventoryComponent> playerInv =
+            clientState
+                .playerEntity()
+                .map(e -> e.fetch(UIComponent.class))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .flatMap(UIUtils::getFirstInventoryFromUI);
+        if (playerInv.isEmpty()) {
+          LOGGER.warn("No inventory component found for entity {} to drop item", playerEntity.id());
+          break;
+        }
+        int itemIndex = (int) msg.point().x();
+        HeroController.dropItem(playerEntity, playerInv.get(), itemIndex);
+      }
+      case INV_MOVE -> {
+        int fromIndex = (int) msg.point().x();
+        int toIndex = (int) msg.point().y();
+        HeroController.moveItem(playerEntity, fromIndex, toIndex);
+      }
+      case INV_USE -> {
+        int itemIndex = (int) msg.point().x();
+        HeroController.useItem(playerEntity, itemIndex);
+      }
+      default -> LOGGER.warn("Unknown action {} for client {}", msg.action(), clientState);
+    }
+    LOGGER.trace("Applied input for client {} (action: {})", clientState, msg.action());
   }
 }

@@ -55,6 +55,22 @@ public final class HudSystem extends System {
   }
 
   /**
+   * Returns whether there is any open pausing UI for a given entity.
+   *
+   * @param entity the entity to check for
+   * @return true if there is an open pausing UI for the entity, false otherwise
+   */
+  public boolean hasOpenPausingUI(Entity entity) {
+    return entityUIComponentMap.values().stream()
+        .anyMatch(
+            component ->
+                component.willPauseGame()
+                    && component.isVisible()
+                    && Arrays.stream(component.targetEntityIds())
+                        .anyMatch(id -> id == entity.id()));
+  }
+
+  /**
    * Once a UIComponent is removed, its Dialog has to be removed from the Stage.
    *
    * @param entity Entity which no longer has a UIComponent.
