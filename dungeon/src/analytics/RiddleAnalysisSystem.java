@@ -12,6 +12,7 @@ import core.level.utils.DesignLabel;
 import core.utils.Point;
 import core.utils.logging.DungeonLogger;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -41,7 +42,9 @@ public class RiddleAnalysisSystem extends System {
     String levelName = DungeonLoader.currentLevel();
 
     // Detect level change
-    if (!levelName.equals(currentLevelName) && Game.currentLevel().isPresent()) {
+    if (!levelName.equals(currentLevelName)
+        && Game.currentLevel().isPresent()
+        && Game.currentLevel().get().finishedLoading()) {
       currentLevelName = levelName;
       if (!MAROOM_LEVEL.equals(levelName)) {
         LOGGER.debug("Left maroom level: {}", levelName);
@@ -85,7 +88,6 @@ public class RiddleAnalysisSystem extends System {
       newRiddle(player, currentRiddle);
     } else if (isRiddleSolved(currentRiddle)) {
       // Player is still in the same riddle, check if solved
-      currentRiddleMap.remove(player);
       riddleSolved(player, currentRiddle);
     }
   }
@@ -96,7 +98,6 @@ public class RiddleAnalysisSystem extends System {
     if (previousRiddle != null) {
       if (isRiddleSolved(previousRiddle)) {
         // Player has left a riddle (solved)
-        currentRiddleMap.remove(player);
         riddleSolved(player, previousRiddle);
       } else {
         // Player has left a riddle (unsolved)
@@ -123,7 +124,12 @@ public class RiddleAnalysisSystem extends System {
       LOGGER.warn("Riddle solved but no stats found: {}", riddle.name);
       return;
     }
+    if (stats.solvedBy.contains(player.id())) {
+      return; // Already recorded as solved by this player
+    }
+
     long solveTime = java.lang.System.currentTimeMillis() - stats.solveStartTime;
+    stats.solvedBy.add(player.id());
 
     // Only count as attempt if threshold is exceeded
     if (solveTime >= RIDDLE_ATTEMPT_THRESHOLD_MS) {
@@ -228,6 +234,7 @@ public class RiddleAnalysisSystem extends System {
   private static class RiddleStats {
     int attemptCount = 0;
     long solveStartTime = 0;
+    Set<Integer> solvedBy = new HashSet<>();
   }
 
   public record RiddleType(DesignLabel designLabel, String name, Predicate<Point> isSolved) {
@@ -237,7 +244,7 @@ public class RiddleAnalysisSystem extends System {
             "Ice Puzzle",
             (posToCheck) -> {
               Stream<Entity> entityOnLastBlockingTile = Game.entityAtPoint(posToCheck);
-              return entityOnLastBlockingTile.noneMatch(e -> e.name().contains("show_Wall"));
+              return entityOnLastBlockingTile.noneMatch(e -> e.name().contains("snow_Wall"));
             });
     static final RiddleAnalysisSystem.RiddleType PUSH_PUZZLE =
         new RiddleAnalysisSystem.RiddleType(
