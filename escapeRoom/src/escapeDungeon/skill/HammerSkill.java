@@ -59,7 +59,7 @@ public class HammerSkill extends CursorSkill {
                       }));
               sc.consume(staminaCost);
             },
-            null);
+            () -> {});
       }
     }
   }

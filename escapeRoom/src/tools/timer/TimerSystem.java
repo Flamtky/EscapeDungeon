@@ -149,4 +149,13 @@ public class TimerSystem extends System {
   private void broadcastSync() {
     Game.network().broadcast(new TimerSyncMessage(elapsedTime, running), true);
   }
+
+  /**
+   * Returns whether the timer is currently running.
+   *
+   * @return true if the timer is running, false otherwise
+   */
+  public boolean isTimerRunning() {
+    return running;
+  }
 }

@@ -208,14 +208,11 @@ public final class UIUtils {
     }
 
     Optional<InventoryComponent> playerInventory = player.fetch(InventoryComponent.class);
-    if (playerInventory.isEmpty()) {
-      return Optional.empty();
-    }
-
-    GUICombination guiCombination = (GUICombination) uiComponentOpt.get().dialog();
-    return findAllTypesInGroup(guiCombination, InventoryGUI.class)
-        .filter(inventoryGUI -> inventoryGUI.inventoryComponent() == playerInventory.get())
-        .findFirst();
+    return playerInventory.flatMap(
+        inventoryComponent ->
+            findAllTypesInGroup(uiComponentOpt.get().dialog(), InventoryGUI.class)
+                .filter(inventoryGUI -> inventoryGUI.inventoryComponent() == inventoryComponent)
+                .findFirst());
   }
 
   /**

@@ -24,6 +24,7 @@ import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
 import java.io.IOException;
 import mushRoom.modules.EscapeRoomDialogTypes;
+import mushRoom.modules.journal.CraftingBookItem;
 import network.EscapeRoomSnapshotTranslator;
 import tools.timer.*;
 
@@ -100,6 +101,7 @@ public class MASinglePlayer {
     Item.registerItem(HammerHeadItem.class);
     Item.registerItem(HammerItem.class);
     Item.registerItem(TutorialPotionItem.class);
+    Item.registerItem(CraftingBookItem.class);
   }
 
   private static void configGame() throws IOException {

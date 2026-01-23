@@ -25,6 +25,8 @@ public class ItemWoodenBow extends Item {
   /** The default texture for all wooden bows. */
   public static final IPath DEFAULT_TEXTURE = new SimpleIPath("items/weapon/wooden_bow.png");
 
+  private Entity itemHolder;
+
   /** Create a {@link Item} that looks like a bow and can be collected to unlock the BOW_SKILL. */
   public ItemWoodenBow() {
     super("Wooden Bow", "It needs arrows as ammunition", new Animation(DEFAULT_TEXTURE));
@@ -32,6 +34,7 @@ public class ItemWoodenBow extends Item {
 
   @Override
   public boolean collect(final Entity itemEntity, final Entity collector) {
+    added(collector);
     return collector
         .fetch(InventoryComponent.class)
         .map(
@@ -51,9 +54,11 @@ public class ItemWoodenBow extends Item {
 
   @Override
   public Optional<Entity> drop(final Point position) {
-    Game.player()
-        .flatMap(player -> player.fetch(SkillComponent.class))
-        .ifPresent(sc -> sc.removeSkill(BowSkill.class));
+    if (itemHolder == null) {
+      return Optional.empty();
+    }
+
+    itemHolder.fetch(SkillComponent.class).ifPresent(sc -> sc.removeSkill(BowSkill.class));
 
     return Game.tileAt(position)
         .filter(FloorTile.class::isInstance)
@@ -64,6 +69,11 @@ public class ItemWoodenBow extends Item {
               return Optional.of(bow);
             })
         .orElse(Optional.empty());
+  }
+
+  @Override
+  public void added(Entity collector) {
+    itemHolder = collector;
   }
 
   @Override

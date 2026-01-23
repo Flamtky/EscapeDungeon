@@ -600,6 +600,11 @@ public final class ECSManagement {
    * @see #allPlayers()
    */
   public static Optional<Entity> player() {
+    if (allPlayers().count() > 1
+        && PreRunConfiguration.multiplayerEnabled()
+        && PreRunConfiguration.isNetworkServer()) {
+      LOGGER.warn("Multiple player entities detected in level; returning the first one found.");
+    }
     return allPlayers()
         .filter(e -> e.fetch(PlayerComponent.class).map(PlayerComponent::isLocal).orElse(false))
         .findFirst();

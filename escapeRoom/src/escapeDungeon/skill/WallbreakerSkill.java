@@ -53,7 +53,7 @@ public class WallbreakerSkill extends CursorSkill {
                           () -> ic.removeReason(IllegalComponent.Reason.VANDALISM), 5000);
                     });
           },
-          null);
+          () -> {});
     }
   }
 }

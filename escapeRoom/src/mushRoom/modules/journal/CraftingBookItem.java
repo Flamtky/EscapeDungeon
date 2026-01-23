@@ -10,11 +10,15 @@ import contrib.crafting.Recipe;
 import contrib.hud.UIUtils;
 import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogFactory;
+import contrib.hud.dialogs.HeadlessDialogGroup;
 import contrib.item.Item;
 import core.Entity;
+import core.Game;
+import core.utils.Point;
 import core.utils.components.draw.TextureMap;
 import core.utils.components.draw.animation.Animation;
 import core.utils.components.path.SimpleIPath;
+import java.util.Optional;
 import mushRoom.Sounds;
 import mushRoom.modules.EscapeRoomDialogTypes;
 
@@ -60,6 +64,10 @@ public class CraftingBookItem extends Item {
   }
 
   private static Group buildCraftingBookDialog(DialogContext dialogContext) {
+    if (Game.isHeadless()) {
+      return new HeadlessDialogGroup("Crafting Book UI", "Crafting Book UI");
+    }
+
     Skin skin = UIUtils.defaultSkin();
     Texture bookTex = TextureMap.instance().textureAt(new SimpleIPath("images/open-book.png"));
 
@@ -76,5 +84,11 @@ public class CraftingBookItem extends Item {
     }
 
     return bookUI;
+  }
+
+  @Override
+  public Optional<Entity> drop(final Point position) {
+    // Prevent dropping the crafting book
+    return Optional.empty();
   }
 }

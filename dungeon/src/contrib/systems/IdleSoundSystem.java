@@ -46,14 +46,7 @@ public final class IdleSoundSystem extends System {
 
   @Override
   public void execute() {
-    Point playerPos = Game.player().flatMap(Game::positionOf).orElse(null);
-    if (playerPos == null) {
-      LOGGER.debug("No player position found, skipping IdleSoundSystem execution.");
-      return;
-    }
-
     filteredEntityStream(IdleSoundComponent.class)
-        .filter(e -> isEntityNearby(playerPos, e))
         .forEach(
             e ->
                 playSound(

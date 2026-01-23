@@ -206,10 +206,10 @@ public final class TimerAPI {
   public static boolean isRunning() {
     if (PreRunConfiguration.isNetworkServer()) {
       var timerSys = ECSManagement.systems().get(TimerSystem.class);
-      if (timerSys == null) {
+      if (!(timerSys instanceof TimerSystem timerSystem)) {
         return false;
       }
-      return timerSys.isRunning();
+      return timerSystem.isTimerRunning();
     } else {
       TimerUI ui = TimerDialog.currentUI();
       if (ui != null) {

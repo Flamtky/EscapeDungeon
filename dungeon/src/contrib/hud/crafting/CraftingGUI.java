@@ -193,7 +193,7 @@ public class CraftingGUI extends CombinableGUI implements IInventoryHolder {
   @Override
   protected void initDragAndDrop(DragAndDrop dragAndDrop) {
     dragAndDrop.addTarget(
-        new DragAndDrop.Target(this.actor()) {
+        new DragAndDrop.Target(this) {
           @Override
           public boolean drag(
               DragAndDrop.Source source,

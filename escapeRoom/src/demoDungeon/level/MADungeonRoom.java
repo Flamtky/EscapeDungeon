@@ -14,6 +14,7 @@ import contrib.hud.DialogUtils;
 import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogContextKeys;
 import contrib.hud.dialogs.DialogType;
+import contrib.item.Item;
 import contrib.modules.interaction.Interaction;
 import contrib.modules.interaction.InteractionComponent;
 import contrib.systems.EventScheduler;
@@ -51,6 +52,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import mobs.EscapeRoomMonsterBuilder;
 import mushRoom.Sounds;
+import mushRoom.modules.journal.CraftingBookItem;
 import mushRoom.modules.lockpick.LockPickDialog;
 import mushRoom.modules.lockpick.LockPickDifficulty;
 import mushRoom.shaders.TorchPostProcessing;
@@ -136,6 +138,13 @@ public class MADungeonRoom extends DungeonLevel {
           CharacterClass.ROGUE, SprintSkill.class
           // Add other mappings as needed
           );
+  private static final Map<CharacterClass, Item[]> classToStartingItemsMap =
+      Map.of(
+          CharacterClass.APPRENTICE, new Item[] {new CraftingBookItem()}
+          // Add other mappings as needed
+          );
+
+  private final Set<Integer> initedPlayers = new HashSet<>();
 
   ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
   ;
@@ -378,37 +387,65 @@ public class MADungeonRoom extends DungeonLevel {
     Game.allPlayers()
         .forEach(
             player -> {
-              iceControls(player); // TODO: analytics
+              iceControls(player);
               checkEscape(player);
 
-              // give skills to classes
-              classToSkillMap.forEach(
-                  (charClass, skillCls) -> {
-                    if (player
-                        .fetch(CharacterClassComponent.class)
-                        .map(cc -> cc.characterClass() == charClass)
-                        .orElse(false)) {
-                      player
-                          .fetch(SkillComponent.class)
-                          .ifPresent(
-                              skillComp -> {
-                                if (skillComp.getSkill(skillCls).isEmpty()) {
-                                  try {
-                                    skillComp.addSkill(
-                                        skillCls.getDeclaredConstructor().newInstance());
-                                  } catch (Exception e) {
-                                    e.printStackTrace();
-                                  }
-                                }
-                              });
-                    }
-                  });
+              handleStartLogic(player);
             });
 
     if (!escaped
         && Game.allPlayers().allMatch(player -> player.isPresent(EscapedComponent.class))) {
       Game.allPlayers().forEach(this::escaped);
     }
+  }
+
+  private void handleStartLogic(Entity player) {
+    if (initedPlayers.contains(player.id())) {
+      return;
+    }
+
+    initedPlayers.add(player.id());
+    // give skills to classes
+    classToSkillMap.forEach(
+        (charClass, skillCls) -> {
+          if (player
+              .fetch(CharacterClassComponent.class)
+              .map(cc -> cc.characterClass() == charClass)
+              .orElse(false)) {
+            player
+                .fetch(SkillComponent.class)
+                .ifPresent(
+                    skillComp -> {
+                      if (skillComp.getSkill(skillCls).isEmpty()) {
+                        try {
+                          skillComp.addSkill(skillCls.getDeclaredConstructor().newInstance());
+                        } catch (Exception e) {
+                          e.printStackTrace();
+                        }
+                      }
+                    });
+          }
+        });
+
+    // give starting items to classes
+    classToStartingItemsMap.forEach(
+        (charClass, items) -> {
+          if (player
+              .fetch(CharacterClassComponent.class)
+              .map(cc -> cc.characterClass() == charClass)
+              .orElse(false)) {
+            player
+                .fetch(InventoryComponent.class)
+                .ifPresent(
+                    invComp -> {
+                      for (Item item : items) {
+                        if (!invComp.hasItem(item.getClass())) {
+                          invComp.add(item);
+                        }
+                      }
+                    });
+          }
+        });
   }
 
   private void createChests() {
@@ -468,7 +505,7 @@ public class MADungeonRoom extends DungeonLevel {
                                       interactor.add(ui);
                                     });
                           },
-                          null);
+                          () -> {});
                     })));
 
     return chest;

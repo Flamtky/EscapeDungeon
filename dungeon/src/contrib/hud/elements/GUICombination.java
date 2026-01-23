@@ -43,10 +43,7 @@ public final class GUICombination extends Group {
 
     if (Game.isHeadless()) {
       this.dragAndDrop = null;
-      this.combinableGuis.forEach(
-          combinableGUI -> {
-            this.addActor(combinableGUI.actor());
-          });
+      this.combinableGuis.forEach(this::addActor);
       return;
     }
     this.dragAndDrop = new DragAndDrop();
@@ -55,7 +52,7 @@ public final class GUICombination extends Group {
     this.combinableGuis.forEach(
         combinableGUI -> {
           combinableGUI.dragAndDrop(this.dragAndDrop);
-          this.addActor(combinableGUI.actor());
+          this.addActor(combinableGUI);
         });
     this.scalePositionChildren();
   }
