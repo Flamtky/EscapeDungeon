@@ -154,7 +154,7 @@ public class Level01 extends DungeonLevel {
     preasurePlate = plate.fetch(LeverComponent.class).get();
     Game.add(plate);
     Entity npc = new Entity();
-    npc.add(new VelocityComponent(5));
+    npc.add(VelocityComponent.defaultMoving(5));
     npc.add(new CollideComponent());
     npc.add(new PositionComponent(getPoint(0)));
     npc.add(new DrawComponent(new SimpleIPath("character/monster/chort")));

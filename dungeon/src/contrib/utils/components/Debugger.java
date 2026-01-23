@@ -196,7 +196,7 @@ public class Debugger extends System {
       // Add components to the monster entity
       monster.add(new PositionComponent(position));
       monster.add(new DrawComponent(new SimpleIPath("character/monster/chort")));
-      monster.add(new VelocityComponent(1));
+      monster.add(VelocityComponent.defaultMoving(1.0f));
       monster.add(new HealthComponent());
       monster.add(new CollideComponent());
       monster.add(

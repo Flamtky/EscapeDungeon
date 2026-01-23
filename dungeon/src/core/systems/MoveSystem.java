@@ -2,7 +2,6 @@ package core.systems;
 
 import analytics.DungeonAnalyticsAPI;
 import contrib.components.CollideComponent;
-import contrib.components.SprintComponent;
 import contrib.components.StaminaComponent;
 import contrib.systems.CollisionSystem;
 import contrib.systems.PositionSync;
@@ -80,16 +79,10 @@ public class MoveSystem extends System {
   private void updatePosition(MSData data) {
     VelocityComponent vc = data.vc;
 
-    Vector2 velocity = data.vc.currentVelocity();
+    Vector2 velocity = data.vc.currentVelocity().normalize();
 
-    // Cap velocity magnitude to maxSpeed, mainly for diagonal movement
-    if (velocity.length() > data.vc.maxSpeed()) {
-      velocity = velocity.normalize().scale(data.vc.maxSpeed());
-    }
-    velocity =
-        velocity.scale(
-            data.e.fetch(SprintComponent.class).map(SprintComponent::multiplier).orElse(1f));
-    data.e.remove(SprintComponent.class);
+    velocity = velocity.scale(vc.totalModifiers());
+    vc.removeModifier("sprint");
 
     Vector2 absVelocity = Vector2.of(Math.abs(velocity.x()), Math.abs(velocity.y()));
 

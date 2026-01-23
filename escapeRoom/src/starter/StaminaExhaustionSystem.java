@@ -45,12 +45,6 @@ public class StaminaExhaustionSystem extends System {
    */
   private static final float RECOVERY_THRESHOLD_PERCENT = 0.90f;
 
-  /**
-   * Map storing the original maximum speed for each entity. Used to restore speed when the entity
-   * recovers from exhaustion.
-   */
-  private final Map<Entity, Float> originalSpeeds = new HashMap<>();
-
   private final Map<Entity, Long> exhaustionTimestamps = new HashMap<>();
 
   /**
@@ -61,9 +55,6 @@ public class StaminaExhaustionSystem extends System {
    */
   public StaminaExhaustionSystem() {
     super(StaminaComponent.class, VelocityComponent.class);
-
-    // Clean up stored speeds when entities are removed
-    onEntityRemove = originalSpeeds::remove;
   }
 
   /**
@@ -141,14 +132,12 @@ public class StaminaExhaustionSystem extends System {
   private void becomeExhausted(
       Entity entity, StaminaComponent stamina, VelocityComponent velocity) {
     // Store original speed if not already stored
-    if (!originalSpeeds.containsKey(entity)) {
-      originalSpeeds.put(entity, velocity.maxSpeed());
+    if (!exhaustionTimestamps.containsKey(entity)) {
       exhaustionTimestamps.put(entity, java.lang.System.currentTimeMillis());
     }
 
     // Apply speed reduction
-    float originalSpeed = originalSpeeds.get(entity);
-    velocity.maxSpeed(originalSpeed * EXHAUSTED_SPEED_MULTIPLIER);
+    velocity.modifier("stamina_exhaustion", EXHAUSTED_SPEED_MULTIPLIER);
 
     // Mark as exhausted
     stamina.setExhausted(true);
@@ -177,10 +166,7 @@ public class StaminaExhaustionSystem extends System {
   private void recoverFromExhaustion(
       Entity entity, StaminaComponent stamina, VelocityComponent velocity) {
     // Restore original speed
-    Float originalSpeed = originalSpeeds.remove(entity);
-    if (originalSpeed != null) {
-      velocity.maxSpeed(originalSpeed);
-    }
+    velocity.removeModifier("stamina_exhaustion");
 
     // Mark as no longer exhausted
     stamina.setExhausted(false);

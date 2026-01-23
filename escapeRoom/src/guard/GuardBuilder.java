@@ -260,8 +260,6 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
               grabbedPlayer.fetch(CollideComponent.class).ifPresent(cc -> cc.isSolid(true));
               grabbedPlayer.remove(AttachmentComponent.class);
               this.grabbedPlayer = null;
-              guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
-              guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(3.5f));
               guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(true));
             },
             () ->
@@ -269,22 +267,21 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
                     "Das hat nicht geklappt! Jetzt muss ich kurz warten, bis ich mich wieder bewegen darf.",
                     "Einzelhaft",
                     () -> {
-                      grabbedPlayer.remove(AttachmentComponent.class);
-                      guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
-                      guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(3.5f));
-                      guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(true));
                       EventScheduler.scheduleAction(
                           () -> {
+                            grabbedPlayer.remove(AttachmentComponent.class);
                             grabbedPlayer
                                 .fetch(CollideComponent.class)
                                 .ifPresent(cc -> cc.isSolid(true));
                             this.grabbedPlayer = null;
+                            guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(true));
                           },
                           10000);
                     },
                     grabbedPlayer.id()));
+        guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
+        guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.removeModifier("sprint"));
         guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(false));
-
         DungeonAnalyticsAPI.logXApiStatement(
             grabbedPlayer.fetch(AnalyticsComponent.class).orElseThrow(),
             DungeonAnalyticsAPI.Verb.RELEASED,
@@ -300,7 +297,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
           .ifPresent(ac -> ac.increaseAlertness(999f, grabbedPlayer)); // keep alert
       guard
           .fetch(VelocityComponent.class)
-          .ifPresent(vc -> vc.maxSpeed(5f)); // increase speed to cell
+          .ifPresent(vc -> vc.modifier("sprint", 1.5f)); // increase speed to cell
       AIUtils.followPath(guard, path);
     }
   }

@@ -591,7 +591,7 @@ public class MADungeonRoom extends DungeonLevel {
     dc.tintColor(Color.rgba8888(tintColor));
     pushStone.add(dc);
     pushStone.add(new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f)));
-    pushStone.add(new VelocityComponent(5.0f, 1.3f, e -> {}, false));
+    pushStone.add(VelocityComponent.builder().baseSpeed(5).mass(1.3f).build());
     Game.add(pushStone);
     return pushStone;
   }
@@ -970,7 +970,7 @@ public class MADungeonRoom extends DungeonLevel {
             ic.deactivateControls(false);
           });
       if (tileInFront.levelElement().value()) {
-        vc.currentVelocity(pc.viewDirection().scale(vc.maxSpeed()));
+        vc.currentVelocity(pc.viewDirection().scale(vc.baseSpeed()));
         addCallbacks(ic);
         ic.deactivateControls(true);
       }

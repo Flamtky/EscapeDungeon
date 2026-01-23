@@ -421,7 +421,7 @@ public class MainLevel extends DungeonLevel {
               pushStone.add(new PositionComponent(p));
               pushStone.add(new DrawComponent(new SimpleIPath("objects/push-stone.png")));
               pushStone.add(new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f)));
-              pushStone.add(new VelocityComponent(5.0f));
+              pushStone.add(VelocityComponent.defaultMoving(5));
               Game.add(pushStone);
               puzzlePushEntities.add(pushStone);
             });

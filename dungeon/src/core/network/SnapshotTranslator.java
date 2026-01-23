@@ -89,6 +89,6 @@ public interface SnapshotTranslator {
     // Inventory holders can change contents without moving
     if (entity.isPresent(InventoryComponent.class)) return true;
     // Entities with velocity that can move
-    return entity.fetch(VelocityComponent.class).map(vc -> vc.maxSpeed() > 0).orElse(false);
+    return entity.fetch(VelocityComponent.class).map(vc -> !vc.isStationary()).orElse(false);
   }
 }

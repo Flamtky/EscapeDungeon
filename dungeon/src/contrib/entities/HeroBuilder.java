@@ -243,11 +243,10 @@ public final class HeroBuilder {
     hero.add(dc);
 
     hero.add(
-        new VelocityComponent(
-            Math.max(characterClass.speed().x(), characterClass.speed().y()),
-            characterClass.mass(),
-            (e) -> {},
-            true));
+        VelocityComponent.builder()
+            .mass(characterClass.mass())
+            .baseSpeed(characterClass.speed())
+            .build());
     hero.add(
         new ManaComponent(
             characterClass.mana(), characterClass.mana(), characterClass.manaRestore()));

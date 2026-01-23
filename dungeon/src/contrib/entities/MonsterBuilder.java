@@ -26,10 +26,7 @@ import core.utils.components.draw.state.CharacterStateFactory;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
 import core.utils.logging.DungeonLogger;
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.*;
 
 /**
@@ -591,7 +588,13 @@ public class MonsterBuilder<T extends MonsterBuilder<T>> {
     monster.add(new PositionComponent(spawnPoint));
     monster.add(
         new DrawComponent(CharacterStateFactory.createStateMachine(texture()), DepthLayer.Player));
-    monster.add(new VelocityComponent(speed(), mass(), onWallHit(), canEnterOpenPits()));
+    monster.add(
+        VelocityComponent.builder()
+            .mass(mass())
+            .onWallHit(onWallHit())
+            .canEnterOpenPits(canEnterOpenPits())
+            .baseSpeed(speed())
+            .build());
     monster.add(new CollideComponent());
     if (collideDamage() > 0)
       monster.add(new SpikyComponent(collideDamage(), damageType(), collideCooldown()));

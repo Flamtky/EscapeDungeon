@@ -1,7 +1,6 @@
 package escapeDungeon.skill;
 
 import contrib.components.CharacterClassComponent;
-import contrib.components.SprintComponent;
 import contrib.components.StaminaComponent;
 import contrib.utils.components.skill.Skill;
 import core.Entity;
@@ -43,12 +42,8 @@ public class SprintSkill extends Skill {
       return; // No character class component, skip consume and scaling
     }
 
-    if (caster.fetch(SprintComponent.class).isPresent()) {
-      return; // Already sprinting
-    }
-
     if (staminaOpt.get().consume(SPRINT_STAMINA_COST)) {
-      caster.add(new SprintComponent(SPRINT_MULTIPLIER));
+      velocityOpt.get().modifier("sprint", SPRINT_MULTIPLIER);
     }
   }
 }

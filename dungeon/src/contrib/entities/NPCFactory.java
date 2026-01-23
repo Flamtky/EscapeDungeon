@@ -55,7 +55,7 @@ public class NPCFactory {
     cc.isSolid(true);
     npc.add(cc);
 
-    npc.add(new VelocityComponent(0));
+    npc.add(VelocityComponent.stationary());
     return npc;
   }
 }

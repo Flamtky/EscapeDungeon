@@ -15,8 +15,6 @@ import core.System;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
 import core.components.VelocityComponent;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A system that manages bed sleep interactions and stamina restoration during sleep.
@@ -35,8 +33,6 @@ import java.util.Map;
  * being added to the game and replaces their interaction component with custom sleep logic.
  */
 public class BedSleepSystem extends System {
-
-  private static final Map<Integer, Float> oldSpeeds = new HashMap<>();
 
   /**
    * Creates a new {@code BedSleepSystem}.
@@ -132,10 +128,7 @@ public class BedSleepSystem extends System {
     PositionSync.syncPosition(player);
 
     // Disable movement controls during sleep
-    var oldSpeed =
-        player.fetch(VelocityComponent.class).map(VelocityComponent::maxSpeed).orElse(0f);
-    oldSpeeds.put(player.id(), oldSpeed);
-    player.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(0f));
+    player.fetch(VelocityComponent.class).ifPresent(vc -> vc.modifier("sleep", 0f));
 
     // Play death animation as placeholder for sleep animation
     player
@@ -216,9 +209,7 @@ public class BedSleepSystem extends System {
     stamina.currentAmount(stamina.maxAmount());
 
     // Re-enable movement controls
-    float oldSpeed = oldSpeeds.getOrDefault(entity.id(), 1f);
-    entity.fetch(VelocityComponent.class).ifPresent(vc -> vc.maxSpeed(oldSpeed));
-    oldSpeeds.remove(entity.id());
+    entity.fetch(VelocityComponent.class).ifPresent(vc -> vc.removeModifier("sleep"));
 
     // Reset animation state to idle
     entity.fetch(DrawComponent.class).ifPresent(DrawComponent::resetState);

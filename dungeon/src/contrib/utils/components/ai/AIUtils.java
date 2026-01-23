@@ -76,7 +76,7 @@ public class AIUtils {
 
     entity
         .fetch(VelocityComponent.class)
-        .ifPresent(vc -> vc.applyForce("MOVEMENT", direction.normalize().scale(vc.maxSpeed())));
+        .ifPresent(vc -> vc.applyForce("MOVEMENT", direction.normalize().scale(vc.baseSpeed())));
   }
 
   /**
