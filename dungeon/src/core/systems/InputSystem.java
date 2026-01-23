@@ -1,6 +1,5 @@
 package core.systems;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import core.Entity;
 import core.System;
@@ -80,9 +79,9 @@ public final class InputSystem extends System {
     boolean isMouseButton =
         key == Input.Buttons.LEFT || key == Input.Buttons.RIGHT || key == Input.Buttons.MIDDLE;
     boolean isPressed =
-        isMouseButton ? Gdx.input.isButtonPressed(key) : Gdx.input.isKeyPressed(key);
+        isMouseButton ? InputManager.isButtonPressed(key) : InputManager.isKeyPressed(key);
     boolean isJustPressed =
-        isMouseButton ? Gdx.input.isButtonJustPressed(key) : Gdx.input.isKeyJustPressed(key);
+        isMouseButton ? InputManager.isButtonJustPressed(key) : InputManager.isKeyJustPressed(key);
 
     if ((isJustPressed && !data.repeat()) || (isPressed && data.repeat())) {
       data.callback().accept(entity);

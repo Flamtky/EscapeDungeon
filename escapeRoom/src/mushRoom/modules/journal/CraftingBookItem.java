@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import contrib.crafting.Crafting;
+import contrib.crafting.CraftingType;
 import contrib.crafting.Recipe;
 import contrib.hud.UIUtils;
 import contrib.hud.dialogs.DialogContext;
@@ -63,7 +64,13 @@ public class CraftingBookItem extends Item {
     Sounds.OPEN_INVENTORY_SOUND.play();
   }
 
-  private static Group buildCraftingBookDialog(DialogContext dialogContext) {
+  /**
+   * Builds the crafting book dialog UI.
+   *
+   * @param dialogContext the context for the dialog
+   * @return the constructed crafting book dialog group
+   */
+  public static Group buildCraftingBookDialog(DialogContext dialogContext) {
     if (Game.isHeadless()) {
       return new HeadlessDialogGroup("Crafting Book UI", "Crafting Book UI");
     }
@@ -78,7 +85,23 @@ public class CraftingBookItem extends Item {
     if (Crafting.recipes().isEmpty()) {
       bookUI.addEmptyEntry(NO_RECIPES_TEXT);
     } else {
-      for (Recipe recipe : Crafting.recipes()) {
+      for (Recipe recipe :
+          Crafting.recipes().stream()
+              .sorted(
+                  (o1, o2) -> {
+                    Item item1 = null;
+                    if (o1.results()[0].resultType().equals(CraftingType.ITEM)) {
+                      item1 = (Item) o1.results()[0];
+                    }
+                    Item item2 = null;
+                    if (o2.results()[0].resultType().equals(CraftingType.ITEM)) {
+                      item2 = (Item) o2.results()[0];
+                    }
+                    return item1 != null && item2 != null
+                        ? item1.displayName().compareToIgnoreCase(item2.displayName())
+                        : 0;
+                  })
+              .toList()) {
         bookUI.addRecipeEntry(recipe);
       }
     }

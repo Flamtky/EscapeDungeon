@@ -1,6 +1,5 @@
 package contrib.utils.systems.levelEditor;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import contrib.systems.DebugDrawSystem;
@@ -8,6 +7,7 @@ import contrib.systems.LevelEditorSystem;
 import contrib.utils.CheckPatternPainter;
 import core.level.utils.Coordinate;
 import core.level.utils.LevelElement;
+import core.systems.InputManager;
 import core.utils.Point;
 import core.utils.Vector2;
 import java.util.LinkedHashMap;
@@ -48,13 +48,13 @@ public class TilesMode extends LevelEditorMode {
   @Override
   public void execute() {
     if (LevelEditorSystem.isButtonJustPressed(PRIMARY_DOWN)) {
-      if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
+      if (InputManager.isButtonPressed(Input.Buttons.RIGHT)) {
         selectedTileIndexR -= 1;
       } else {
         selectedTileIndexL -= 1;
       }
     } else if (LevelEditorSystem.isButtonJustPressed(PRIMARY_UP)) {
-      if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
+      if (InputManager.isButtonPressed(Input.Buttons.RIGHT)) {
         selectedTileIndexR += 1;
       } else {
         selectedTileIndexL += 1;
@@ -84,7 +84,7 @@ public class TilesMode extends LevelEditorMode {
      */
     Optional<LevelElement> levelElement = Optional.empty();
     int targetBrushSize;
-    if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+    if (InputManager.isButtonPressed(Input.Buttons.LEFT)) {
       levelElement =
           Optional.of(
               LevelElement.values()[
@@ -92,12 +92,12 @@ public class TilesMode extends LevelEditorMode {
       targetBrushSize = brushSize;
     } else {
       targetBrushSize = 1;
-      if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
+      if (InputManager.isButtonPressed(Input.Buttons.RIGHT)) {
         levelElement =
             Optional.of(
                 LevelElement.values()[
                     Math.floorMod(selectedTileIndexR, LevelElement.values().length)]);
-      } else if (Gdx.input.isKeyPressed(TERTIARY)) {
+      } else if (InputManager.isKeyPressed(TERTIARY)) {
         levelElement = Optional.of(LevelElement.SKIP);
       }
     }

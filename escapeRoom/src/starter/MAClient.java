@@ -13,6 +13,7 @@ import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoomClient;
 import java.io.IOException;
 import mushRoom.modules.EscapeRoomDialogTypes;
+import mushRoom.modules.journal.CraftingBookItem;
 import mushRoom.modules.lockpick.LockPickDialog;
 import mushRoom.modules.qte.FollowingIndicatorDialog;
 import network.EscapeRoomSnapshotTranslator;
@@ -25,6 +26,8 @@ public final class MAClient {
     DialogFactory.register(
         EscapeRoomDialogTypes.FOLLOWING_INDICATOR, FollowingIndicatorDialog::build);
     DialogFactory.register(EscapeRoomDialogTypes.LOCKPICK, LockPickDialog::build);
+    DialogFactory.register(
+        EscapeRoomDialogTypes.CRAFTING_BOOK, CraftingBookItem::buildCraftingBookDialog);
   }
 
   private static boolean firstTick = true;

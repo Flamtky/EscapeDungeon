@@ -2,7 +2,6 @@ package contrib.systems;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -16,15 +15,14 @@ import core.components.PlayerComponent;
 import core.level.DungeonLevel;
 import core.level.Tile;
 import core.systems.DrawSystem;
+import core.systems.InputManager;
 import core.utils.*;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.draw.shader.OutlineShader;
 import core.utils.components.draw.shader.PassthroughShader;
 import core.utils.logging.DungeonLogger;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * The LevelEditorSystem is responsible for handling the level editor. It allows the user to change
@@ -62,89 +60,11 @@ public class LevelEditorSystem extends System {
   private static float feedbackMessageTimer = 0.0f;
   private static final float FEEDBACK_MESSAGE_DURATION = 3.0f; // seconds
 
-  private static final Set<Integer> justPressedButtons = new HashSet<>();
-  private static final Set<Integer> pressedButtons = new HashSet<>();
-
-  private static Map<Integer, InputComponent.InputData> playerClallbacks = null;
+  private static Map<Integer, InputComponent.InputData> playerCallbacks = null;
 
   /** Constructs a new LevelEditorSystem. */
   public LevelEditorSystem() {
     super();
-
-    var old = Gdx.input.getInputProcessor();
-    Gdx.input.setInputProcessor(
-        new InputProcessor() {
-          @Override
-          public boolean keyDown(int keycode) {
-            justPressedButtons.add(keycode);
-            return old.keyDown(keycode);
-          }
-
-          @Override
-          public boolean keyUp(int keycode) {
-            justPressedButtons.remove(keycode);
-            pressedButtons.remove(keycode);
-            return old.keyUp(keycode);
-          }
-
-          @Override
-          public boolean keyTyped(char character) {
-            return old.keyTyped(character);
-          }
-
-          @Override
-          public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-            justPressedButtons.add(button);
-            return old.touchDown(screenX, screenY, pointer, button);
-          }
-
-          @Override
-          public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-            justPressedButtons.remove(button);
-            pressedButtons.remove(button);
-            return old.touchUp(screenX, screenY, pointer, button);
-          }
-
-          @Override
-          public boolean touchCancelled(int screenX, int screenY, int pointer, int button) {
-            return old.touchCancelled(screenX, screenY, pointer, button);
-          }
-
-          @Override
-          public boolean touchDragged(int screenX, int screenY, int pointer) {
-            return old.touchDragged(screenX, screenY, pointer);
-          }
-
-          @Override
-          public boolean mouseMoved(int screenX, int screenY) {
-            return old.mouseMoved(screenX, screenY);
-          }
-
-          @Override
-          public boolean scrolled(float amountX, float amountY) {
-            return old.scrolled(amountX, amountY);
-          }
-        });
-  }
-
-  /**
-   * Checks if a button was just pressed in the current frame.
-   *
-   * @param button The button to check.
-   * @return true if the button was just pressed, false otherwise.
-   */
-  public static boolean isButtonJustPressed(int button) {
-    return justPressedButtons.contains(button);
-  }
-
-  /**
-   * Checks if a button is currently pressed.
-   *
-   * @param button The button to check.
-   * @return true if the button is pressed, false otherwise.
-   */
-  public static boolean isButtonPressed(int button) {
-    return pressedButtons.contains(button);
   }
 
   /**
@@ -169,7 +89,7 @@ public class LevelEditorSystem extends System {
           .fetch(InputComponent.class)
           .ifPresent(
               pc -> {
-                playerClallbacks = pc.callbacks();
+                playerCallbacks = pc.callbacks();
                 pc.removeCallback(LevelEditorMode.PRIMARY_UP);
                 pc.removeCallback(LevelEditorMode.PRIMARY_DOWN);
                 pc.removeCallback(LevelEditorMode.SECONDARY_UP);
@@ -188,17 +108,17 @@ public class LevelEditorSystem extends System {
         currentModeInstance.onEnter();
       }
     } else {
-      if (playerClallbacks != null) {
+      if (playerCallbacks != null) {
         player
             .fetch(InputComponent.class)
             .ifPresent(
                 pc -> {
-                  playerClallbacks.forEach(
+                  playerCallbacks.forEach(
                       ((key, value) ->
                           pc.registerCallback(
                               key, value.callback(), value.repeat(), value.pauseable())));
                 });
-        playerClallbacks = null;
+        playerCallbacks = null;
         player
             .fetch(HealthComponent.class)
             .ifPresent(
@@ -256,39 +176,37 @@ public class LevelEditorSystem extends System {
 
   @Override
   public void execute() {
-    if (LevelEditorSystem.isButtonJustPressed(TOGGLE_ACTIVE)) {
+    if (InputManager.isKeyJustPressed(TOGGLE_ACTIVE)) {
       active(!active);
     }
 
     if (!active) {
-      updateInputs();
       return;
     }
 
     Optional<PlayerComponent> pc = Game.player().flatMap(e -> e.fetch(PlayerComponent.class));
     if (pc.isPresent() && pc.get().openDialogs()) {
-      updateInputs();
       return;
     }
 
-    if (LevelEditorSystem.isButtonJustPressed(TOGGLE_DEBUG_SHADER)) {
+    if (InputManager.isKeyJustPressed(TOGGLE_DEBUG_SHADER)) {
       toggleDebugShader();
     }
 
     Mode previousMode = currentMode;
-    if (isButtonJustPressed(MODE_1)) {
+    if (InputManager.isKeyJustPressed(MODE_1)) {
       currentMode = Mode.getMode(0);
-    } else if (isButtonJustPressed(MODE_2)) {
+    } else if (InputManager.isKeyJustPressed(MODE_2)) {
       currentMode = Mode.getMode(1);
-    } else if (isButtonJustPressed(MODE_3)) {
+    } else if (InputManager.isKeyJustPressed(MODE_3)) {
       currentMode = Mode.getMode(2);
-    } else if (isButtonJustPressed(MODE_4)) {
+    } else if (InputManager.isKeyJustPressed(MODE_4)) {
       currentMode = Mode.getMode(3);
-    } else if (isButtonJustPressed(MODE_5)) {
+    } else if (InputManager.isKeyJustPressed(MODE_5)) {
       currentMode = Mode.getMode(4);
-    } else if (isButtonJustPressed(MODE_6)) {
+    } else if (InputManager.isKeyJustPressed(MODE_6)) {
       currentMode = Mode.getMode(5);
-    } else if (isButtonJustPressed(MODE_7)) {
+    } else if (InputManager.isKeyJustPressed(MODE_7)) {
       currentMode = Mode.getMode(6);
     }
 
@@ -300,14 +218,6 @@ public class LevelEditorSystem extends System {
       }
       currentModeInstance.doExecute();
     }
-
-    updateInputs();
-  }
-
-  private void updateInputs() {
-    // update buttons buffers
-    pressedButtons.addAll(justPressedButtons);
-    justPressedButtons.clear();
   }
 
   private void toggleDebugShader() {

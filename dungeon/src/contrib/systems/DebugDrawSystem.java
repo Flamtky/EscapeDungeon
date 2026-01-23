@@ -1,6 +1,5 @@
 package contrib.systems;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -25,6 +24,7 @@ import core.game.WindowEventManager;
 import core.level.DungeonLevel;
 import core.level.elements.ILevel;
 import core.systems.CameraSystem;
+import core.systems.InputManager;
 import core.utils.FontHelper;
 import core.utils.Point;
 import core.utils.Vector2;
@@ -475,8 +475,8 @@ public class DebugDrawSystem extends System {
     }
 
     // If holding Shift, show all components; otherwise hint how to show them
-    if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)
-        || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
+    if (InputManager.isKeyPressed(Input.Keys.SHIFT_LEFT)
+        || InputManager.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
       info.append(componentNames.size())
           .append(" component")
           .append(componentNames.size() == 1 ? "" : "s")

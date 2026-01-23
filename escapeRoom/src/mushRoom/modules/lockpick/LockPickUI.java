@@ -1,6 +1,5 @@
 package mushRoom.modules.lockpick;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -18,6 +17,7 @@ import contrib.systems.EventScheduler;
 import core.Entity;
 import core.Game;
 import core.game.WindowEventManager;
+import core.systems.InputManager;
 import core.utils.FontHelper;
 import core.utils.logging.DungeonLogger;
 import java.util.Objects;
@@ -716,22 +716,22 @@ public class LockPickUI extends Group implements Disposable {
     if (!inputEnabled) return;
 
     float curSpeed = ROTATION_SPEED;
-    if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+    if (InputManager.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
       curSpeed /= SHIFT_SLOWDOWN_FACTOR;
     }
 
-    if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+    if (InputManager.isKeyPressed(Input.Keys.A) || InputManager.isKeyPressed(Input.Keys.LEFT)) {
       rotateSelectedRing(curSpeed * delta * DELTA_TIME_MULTIPLIER);
     }
-    if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+    if (InputManager.isKeyPressed(Input.Keys.D) || InputManager.isKeyPressed(Input.Keys.RIGHT)) {
       rotateSelectedRing(-curSpeed * delta * DELTA_TIME_MULTIPLIER);
     }
 
-    if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+    if (InputManager.isKeyJustPressed(Input.Keys.SPACE)) {
       LOGGER.trace("SPACE pressed - submitting ring {}", selectedRingIndex);
       submitCurrentRing();
     }
-    if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+    if (InputManager.isKeyJustPressed(Input.Keys.ENTER)) {
       LOGGER.trace("ENTER pressed - checking alignment");
       checkAlignment();
     }

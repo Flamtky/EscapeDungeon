@@ -1,6 +1,5 @@
 package mushRoom.modules.qte;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -16,6 +15,7 @@ import contrib.systems.EventScheduler;
 import core.Entity;
 import core.Game;
 import core.game.WindowEventManager;
+import core.systems.InputManager;
 import core.utils.FontHelper;
 import core.utils.Tuple;
 import core.utils.logging.DungeonLogger;
@@ -314,7 +314,7 @@ public class FollowingIndicatorUI extends Group implements Disposable {
 
     // Check for key presses
     for (int i = 0; i < VALID_KEYS.length; i++) {
-      if (Gdx.input.isKeyJustPressed(VALID_KEYS[i])) {
+      if (InputManager.isKeyJustPressed(VALID_KEYS[i])) {
         handleKeyPress(i);
         break;
       }

@@ -1,6 +1,5 @@
 package aiAdvanced.systems;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import contrib.utils.components.skill.SkillTools;
 import core.Entity;
@@ -8,6 +7,7 @@ import core.Game;
 import core.System;
 import core.level.Tile;
 import core.level.utils.LevelElement;
+import core.systems.InputManager;
 import core.systems.LevelSystem;
 import core.utils.Point;
 
@@ -24,9 +24,9 @@ public class MazeEditorSystem extends System {
 
   @Override
   public void execute() {
-    if (Gdx.input.isButtonPressed(FLOOR_BUTTON)) {
+    if (InputManager.isButtonPressed(FLOOR_BUTTON)) {
       setTile(LevelElement.FLOOR);
-    } else if (Gdx.input.isButtonPressed(WALL_BUTTON)) {
+    } else if (InputManager.isButtonPressed(WALL_BUTTON)) {
       setTile(LevelElement.WALL);
     }
   }

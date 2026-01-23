@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * {@link core.game.PreRunConfiguration#userOnSetup() onSetup callback}.
  */
 public final class Crafting {
-  private static final HashSet<Recipe> RECIPES = new HashSet<>();
+  private static final HashSet<Recipe> RECIPES = new LinkedHashSet<>();
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(Crafting.class);
 
   /**

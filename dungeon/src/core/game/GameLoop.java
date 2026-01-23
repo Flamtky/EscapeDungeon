@@ -218,6 +218,7 @@ public final class GameLoop extends ScreenAdapter {
                 PreRunConfiguration.windowHeight()),
             new SpriteBatch());
     Gdx.input.setInputProcessor(stage);
+    InputManager.init();
   }
 
   /**
@@ -267,6 +268,8 @@ public final class GameLoop extends ScreenAdapter {
     CameraSystem.camera().update();
     // stage logic
     stage().ifPresent(GameLoop::updateStage);
+
+    InputManager.update();
   }
 
   /**
@@ -520,7 +523,8 @@ public final class GameLoop extends ScreenAdapter {
   }
 
   private void fullscreenKey() {
-    if (Gdx.input.isKeyJustPressed(core.configuration.KeyboardConfig.TOGGLE_FULLSCREEN.value())) {
+    if (InputManager.isKeyJustPressed(
+        core.configuration.KeyboardConfig.TOGGLE_FULLSCREEN.value())) {
       if (!Gdx.graphics.isFullscreen()) {
         Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
       } else {

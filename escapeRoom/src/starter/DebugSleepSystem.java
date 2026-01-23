@@ -1,6 +1,5 @@
 package starter;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import contrib.components.StaminaComponent;
 import contrib.systems.HealthSystem;
@@ -10,6 +9,7 @@ import core.components.DrawComponent;
 import core.components.InputComponent;
 import core.components.PlayerComponent;
 import core.components.PositionComponent;
+import core.systems.InputManager;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,7 +75,7 @@ public class DebugSleepSystem extends System {
   @Override
   public void execute() {
     // Check for sleep key press
-    if (Gdx.input.isKeyJustPressed(SLEEP_KEY)) {
+    if (InputManager.isKeyJustPressed(SLEEP_KEY)) {
       filteredEntityStream(PlayerComponent.class, StaminaComponent.class).forEach(this::startSleep);
     }
 
