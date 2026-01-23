@@ -26,7 +26,7 @@ public abstract class Skill {
   public static final Random RANDOM = new Random();
 
   /** Logger for skill-related events. */
-  private static final DungeonLogger LOGGER = DungeonLogger.getLogger(Skill.class);
+  protected static final DungeonLogger LOGGER = DungeonLogger.getLogger(Skill.class);
 
   /** A placeholder skill that does nothing when executed. */
   public static final Skill NONE =

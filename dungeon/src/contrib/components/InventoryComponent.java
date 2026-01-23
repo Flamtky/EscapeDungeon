@@ -295,6 +295,8 @@ public final class InventoryComponent implements Component {
       return false;
     }
     this.inventory[index % this.inventory.length] = item;
+    if (item == null) return true; // do not call added on null items
+
     this.onItemAdded.accept(item);
     item.added(Game.findInLevel(this).orElse(null));
     return true;

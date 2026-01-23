@@ -197,7 +197,10 @@ public final class ServerTransport {
     try {
       byte[] data = serialize(obj);
       if (data.length > SAFE_UDP_MTU) {
-        LOGGER.warn("Skip UDP send; payload too large ({} B) to {}", data.length, target);
+        LOGGER.debug(
+            "Skip UDP send; payload too large ({} B) to {}",
+            data.length,
+            target); // too spammy for info
         return CompletableFuture.completedFuture(false);
       }
       udpChannel
@@ -717,7 +720,7 @@ public final class ServerTransport {
       return;
     }
 
-    Optional<Entity> optEntity = Game.levelEntities().filter(e -> e.id() == entityId).findFirst();
+    Optional<Entity> optEntity = Game.findEntityById(entityId);
     if (optEntity.isEmpty()) {
       LOGGER.warn("Entity id='{}' not found for spawn", entityId);
       return;

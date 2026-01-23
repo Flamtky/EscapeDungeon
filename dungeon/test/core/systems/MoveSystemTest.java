@@ -174,6 +174,41 @@ public class MoveSystemTest {
   }
 
   /**
+   * Tests if the entity corner corrects past the wall when moving horizontally. Should not trigger
+   * the onWallHit callback.
+   */
+  @Test
+  void cornerCorrectionVertically() {
+    vc.currentVelocity(Vector2.of(1, 0));
+
+    pc.position(
+        new Point(
+            2 - cc.collider().size().x() - cc.collider().offset().x(),
+            1 - cc.collider().offset().y() - MoveSystem.CORNER_CORRECT_DISTANCE));
+    Point oldPos = pc.position();
+
+    String layoutStr =
+        """
+        FFF
+        FFF
+        FFW""";
+    LevelElement[][] layout =
+        V2FormatParser.loadLevelLayout(Arrays.stream(layoutStr.split("\n")).toList());
+    DungeonLevel l = new DungeonLevel(layout, DesignLabel.DEFAULT);
+    Game.currentLevel(l);
+
+    Consumer<Entity> onWallHit = mock(Consumer.class);
+    vc.onWallHit(onWallHit);
+
+    system.execute();
+
+    // Check that the entity actually moved past the wall (x is higher than before when we were
+    // already maximally against the wall)
+    assertTrue(oldPos.x() < pc.position().x());
+    verify(onWallHit, times(0)).accept(entity);
+  }
+
+  /**
    * Tests that the entity can move into a PIT tile if canEnterOpenPits is true, even though the
    * tile is not normally accessible.
    */

@@ -245,8 +245,7 @@ public class Tutorial extends DungeonLevel {
                         if (!enteredAreas.get(player)[1] && position.x() > 45) {
                           enteredAreas.get(player)[1] = true;
                           exitArea++;
-                        }
-                        else if (enteredAreas.get(player)[1] && position.x() < 45) {
+                        } else if (enteredAreas.get(player)[1] && position.x() < 45) {
                           enteredAreas.get(player)[1] = false;
                           exitArea--;
                         }

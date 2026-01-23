@@ -21,6 +21,7 @@ public class EscapeRoomEntityState extends EntityState {
   private final Float viewConeAngle;
   private final Float viewRange;
   private final Float decayRate;
+  private final Boolean isIllegal;
 
   /**
    * Constructs an EscapeRoomEntityState using the provided Builder.
@@ -34,6 +35,7 @@ public class EscapeRoomEntityState extends EntityState {
     this.viewConeAngle = builder.viewConeAngle;
     this.viewRange = builder.viewRange;
     this.decayRate = builder.decayRate;
+    this.isIllegal = builder.isIllegal;
   }
 
   /**
@@ -82,6 +84,15 @@ public class EscapeRoomEntityState extends EntityState {
   }
 
   /**
+   * Gets whether the entity is illegal.
+   *
+   * @return an Optional containing the illegal status if present, otherwise an empty Optional
+   */
+  public Optional<Boolean> isIllegal() {
+    return Optional.ofNullable(isIllegal);
+  }
+
+  /**
    * Creates a new Builder instance for constructing an EscapeRoomEntityState.
    *
    * @return a new Builder instance
@@ -101,6 +112,7 @@ public class EscapeRoomEntityState extends EntityState {
     protected Float viewConeAngle;
     protected Float viewRange;
     protected Float decayRate;
+    protected Boolean isIllegal;
 
     /**
      * Sets the current alertness of the entity.
@@ -154,6 +166,17 @@ public class EscapeRoomEntityState extends EntityState {
      */
     public Builder decayRate(Float decayRate) {
       this.decayRate = decayRate;
+      return this;
+    }
+
+    /**
+     * Sets whether the entity is illegal.
+     *
+     * @param isIllegal true if the entity is illegal, false otherwise
+     * @return the Builder instance
+     */
+    public Builder isIllegal(Boolean isIllegal) {
+      this.isIllegal = isIllegal;
       return this;
     }
 

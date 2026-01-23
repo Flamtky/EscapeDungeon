@@ -232,4 +232,13 @@ public final class AlertnessComponent implements Component, BarDisplayable {
   public Optional<Entity> lastSeenEntity() {
     return Optional.ofNullable(lastSeenEntity);
   }
+
+  /**
+   * Sets the current alertness to a specific value.
+   *
+   * @param alertness the new alertness value (clamped between 0 and maxAlertness)
+   */
+  public void alertness(float alertness) {
+    this.alertness = Math.max(0f, Math.min(alertness, maxAlertness));
+  }
 }

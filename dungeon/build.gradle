@@ -2,7 +2,6 @@ plugins {
     id 'java-library'
 }
 
-
 dependencies {
     // LibGDX: expose this API to users because of core.level.elements.ILevel
     api supportDependencies.gdx
@@ -17,6 +16,11 @@ dependencies {
     // Netty for server-client communication
     implementation supportDependencies.netty_all
 
+    // Database and Analytics: exposed to the API for evaluation logic
+    api supportDependencies.postgresql
+    api supportDependencies.hikari
+    api supportDependencies.dotenv
+
     // JUnit and Mockito for testing
     testImplementation supportDependencies.junit
     testImplementation supportDependencies.junitLauncher
@@ -26,7 +30,6 @@ dependencies {
     testImplementation("com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion")
     testImplementation("com.badlogicgames.gdx:gdx:$gdxVersion")
 }
-
 
 sourceSets.main.java.srcDirs = ['src/']
 sourceSets.main.resources.srcDirs = ['assets/']

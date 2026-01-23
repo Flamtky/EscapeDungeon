@@ -33,6 +33,7 @@ import core.utils.components.draw.shader.ShaderList;
 import core.utils.components.path.IPath;
 import core.utils.logging.DungeonLogger;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This system draws the entities on the screen using a multi-pass rendering pipeline:
@@ -71,6 +72,7 @@ public final class DrawSystem extends System implements Disposable {
   private static SpriteBatch FBO_BATCH; // lazy initialized
 
   private final TreeMap<Integer, List<Entity>> sortedEntities = new TreeMap<>();
+  private final Map<Integer, DSData> entityDataCache = new ConcurrentHashMap<>();
 
   private final FrameBufferPool FBO_POOL = FrameBufferPool.getInstance();
   // Dedicated SpriteBatch for rendering locally to FBOs (Pass 1 & Post-Processing Ping-Pong)
@@ -115,8 +117,8 @@ public final class DrawSystem extends System implements Disposable {
   }
 
   private void onEntityChanged(Entity changed, boolean added) {
-    DSData data = DSData.build(changed);
-    int depth = data.dc.depth();
+    entityDataCache.put(changed.id(), DSData.build(changed));
+    int depth = entityDataCache.get(changed.id()).dc.depth();
     List<Entity> entitiesAtDepth = sortedEntities.get(depth);
 
     if (entitiesAtDepth == null) {

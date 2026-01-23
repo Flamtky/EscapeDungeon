@@ -65,6 +65,8 @@ public record IllegalComponent(Set<Reason> reasons) implements Component, Serial
     /** The player is caught stealing items. */
     STEALING,
     /** The player is destroying walls or property. */
-    VANDALISM
+    VANDALISM,
+    /** Unknown reason. */
+    UNKNOWN
   }
 }

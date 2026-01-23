@@ -1,5 +1,8 @@
 package mushRoom.modules.lockpick;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 /**
  * Represents difficulty configuration for the lock-picking minigame.
  *
@@ -17,7 +20,9 @@ package mushRoom.modules.lockpick;
  * <p>Predefined difficulties are available as static fields. Custom difficulties can be created via
  * {@link #of(int, float, float)} for runtime-defined configurations.
  */
-public final class LockPickDifficulty {
+public final class LockPickDifficulty implements Serializable {
+  @Serial private static final long serialVersionUID = 1L;
+
   /** Easy: 3 rings, 35-60° gaps. Wide margins for learning. */
   public static final LockPickDifficulty EASY = new LockPickDifficulty(3, 35f, 60f);
 

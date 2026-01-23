@@ -13,11 +13,19 @@ import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoomClient;
 import java.io.IOException;
 import mushRoom.modules.EscapeRoomDialogTypes;
+import mushRoom.modules.lockpick.LockPickDialog;
+import mushRoom.modules.qte.FollowingIndicatorDialog;
 import network.EscapeRoomSnapshotTranslator;
 import tools.timer.*;
 
 /** The main class for the Multiplayer Client for development and testing purposes. */
 public final class MAClient {
+
+  static {
+    DialogFactory.register(
+        EscapeRoomDialogTypes.FOLLOWING_INDICATOR, FollowingIndicatorDialog::build);
+    DialogFactory.register(EscapeRoomDialogTypes.LOCKPICK, LockPickDialog::build);
+  }
 
   private static boolean firstTick = true;
 
@@ -47,6 +55,7 @@ public final class MAClient {
     Game.userOnSetup(
         () -> {
           Game.add(new Debugger());
+          Game.add(new IllegalSystem());
           registerTimerHandlers();
         });
 
@@ -70,7 +79,6 @@ public final class MAClient {
     dispatcher.registerHandler(
         TimerCommandMessage.class,
         (session, msg) -> {
-          System.out.println("Received TimerCommandMessage: " + msg.command());
           switch (msg.command()) {
             case START:
               // Create timer dialog if it doesn't exist

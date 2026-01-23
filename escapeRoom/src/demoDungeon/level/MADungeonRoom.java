@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import contrib.components.*;
 import contrib.components.CollideComponent;
 import contrib.components.FlyComponent;
+import contrib.entities.CharacterClass;
 import contrib.entities.LeverFactory;
 import contrib.entities.MiscFactory;
 import contrib.entities.deco.Deco;
@@ -18,6 +19,7 @@ import contrib.systems.EventScheduler;
 import contrib.utils.EntityUtils;
 import contrib.utils.ICommand;
 import contrib.utils.components.ai.idle.PatrolWalk;
+import contrib.utils.components.skill.Skill;
 import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
@@ -41,6 +43,7 @@ import core.utils.components.path.SimpleIPath;
 import escapeDungeon.components.AxeComponent;
 import escapeDungeon.components.IceMovementComponent;
 import escapeDungeon.items.*;
+import escapeDungeon.skill.SprintSkill;
 import guard.GuardBuilder;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -128,6 +131,12 @@ public class MADungeonRoom extends DungeonLevel {
   };
 
   private final Tuple<Point[], PatrolWalk.MODE>[] guardCheckPoints;
+
+  private static final Map<CharacterClass, Class<? extends Skill>> classToSkillMap =
+      Map.of(
+          CharacterClass.ROGUE, SprintSkill.class
+          // Add other mappings as needed
+          );
 
   ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
   ;
@@ -366,6 +375,29 @@ public class MADungeonRoom extends DungeonLevel {
                 iceControls(player);
               }
               checkEscape(player);
+
+              // give skills to classes
+              classToSkillMap.forEach(
+                  (Ch, skillCls) -> {
+                    if (player
+                        .fetch(CharacterClassComponent.class)
+                        .map(cc -> cc.characterClass() == Ch)
+                        .orElse(false)) {
+                      player
+                          .fetch(SkillComponent.class)
+                          .ifPresent(
+                              skillComp -> {
+                                if (skillComp.getSkill(skillCls).isEmpty()) {
+                                  try {
+                                    skillComp.addSkill(
+                                        skillCls.getDeclaredConstructor().newInstance());
+                                  } catch (Exception e) {
+                                    e.printStackTrace();
+                                  }
+                                }
+                              });
+                    }
+                  });
             });
   }
 
@@ -387,8 +419,7 @@ public class MADungeonRoom extends DungeonLevel {
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest11"))));
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest12"))));
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new CoalItem()), getPoint("chest13"))));
-    Game.add(
-        addLockpicking(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest14"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest14"))));
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RopeItem()), getPoint("chest15"))));
     createTreeChest();
   }
