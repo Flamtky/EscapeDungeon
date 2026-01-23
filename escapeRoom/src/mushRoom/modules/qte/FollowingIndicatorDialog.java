@@ -106,7 +106,6 @@ public final class FollowingIndicatorDialog {
       implements Serializable {}
 
   private static void handleAnalysis(Entity user, Serializable data) {
-    System.out.println("handleAnalysis called with data: " + data);
     if (data instanceof Result result) {
       AnalyticsComponent ac = user.fetch(AnalyticsComponent.class).orElse(null);
       if (ac == null) {

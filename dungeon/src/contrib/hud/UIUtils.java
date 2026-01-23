@@ -186,6 +186,14 @@ public final class UIUtils {
   }
 
   /**
+   * Retrieves the first {@link InventoryComponent} from the given {@link UIComponent}'s dialog, if
+   * it is a {@link GUICombination}.
+   */
+  public static Optional<InventoryComponent> getFirstInventoryFromUI(UIComponent ui) {
+    return getInventoriesFromUI(ui).findFirst();
+  }
+
+  /**
    * Recursively searches for an Actor of the specified type within the given Group and its
    * subgroups.
    *
@@ -256,6 +264,7 @@ public final class UIUtils {
    * @param targetEntityIds the target entity IDs for which the dialog is opened
    */
   public static void analyticsOpenDialog(DialogContext context, int[] targetEntityIds) {
+    Integer[] targetEntityIdsInt = Arrays.stream(targetEntityIds).boxed().toArray(Integer[]::new);
     Arrays.stream(targetEntityIds)
         .mapToObj(Game::findEntityById)
         .filter(Optional::isPresent)
@@ -267,11 +276,7 @@ public final class UIUtils {
                     player.fetch(AnalyticsComponent.class).orElseThrow(),
                     DungeonAnalyticsAPI.Verb.SEES,
                     "dialog:" + context.dialogType().toString(),
-                    Map.of(
-                        "attributes",
-                        context.attributes().toString(),
-                        "targetIds",
-                        Arrays.toString(targetEntityIds))));
+                    Map.of("attributes", context.attributes(), "targetIds", targetEntityIdsInt)));
   }
 
   /**
@@ -280,9 +285,10 @@ public final class UIUtils {
    * @param uiComponent the UIComponent whose dialog is being closed
    */
   public static void analyticsCloseDialog(UIComponent uiComponent) {
-    int[] targetEntityIds = uiComponent.targetEntityIds();
+    Integer[] targetEntityIds =
+        Arrays.stream(uiComponent.targetEntityIds()).boxed().toArray(Integer[]::new);
     Arrays.stream(targetEntityIds)
-        .mapToObj(Game::findEntityById)
+        .map(Game::findEntityById)
         .filter(Optional::isPresent)
         .map(Optional::get)
         .filter(entity -> entity.isPresent(AnalyticsComponent.class))
@@ -294,9 +300,9 @@ public final class UIUtils {
                     "dialog:" + uiComponent.dialogContext().dialogType().toString(),
                     Map.of(
                         "attributes",
-                        uiComponent.dialogContext().attributes().toString(),
+                        uiComponent.dialogContext().attributes(),
                         "targetIds",
-                        Arrays.toString(targetEntityIds),
+                        targetEntityIds,
                         "durationMs",
                         System.currentTimeMillis() - uiComponent.createdAt())));
   }

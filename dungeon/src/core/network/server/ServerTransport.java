@@ -5,7 +5,6 @@ import static core.network.codec.NetworkCodec.serialize;
 import static core.network.config.NetworkConfig.*;
 
 import contrib.entities.HeroController;
-import contrib.hud.inventory.InventoryGUI;
 import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
@@ -441,29 +440,7 @@ public final class ServerTransport {
     dispatcher.registerHandler(RequestEntitySpawn.class, this::onRequestEntitySpawn);
     dispatcher.registerHandler(InputMessage.class, this::onInputMessage);
     dispatcher.registerHandler(SoundFinishedMessage.class, this::onSoundFinished);
-    dispatcher.registerHandler(InventoryUIMessage.class, this::onInventoryUIMessage);
     dispatcher.registerHandler(DialogResponseMessage.class, this::onDialogResponse);
-  }
-
-  private void onInventoryUIMessage(Session session, InventoryUIMessage msg) {
-    LOGGER.debug(
-        "Received InventoryUIMessage (open={}) from client {}", msg.open(), session.clientId());
-
-    Optional<Entity> sessionEntity = session.clientState().flatMap(ClientState::playerEntity);
-    if (sessionEntity.isEmpty()) {
-      LOGGER.warn("Ignoring InventoryUIMessage from session with no player entity: {}", session);
-      return;
-    }
-
-    Entity player = sessionEntity.get();
-    if (msg.open() == InventoryGUI.inPlayerInventory(player)) { // already correct state
-      LOGGER.debug(
-          "Ignoring redundant InventoryUIMessage (open={}) from client {}",
-          msg.open(),
-          session.clientId());
-      return;
-    }
-    HeroController.toggleInventory(player);
   }
 
   private void onSoundFinished(Session session, SoundFinishedMessage msg) {

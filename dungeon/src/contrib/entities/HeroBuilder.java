@@ -6,7 +6,6 @@ import contrib.hud.DialogUtils;
 import contrib.hud.UIUtils;
 import contrib.hud.dialogs.DialogCallbackResolver;
 import contrib.hud.dialogs.DialogContextKeys;
-import contrib.hud.inventory.InventoryGUI;
 import contrib.systems.HealthSystem;
 import contrib.systems.HudSystem;
 import contrib.systems.PositionSync;
@@ -382,7 +381,11 @@ public final class HeroBuilder {
 
     // UI controls
     inputComp.registerCallback(
-        KeyboardConfig.INVENTORY_OPEN.value(), HeroController::toggleInventory, false, true);
+        KeyboardConfig.INVENTORY_OPEN.value(),
+        (caller) ->
+            Game.network()
+                .sendInput(new InputMessage(InputMessage.Action.TOGGLE_INVENTORY, Vector2.ZERO)),
+        false);
     inputComp.registerCallback(
         KeyboardConfig.CLOSE_UI.value(),
         (caller) ->
@@ -394,24 +397,16 @@ public final class HeroBuilder {
                         .ifPresent(
                             firstUI -> {
                               UIComponent component = firstUI.b();
-                              Entity entity = firstUI.a();
 
-                              // Check if this is the player's inventory
-                              if (InventoryGUI.inPlayerInventory(entity)) {
-                                // Use toggleInventory which properly notifies server via
-                                // InventoryUIMessage
-                                HeroController.toggleInventory(entity);
+                              // For network dialogs (received from server), send close message
+                              if (component.dialogContext() != null) {
+                                String dialogId = component.dialogContext().dialogId();
+                                DialogCallbackResolver.createButtonCallback(
+                                        dialogId, DialogContextKeys.ON_CLOSE)
+                                    .accept(null);
                               } else {
-                                // For network dialogs (received from server), send close message
-                                if (component.dialogContext() != null) {
-                                  String dialogId = component.dialogContext().dialogId();
-                                  DialogCallbackResolver.createButtonCallback(
-                                          dialogId, DialogContextKeys.ON_CLOSE)
-                                      .accept(null);
-                                } else {
-                                  // Remove the UI component
-                                  UIUtils.closeDialog(component);
-                                }
+                                // Remove the UI component
+                                UIUtils.closeDialog(component);
                               }
                             }))),
         false,

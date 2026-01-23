@@ -1,9 +1,6 @@
 package core.utils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A simple utility class for writing Java Maps to JSON strings and parsing JSON strings into Java
@@ -162,6 +159,11 @@ public class JsonHandler {
     } else if (value instanceof List) {
       @SuppressWarnings("unchecked")
       List<Object> list = (List<Object>) value;
+      writeArray(jsonBuilder, list, prettyPrint, currentIndent, indentIncrement);
+    } else if (value.getClass().isArray()) {
+      // Handle array types
+      Object[] array = (Object[]) value;
+      List<Object> list = new ArrayList<>(Arrays.asList(array));
       writeArray(jsonBuilder, list, prettyPrint, currentIndent, indentIncrement);
     } else {
       // Fallback for other types: treat as string using toString()
