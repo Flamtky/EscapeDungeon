@@ -1,7 +1,6 @@
 package starter;
 
 import analytics.RiddleAnalysisSystem;
-import contrib.crafting.Crafting;
 import contrib.entities.CharacterClass;
 import contrib.entities.EntityFactory;
 import contrib.entities.HeroController;
@@ -68,7 +67,6 @@ public class MAServer {
           DungeonLoader.addLevel(Tuple.of("maroom", MADungeonRoom.class));
           createSystems();
           // createHero();
-          Crafting.loadRecipes();
 
           ECSManagement.system(
               LevelSystem.class,

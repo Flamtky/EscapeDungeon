@@ -150,8 +150,7 @@ public final class InventoryComponent implements Component {
    * @return True if the inventory contains the item, false otherwise.
    */
   public boolean hasItem(final Item item) {
-    return Arrays.stream(this.inventory)
-        .anyMatch(invItem -> invItem != null && invItem.equals(item));
+    return Arrays.stream(this.inventory).anyMatch(invItem -> invItem == item);
   }
 
   /**
@@ -300,8 +299,9 @@ public final class InventoryComponent implements Component {
     this.inventory[index % this.inventory.length] = item;
     if (item == null) return true; // do not call added on null items
 
+    this.onItemAdded.accept(item);
+
     if (PreRunConfiguration.isNetworkServer() && isNewItem) {
-      this.onItemAdded.accept(item);
       item.added(Game.findInLevel(this).orElse(null));
     }
     return true;
@@ -474,28 +474,5 @@ public final class InventoryComponent implements Component {
    */
   public Consumer<Item> onItemRemoved() {
     return this.onItemRemoved;
-  }
-
-  /**
-   * Sets the items in the inventory to the provided array of items.
-   *
-   * <p>If the provided array has fewer items than the inventory size, the remaining slots will be
-   * set to null. If the array has more items than the inventory size, the excess items will be
-   * ignored.
-   *
-   * @param newItems An array of items to set in the inventory.
-   */
-  public void setItems(Item[] newItems) {
-    if (newItems.length > this.inventory.length) {
-      LOGGER.warn("Provided items array exceeds inventory size. Excess items will be ignored.");
-    }
-    for (int i = 0; i < this.inventory.length; i++) {
-      if (i < newItems.length) {
-        this.inventory[i] = newItems[i];
-      } else {
-        this.inventory[i] = null;
-      }
-      this.onItemAdded.accept(this.inventory[i]);
-    }
   }
 }
