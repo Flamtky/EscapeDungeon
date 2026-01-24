@@ -140,7 +140,7 @@ public class MADungeonRoom extends DungeonLevel {
           );
   private static final Map<CharacterClass, Item[]> classToStartingItemsMap =
       Map.of(
-          CharacterClass.APPRENTICE, new Item[] {new CraftingBookItem(), new TorchItem()}
+          CharacterClass.APPRENTICE, new Item[] {new CraftingBookItem()}
           // Add other mappings as needed
           );
 
