@@ -52,7 +52,7 @@ public class TorchSkill extends CursorSkill {
                 } else if (placed < maxAmount) {
                   FollowingIndicatorDialog.openFollowingIndicator(
                       caster,
-                      FollowingIndicatorDifficulty.EASY,
+                      FollowingIndicatorDifficulty.FAST.apply(RANDOM.nextInt(3, 6)),
                       () -> {
                         Entity torch =
                             DecoFactory.createDeco(tile.position(), Deco.TorchGrayAnimatedPlaced);
