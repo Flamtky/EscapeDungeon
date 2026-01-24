@@ -277,7 +277,7 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
 
                   return new DeltaEntityResult(currentState, entityId, isDeltaRelevant, currentPos);
                 })
-            .collect(Collectors.toList());
+            .toList();
 
     List<EntityState> changedEntities = new ArrayList<>();
     Set<Integer> currentMobileVisibleIds = new HashSet<>();

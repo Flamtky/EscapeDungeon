@@ -71,7 +71,7 @@ public interface SnapshotTranslator {
    *   <li>Entities with UIComponent (transient, always send)
    *   <li>Player entities (always send)
    *   <li>Entities with InventoryComponent (can have contents changed)
-   *   <li>Entities with VelocityComponent where maxSpeed > 0 (can move)
+   *   <li>Entities with VelocityComponent where stationary is false (can move)
    * </ul>
    *
    * <p>Static entities (deco, items on ground, etc.) are only sent in full snapshots and don't need
