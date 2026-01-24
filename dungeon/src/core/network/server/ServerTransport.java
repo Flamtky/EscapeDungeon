@@ -51,7 +51,7 @@ import java.util.function.Consumer;
 public final class ServerTransport {
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(ServerTransport.class);
   private static final short SERVER_PROTOCOL_VERSION = 1;
-  private static final long SPAWN_REQUEST_COOLDOWN_MS = 5000L;
+  private static final long SPAWN_REQUEST_COOLDOWN_MS = 500L;
 
   private final Queue<Tuple<Session, NetworkMessage>> inboundQueue = new ConcurrentLinkedQueue<>();
 

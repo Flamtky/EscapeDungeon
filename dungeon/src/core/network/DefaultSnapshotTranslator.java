@@ -43,7 +43,7 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
   private static final DungeonLogger LOGGER =
       DungeonLogger.getLogger(DefaultSnapshotTranslator.class);
 
-  private static final long SPAWN_REQUEST_COOLDOWN_MS = 5000L;
+  private static final long SPAWN_REQUEST_COOLDOWN_MS = 1000L;
 
   protected long latestServerTick = -1;
   protected final Map<Integer, Long> lastSpawnRequestTimes = new HashMap<>();

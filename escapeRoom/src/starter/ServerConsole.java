@@ -514,7 +514,7 @@ final class CheatCommand implements ServerCommand {
     String typeStr = parts.length > 1 ? parts[1].toUpperCase() : "";
     CheatType type;
     try {
-      type = CheatType.valueOf(typeStr);
+      type = CheatType.fromString(typeStr);
     } catch (IllegalArgumentException e) {
       System.out.printf("Unknown cheat type '%s'.%n", typeStr);
       return true;
@@ -690,19 +690,21 @@ final class CheatCommand implements ServerCommand {
   }
 
   private enum CheatType {
-    TELEPORT("Teleport to coordinates", "<x> <y>"),
-    REMOVE_MODIFIERS("Remove all velocity modifiers", ""),
-    GIVE_CONTROL("Give control back to player", ""),
-    GIVE_ITEM("Give an item to the player", "<itemName>"),
-    STAMINA("Get/Set stamina", "<get/set> [value]"),
-    REMOVE("Remove a given component from the entity", "<componentName>");
+    TELEPORT("Teleport to coordinates", "<x> <y>", List.of("tp")),
+    REMOVE_MODIFIERS("Remove all velocity modifiers", "", List.of("rm")),
+    GIVE_CONTROL("Give control back to player", "", List.of("gc")),
+    GIVE_ITEM("Give an item to the player", "<itemName>", List.of("give")),
+    STAMINA("Get/Set stamina", "<get/set> [value]", List.of("s")),
+    REMOVE("Remove a given component from the entity", "<componentName>", List.of());
 
     private final String description;
     private final String params;
+    private final List<String> aliases;
 
-    CheatType(String description, String params) {
+    CheatType(String description, String params, List<String> aliases) {
       this.description = description;
       this.params = params;
+      this.aliases = aliases;
     }
 
     public String description() {
@@ -711,6 +713,19 @@ final class CheatCommand implements ServerCommand {
 
     public String params() {
       return params;
+    }
+
+    public List<String> aliases() {
+      return aliases;
+    }
+
+    public static CheatType fromString(String name) {
+      for (CheatType type : CheatType.values()) {
+        if (type.name().equalsIgnoreCase(name) || type.aliases().contains(name.toLowerCase())) {
+          return type;
+        }
+      }
+      throw new IllegalArgumentException("No enum constant for name: " + name);
     }
   }
 }
