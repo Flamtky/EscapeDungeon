@@ -1015,7 +1015,7 @@ public class MADungeonRoom extends DungeonLevel {
     InputComponent ic = hero.fetch(InputComponent.class).orElseThrow();
     Tile currentTile = Game.tileAt(currentPos).orElseThrow();
 
-    if (!hero.isPresent(IceMovementComponent.class)) {
+    if (hero.isPresent(IceMovementComponent.class)) {
       return;
     }
 
