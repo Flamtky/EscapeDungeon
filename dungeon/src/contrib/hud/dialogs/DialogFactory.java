@@ -11,6 +11,7 @@ import contrib.utils.AttributeBarUtil;
 import contrib.utils.components.showImage.ShowImageUI;
 import core.Entity;
 import core.Game;
+import core.game.PreRunConfiguration;
 import core.utils.IVoidFunction;
 import core.utils.logging.DungeonLogger;
 import java.util.*;
@@ -123,7 +124,12 @@ public class DialogFactory {
             .orElseGet(
                 () -> {
                   // Create a new temp dialog entity
-                  Entity newEntity = new Entity("dialog-" + context.dialogType());
+                  Entity newEntity;
+                  if (PreRunConfiguration.isNetworkServer()) {
+                    newEntity = new Entity("dialog-" + context.dialogType());
+                  } else {
+                    newEntity = Entity.createLocalEntity("dialog-" + context.dialogType());
+                  }
                   Game.add(newEntity);
                   return Game.findEntityById(newEntity.id())
                       .orElseThrow(

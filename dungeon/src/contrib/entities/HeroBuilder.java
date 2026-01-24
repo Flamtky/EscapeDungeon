@@ -398,7 +398,8 @@ public final class HeroBuilder {
                               UIComponent component = firstUI.b();
 
                               // For network dialogs (received from server), send close message
-                              if (component.dialogContext() != null) {
+                              if (firstUI.a().id()
+                                  >= 0) { // positive IDs are network entities ; negative are local
                                 String dialogId = component.dialogContext().dialogId();
                                 DialogCallbackResolver.createButtonCallback(
                                         dialogId, DialogContextKeys.ON_CLOSE)
