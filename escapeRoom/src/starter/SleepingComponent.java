@@ -18,7 +18,7 @@ public record SleepingComponent(float startingStamina, float staminaRecoveryRate
     implements Component {
 
   /** The default stamina recovery rate per second. */
-  public static final float DEFAULT_STAMINA_RECOVERY_RATE = 5.0f;
+  public static final float DEFAULT_STAMINA_RECOVERY_RATE = 20.0f;
 
   /**
    * Creates a new {@code SleepingComponent} with the default stamina recovery rate.
