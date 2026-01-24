@@ -36,11 +36,7 @@ public class TorchItem extends Item {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     if (itemHolder != null) {
-      itemHolder
-          .fetch(SkillComponent.class)
-          .ifPresent(
-              (sc) ->
-                  sc.addSkill(new TorchSkill("TorchSkill", 500, 5, Tuple.of(Resource.MANA, 0))));
+      giveSkill(itemHolder);
     }
     return super.collect(itemEntity, collector);
   }
@@ -50,12 +46,18 @@ public class TorchItem extends Item {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     if (itemHolder != null) {
-      itemHolder
-          .fetch(SkillComponent.class)
-          .ifPresent(
-              (sc) ->
-                  sc.addSkill(new TorchSkill("TorchSkill", 500, 3, Tuple.of(Resource.MANA, 0))));
+      giveSkill(itemHolder);
     }
+  }
+
+  private void giveSkill(Entity entity) {
+    entity
+        .fetch(SkillComponent.class)
+        .ifPresent(
+            (sc) -> {
+              if (sc.getSkill(TorchSkill.class).isEmpty())
+                sc.addSkill(new TorchSkill("TorchSkill", 500, 5, Tuple.of(Resource.MANA, 0)));
+            });
   }
 
   @Override

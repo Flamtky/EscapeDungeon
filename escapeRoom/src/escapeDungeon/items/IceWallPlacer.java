@@ -37,11 +37,7 @@ public class IceWallPlacer extends Item {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     collector.add(new IceMovementComponent());
-    collector
-        .fetch(SkillComponent.class)
-        .ifPresent(
-            (sc) ->
-                sc.addSkill(new IceWallSkill("IceWallSkill", 100, 3, Tuple.of(Resource.MANA, 0))));
+    giveSkill(collector);
     return super.collect(itemEntity, collector);
   }
 
@@ -50,11 +46,17 @@ public class IceWallPlacer extends Item {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     collector.add(new IceMovementComponent());
-    collector
+    giveSkill(collector);
+  }
+
+  private void giveSkill(Entity entity) {
+    entity
         .fetch(SkillComponent.class)
         .ifPresent(
-            (sc) ->
-                sc.addSkill(new IceWallSkill("IceWallSkill", 100, 3, Tuple.of(Resource.MANA, 0))));
+            (sc) -> {
+              if (sc.getSkill(IceWallSkill.class).isEmpty())
+                sc.addSkill(new IceWallSkill("IceWallSkill", 100, 3, Tuple.of(Resource.MANA, 0)));
+            });
   }
 
   @Override

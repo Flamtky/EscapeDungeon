@@ -448,7 +448,7 @@ public final class ServerTransport {
         "Received SoundFinishedMessage from client {}: instanceId={}",
         session.clientId(),
         msg.soundInstanceId());
-    core.Game.audio().notifySoundFinished(msg.soundInstanceId());
+    Game.audio().notifySoundFinished(msg.soundInstanceId());
   }
 
   private void onConnectRequest(Session session, ConnectRequest req) {

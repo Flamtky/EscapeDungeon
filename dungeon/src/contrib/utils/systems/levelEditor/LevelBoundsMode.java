@@ -6,7 +6,6 @@ import core.level.DungeonLevel;
 import core.level.Tile;
 import core.level.utils.LevelElement;
 import core.systems.InputManager;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 

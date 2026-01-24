@@ -140,7 +140,7 @@ public class MADungeonRoom extends DungeonLevel {
           );
   private static final Map<CharacterClass, Item[]> classToStartingItemsMap =
       Map.of(
-          CharacterClass.APPRENTICE, new Item[] {new CraftingBookItem()}
+          CharacterClass.APPRENTICE, new Item[] {new CraftingBookItem(), new TorchItem()}
           // Add other mappings as needed
           );
 
@@ -913,6 +913,15 @@ public class MADungeonRoom extends DungeonLevel {
                       pos.position().x() + 0.5f, pos.position().y(), radius));
               initLightEntityIds.add(e.id());
             });
+
+    torchShader
+        .lights()
+        .forEach(
+            light -> {
+              if (Game.entityAtPoint(new Point(light.x, light.y)).findAny().isEmpty())
+                torchShader.removeLight(light);
+            });
+
     Game.player()
         .map(player -> player.fetch(PositionComponent.class))
         .filter(Optional::isPresent)

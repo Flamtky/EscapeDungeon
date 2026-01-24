@@ -6,7 +6,6 @@ import contrib.components.CollideComponent;
 import contrib.components.DecoComponent;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
-import contrib.systems.LevelEditorSystem;
 import contrib.systems.PositionSync;
 import contrib.utils.EntityUtils;
 import core.Entity;
@@ -102,8 +101,7 @@ public class DecoMode extends LevelEditorMode {
         setupPreviewEntity(snapPos);
         rapidFireActive = false;
       }
-    } else if (InputManager.isButtonJustPressed(Input.Buttons.RIGHT)
-        && decoHeldEntity == null) {
+    } else if (InputManager.isButtonJustPressed(Input.Buttons.RIGHT) && decoHeldEntity == null) {
       rapidFireActive = false;
       // Pickup deco on cursor
       Optional<DecoEntityData> clickedDeco = getDecoOnPosition(cursorPos);

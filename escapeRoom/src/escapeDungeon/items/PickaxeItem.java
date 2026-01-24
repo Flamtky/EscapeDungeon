@@ -38,13 +38,7 @@ public class PickaxeItem extends Item {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     if (itemHolder != null) {
-      itemHolder
-          .fetch(SkillComponent.class)
-          .ifPresent(
-              (sc) ->
-                  sc.addSkill(
-                      new WallbreakerSkill(
-                          "WallbreakerSkill", 1000, Tuple.of(Resource.STAMINA, 10))));
+      giveSkill(itemHolder);
     }
     return super.collect(itemEntity, collector);
   }
@@ -54,14 +48,19 @@ public class PickaxeItem extends Item {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     if (itemHolder != null) {
-      itemHolder
-          .fetch(SkillComponent.class)
-          .ifPresent(
-              (sc) ->
-                  sc.addSkill(
-                      new WallbreakerSkill(
-                          "WallbreakerSkill", 1000, Tuple.of(Resource.STAMINA, 10))));
+      giveSkill(itemHolder);
     }
+  }
+
+  private void giveSkill(Entity entity) {
+    entity
+        .fetch(SkillComponent.class)
+        .ifPresent(
+            (sc) -> {
+              if (sc.getSkill(WallbreakerSkill.class).isEmpty())
+                sc.addSkill(
+                    new WallbreakerSkill("WallbreakerSkill", 1000, Tuple.of(Resource.STAMINA, 10)));
+            });
   }
 
   @Override

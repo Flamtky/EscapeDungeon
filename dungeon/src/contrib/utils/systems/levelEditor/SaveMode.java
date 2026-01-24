@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Color;
 import contrib.systems.LevelEditorSystem;
 import core.level.loader.DungeonSaver;
 import core.systems.InputManager;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 

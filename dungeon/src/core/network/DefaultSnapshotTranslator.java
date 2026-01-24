@@ -613,7 +613,6 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
                             entity.add(newIc);
                             return newIc;
                           });
-              ic.clear();
               for (int i = 0; i < snapshots.length; i++) {
                 ItemSnapshot itemSnapshot = snapshots[i];
                 ic.set(i, itemSnapshot != null ? itemSnapshot.toItem() : null);

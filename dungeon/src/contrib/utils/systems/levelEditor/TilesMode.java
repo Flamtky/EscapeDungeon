@@ -3,7 +3,6 @@ package contrib.utils.systems.levelEditor;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import contrib.systems.DebugDrawSystem;
-import contrib.systems.LevelEditorSystem;
 import contrib.utils.CheckPatternPainter;
 import core.level.utils.Coordinate;
 import core.level.utils.LevelElement;

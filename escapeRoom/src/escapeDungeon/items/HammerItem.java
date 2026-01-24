@@ -39,11 +39,7 @@ public class HammerItem extends Item {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     if (itemHolder != null) {
-      itemHolder
-          .fetch(SkillComponent.class)
-          .ifPresent(
-              (sc) ->
-                  sc.addSkill(new HammerSkill("HammerSkill", 1000, Tuple.of(Resource.STAMINA, 0))));
+      giveSkill(itemHolder);
     }
     return super.collect(itemEntity, collector);
   }
@@ -53,11 +49,7 @@ public class HammerItem extends Item {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     if (itemHolder != null) {
-      itemHolder
-          .fetch(SkillComponent.class)
-          .ifPresent(
-              (sc) ->
-                  sc.addSkill(new HammerSkill("HammerSkill", 1000, Tuple.of(Resource.STAMINA, 0))));
+      giveSkill(itemHolder);
       DialogUtils.showTextPopup(
           "Du hast einen Hammer erhalten. Mit diesem Hammer kannst du Stein zerstören. ",
           "Der Hammer",
@@ -70,6 +62,16 @@ public class HammerItem extends Item {
           },
           itemHolder.id());
     }
+  }
+
+  private void giveSkill(Entity entity) {
+    entity
+        .fetch(SkillComponent.class)
+        .ifPresent(
+            (sc) -> {
+              if (sc.getSkill(HammerSkill.class).isEmpty())
+                sc.addSkill(new HammerSkill("HammerSkill", 1000, Tuple.of(Resource.STAMINA, 0)));
+            });
   }
 
   @Override

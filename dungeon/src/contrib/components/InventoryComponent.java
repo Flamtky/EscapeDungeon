@@ -3,6 +3,7 @@ package contrib.components;
 import contrib.item.Item;
 import core.Component;
 import core.Game;
+import core.game.PreRunConfiguration;
 import core.utils.logging.DungeonLogger;
 import java.util.*;
 import java.util.function.Consumer;
@@ -295,11 +296,14 @@ public final class InventoryComponent implements Component {
       return false;
     }
     if (this.inventory[index] == item) return true; // no change
+    var isNewItem = !this.hasItem(item);
     this.inventory[index % this.inventory.length] = item;
     if (item == null) return true; // do not call added on null items
 
-    this.onItemAdded.accept(item);
-    item.added(Game.findInLevel(this).orElse(null));
+    if (PreRunConfiguration.isNetworkServer() && isNewItem) {
+      this.onItemAdded.accept(item);
+      item.added(Game.findInLevel(this).orElse(null));
+    }
     return true;
   }
 
