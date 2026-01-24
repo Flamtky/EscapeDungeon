@@ -205,15 +205,10 @@ public class Item implements CraftingIngredient, CraftingResult, Serializable {
   /**
    * Gets the display name of this item.
    *
-   * <p>If there is more than one item in the stack, a prefix in the format "Count x DisplayName" is
-   * returned.
-   *
    * @return The display name.
    */
   public String displayName() {
-    String prefix = "";
-    if (this.stackSize > 1) prefix = this.stackSize() + " x ";
-    return prefix.concat(this.displayName);
+    return this.displayName;
   }
 
   /**
@@ -374,6 +369,20 @@ public class Item implements CraftingIngredient, CraftingResult, Serializable {
   public boolean match(final CraftingIngredient input) {
     if (this.getClass().isInstance(input)) return ((Item) input).stackSize() <= stackSize;
     return false;
+  }
+
+  @Override
+  public void setAmount(int count) {
+    if (count > Byte.MAX_VALUE) {
+      throw new IllegalArgumentException("Count cannot be higher than " + Byte.MAX_VALUE);
+    }
+
+    this.stackSize = (byte) count;
+  }
+
+  @Override
+  public int getAmount() {
+    return stackSize;
   }
 
   @Override

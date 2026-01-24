@@ -445,17 +445,42 @@ public class CraftingBookUI extends Group implements Disposable {
             .map(Item.class::cast)
             .toArray(Item[]::new);
 
+    int boxCount = 0;
     for (int i = 0; i < ingredients.length; i++) {
-      float ingredientSize = INGREDIENT_BOX_SIZE * bookScale;
-      Stack ingredientStack = createItemBox(ingredients[i], ingredientSize, boxTexture);
-      ingredientsGrid.add(ingredientStack).size(ingredientSize).pad(INGREDIENT_PAD * bookScale);
+      Item ingredient = ingredients[i];
+      // Create one box for each unit in the item's stack size
+      int stackSize = ingredient.getAmount();
 
-      if ((i + 1) % MAX_INGREDIENTS_PER_ROW == 0 && i < ingredients.length - 1) {
-        ingredientsGrid.row();
+      for (int j = 0; j < stackSize; j++) {
+        float ingredientSize = INGREDIENT_BOX_SIZE * bookScale;
+        Stack ingredientStack = createItemBox(ingredient, ingredientSize, boxTexture);
+        ingredientsGrid.add(ingredientStack).size(ingredientSize).pad(INGREDIENT_PAD * bookScale);
+
+        boxCount++;
+
+        // Wrap to next row after MAX_INGREDIENTS_PER_ROW boxes, but not after the last box
+        if (boxCount % MAX_INGREDIENTS_PER_ROW == 0 && boxCount < getTotalBoxCount(ingredients)) {
+          ingredientsGrid.row();
+        }
       }
     }
 
     return ingredientsGrid;
+  }
+
+  /**
+   * Calculates the total number of ingredient boxes that will be displayed based on each
+   * ingredient's stack size.
+   *
+   * @param ingredients the array of ingredients
+   * @return the total number of boxes to be rendered
+   */
+  private int getTotalBoxCount(Item[] ingredients) {
+    int total = 0;
+    for (Item ingredient : ingredients) {
+      total += ingredient.stackSize();
+    }
+    return total;
   }
 
   private Stack createItemBox(Item item, float size, Texture bgTexture) {
@@ -465,8 +490,7 @@ public class CraftingBookUI extends Group implements Disposable {
     boxBg.setSize(size, size);
     stack.add(boxBg);
 
-    Texture itemTexture = item.inventoryAnimation().getSprite().getTexture();
-    Image itemImage = new Image(new TextureRegionDrawable(new TextureRegion(itemTexture)));
+    Image itemImage = new Image(new TextureRegionDrawable(item.inventoryAnimation().update()));
 
     Table container = new Table();
     float padding = size * ITEM_BOX_PADDING_RATIO;

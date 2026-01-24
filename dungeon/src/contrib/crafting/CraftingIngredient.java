@@ -15,4 +15,8 @@ public interface CraftingIngredient {
    * @return True if the ingredient matches the input, false otherwise.
    */
   boolean match(final CraftingIngredient input);
+
+  void setAmount(int count);
+
+  int getAmount();
 }
