@@ -984,7 +984,12 @@ public class MADungeonRoom extends DungeonLevel {
     };
   }
 
-  private void addCallbacks(InputComponent inputComp) {
+  /**
+   * Adds the default hero movement callbacks to the given input component.
+   *
+   * @param inputComp The input component to add the callbacks to.
+   */
+  public static void addCallbacks(InputComponent inputComp) {
     inputComp.registerCallback(
         core.configuration.KeyboardConfig.MOVEMENT_UP.value(),
         (caller) ->

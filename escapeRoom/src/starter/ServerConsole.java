@@ -17,6 +17,7 @@ import core.network.messages.s2c.GameOverEvent;
 import core.network.messages.s2c.LevelChangeEvent;
 import core.network.server.*;
 import core.utils.Point;
+import demoDungeon.level.MADungeonRoom;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -589,6 +590,7 @@ final class CheatCommand implements ServerCommand {
             .ifPresentOrElse(
                 inputComponent -> {
                   inputComponent.deactivateControls(false);
+                  MADungeonRoom.addCallbacks(inputComponent);
                   System.out.printf("Gave control to %s%n", targetId);
                 },
                 () -> {
