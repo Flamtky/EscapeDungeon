@@ -3,6 +3,7 @@ package contrib.hud.elements;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
+import com.badlogic.gdx.utils.Disposable;
 import core.utils.Vector2;
 
 /**
@@ -22,7 +23,7 @@ import core.utils.Vector2;
  * available space and return it as a {@link Vector2}. It should not be greater than the available
  * space.
  */
-public abstract class CombinableGUI extends Group {
+public abstract class CombinableGUI extends Group implements Disposable {
 
   // Position of the GUI-Element and its size
   private int x, y, width, height;
@@ -181,5 +182,10 @@ public abstract class CombinableGUI extends Group {
     }
     setSize(this.width, height);
     this.height = height;
+  }
+
+  @Override
+  public void dispose() {
+    // Default implementation does nothing
   }
 }

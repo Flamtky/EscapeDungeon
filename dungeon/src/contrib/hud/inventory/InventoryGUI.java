@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
+import com.badlogic.gdx.utils.Disposable;
 import contrib.components.InventoryComponent;
 import contrib.components.UIComponent;
 import contrib.configuration.KeyboardConfig;
@@ -38,7 +39,7 @@ import core.utils.logging.DungeonLogger;
 import java.util.Optional;
 
 /** WTF? . */
-public class InventoryGUI extends CombinableGUI implements IInventoryHolder {
+public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Disposable {
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(InventoryGUI.class);
 
   private static final IPath FONT_FNT = new SimpleIPath("skin/myFont.fnt");
@@ -579,5 +580,17 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder {
    */
   public InventoryComponent inventoryComponent() {
     return this.inventoryComponent;
+  }
+
+  @Override
+  public void dispose() {
+    if (this.textureSlots != null) {
+      this.textureSlots.dispose();
+    }
+
+    // clear drag and drop holding item
+    if (this.dragAndDrop().isDragging()) {
+      this.dragAndDrop().getDragActor().remove();
+    }
   }
 }
