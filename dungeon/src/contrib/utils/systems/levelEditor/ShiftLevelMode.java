@@ -8,6 +8,7 @@ import core.components.PositionComponent;
 import core.level.DungeonLevel;
 import core.level.Tile;
 import core.level.utils.LevelElement;
+import core.systems.InputManager;
 import core.utils.Point;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,15 +28,15 @@ public class ShiftLevelMode extends LevelEditorMode {
 
   @Override
   public void execute() {
-    if (LevelEditorSystem.isButtonJustPressed(PRIMARY_UP)) {
+    if (InputManager.isButtonJustPressed(PRIMARY_UP)) {
       shiftLevel(0, 1);
-    } else if (LevelEditorSystem.isButtonJustPressed(PRIMARY_DOWN)) {
+    } else if (InputManager.isButtonJustPressed(PRIMARY_DOWN)) {
       shiftLevel(0, -1);
     }
 
-    if (LevelEditorSystem.isButtonJustPressed(SECONDARY_UP)) {
+    if (InputManager.isButtonJustPressed(SECONDARY_UP)) {
       shiftLevel(1, 0);
-    } else if (LevelEditorSystem.isButtonJustPressed(SECONDARY_DOWN)) {
+    } else if (InputManager.isButtonJustPressed(SECONDARY_DOWN)) {
       shiftLevel(-1, 0);
     }
   }

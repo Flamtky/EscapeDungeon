@@ -5,6 +5,8 @@ import contrib.systems.LevelEditorSystem;
 import core.level.DungeonLevel;
 import core.level.Tile;
 import core.level.utils.LevelElement;
+import core.systems.InputManager;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,15 +20,15 @@ public class LevelBoundsMode extends LevelEditorMode {
 
   @Override
   public void execute() {
-    if (LevelEditorSystem.isButtonJustPressed(PRIMARY_UP)) {
+    if (InputManager.isButtonJustPressed(PRIMARY_UP)) {
       addSize(0, 1);
-    } else if (LevelEditorSystem.isButtonJustPressed(PRIMARY_DOWN)) {
+    } else if (InputManager.isButtonJustPressed(PRIMARY_DOWN)) {
       addSize(0, -1);
     }
 
-    if (LevelEditorSystem.isButtonJustPressed(SECONDARY_UP)) {
+    if (InputManager.isButtonJustPressed(SECONDARY_UP)) {
       addSize(1, 0);
-    } else if (LevelEditorSystem.isButtonJustPressed(SECONDARY_DOWN)) {
+    } else if (InputManager.isButtonJustPressed(SECONDARY_DOWN)) {
       addSize(-1, 0);
     }
   }

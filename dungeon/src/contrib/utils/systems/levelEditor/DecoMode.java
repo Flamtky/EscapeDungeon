@@ -14,6 +14,7 @@ import core.Game;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
 import core.level.DungeonLevel;
+import core.systems.InputManager;
 import core.utils.Point;
 import core.utils.Rectangle;
 import core.utils.Vector2;
@@ -45,19 +46,19 @@ public class DecoMode extends LevelEditorMode {
   @Override
   public void execute() {
     // Toggle ignore-blocked-check key
-    if (LevelEditorSystem.isButtonJustPressed(SIXTH)) {
+    if (InputManager.isButtonJustPressed(SIXTH)) {
       ignoreBlockedCheck = !ignoreBlockedCheck;
     }
 
     // Change category
-    if (LevelEditorSystem.isButtonJustPressed(SECONDARY_DOWN)) {
+    if (InputManager.isButtonJustPressed(SECONDARY_DOWN)) {
       int idx = currentCategory.ordinal() - 1;
       if (idx < 0) idx = Deco.Category.values().length - 1;
       currentCategory = Deco.Category.values()[idx];
       currentCategoryDecos = Deco.byCategory(currentCategory);
       selectedDecoIndex = 0;
       previewEntityChanged();
-    } else if (LevelEditorSystem.isButtonJustPressed(SECONDARY_UP)) {
+    } else if (InputManager.isButtonJustPressed(SECONDARY_UP)) {
       int idx = (currentCategory.ordinal() + 1) % Deco.Category.values().length;
       currentCategory = Deco.Category.values()[idx];
       currentCategoryDecos = Deco.byCategory(currentCategory);
@@ -66,12 +67,12 @@ public class DecoMode extends LevelEditorMode {
     }
 
     // Change selected deco within category
-    if (LevelEditorSystem.isButtonJustPressed(PRIMARY_UP)) {
+    if (InputManager.isButtonJustPressed(PRIMARY_UP)) {
       if (currentCategoryDecos.length > 0) {
         selectedDecoIndex = Math.floorMod(selectedDecoIndex + 1, currentCategoryDecos.length);
         previewEntityChanged();
       }
-    } else if (LevelEditorSystem.isButtonJustPressed(PRIMARY_DOWN)) {
+    } else if (InputManager.isButtonJustPressed(PRIMARY_DOWN)) {
       if (currentCategoryDecos.length > 0) {
         selectedDecoIndex = Math.floorMod(selectedDecoIndex - 1, currentCategoryDecos.length);
         previewEntityChanged();
@@ -79,7 +80,7 @@ public class DecoMode extends LevelEditorMode {
     }
 
     // Change snap mode
-    if (LevelEditorSystem.isButtonJustPressed(FIFTH)) {
+    if (InputManager.isButtonJustPressed(FIFTH)) {
       decoSnapMode = decoSnapMode.nextMode();
     }
 
@@ -91,7 +92,7 @@ public class DecoMode extends LevelEditorMode {
     // - Mouse move [holding a deco]: show preview of deco at cursor position
     Point cursorPos = getCursorPosition();
     Point snapPos = decoSnapMode.getPosition(cursorPos);
-    if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.LEFT)) {
+    if (InputManager.isButtonJustPressed(Input.Buttons.LEFT)) {
       rapidFireActive = true;
 
       if (decoHeldEntity != null) {
@@ -101,7 +102,7 @@ public class DecoMode extends LevelEditorMode {
         setupPreviewEntity(snapPos);
         rapidFireActive = false;
       }
-    } else if (LevelEditorSystem.isButtonJustPressed(Input.Buttons.RIGHT)
+    } else if (InputManager.isButtonJustPressed(Input.Buttons.RIGHT)
         && decoHeldEntity == null) {
       rapidFireActive = false;
       // Pickup deco on cursor
@@ -110,12 +111,12 @@ public class DecoMode extends LevelEditorMode {
         decoHeldEntity = clickedDeco.get();
         removePreviewEntity();
       }
-    } else if (LevelEditorSystem.isButtonPressed(TERTIARY)) {
+    } else if (InputManager.isButtonPressed(TERTIARY)) {
       rapidFireActive = false;
       // Delete deco on cursor
       getDecoOnPosition(cursorPos).map(DecoEntityData::entity).ifPresent(Game::remove);
       syncPlacedDecos();
-    } else if (LevelEditorSystem.isButtonJustPressed(QUARTERNARY)) {
+    } else if (InputManager.isButtonJustPressed(QUARTERNARY)) {
       rapidFireActive = false;
       // Pipette tool to pick deco type on cursor
       Optional<DecoEntityData> clickedDeco = getDecoOnPosition(cursorPos);
@@ -136,7 +137,7 @@ public class DecoMode extends LevelEditorMode {
       }
     }
 
-    if (LevelEditorSystem.isButtonPressed(Input.Buttons.LEFT) && rapidFireActive) {
+    if (InputManager.isButtonPressed(Input.Buttons.LEFT) && rapidFireActive) {
       boolean checkBlocked = decoSnapMode.checkBlocked() && !ignoreBlockedCheck;
       placeDeco(snapPos, checkBlocked);
       if (!checkBlocked) {
