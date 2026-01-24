@@ -589,7 +589,7 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Dis
     }
 
     // clear drag and drop holding item
-    if (this.dragAndDrop().isDragging()) {
+    if (this.dragAndDrop() != null && this.dragAndDrop().isDragging()) {
       this.dragAndDrop().getDragActor().remove();
     }
   }

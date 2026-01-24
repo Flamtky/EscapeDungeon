@@ -50,7 +50,9 @@ public final class AuthoritativeServerLoop {
   private static final DungeonLogger LOGGER =
       DungeonLogger.getLogger(AuthoritativeServerLoop.class);
   private static final boolean PRINT_RTT = false; // to debug latency issues
-  private static final boolean PRINT_TIMING = true; // to debug performance issues
+
+  /** Enable detailed timing prints for ticks and snapshots */
+  public static boolean PRINT_TIMING = true; // to debug performance issues
 
   private final ServerTransport net;
   private final ScheduledExecutorService executor;

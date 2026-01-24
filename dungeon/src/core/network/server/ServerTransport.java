@@ -826,4 +826,13 @@ public final class ServerTransport {
     }
     return true;
   }
+
+  /**
+   * Removes the spawn request cooldown tracking entry for the given client.
+   *
+   * @param clientId the client whose cooldown entry should be cleared
+   */
+  public void clearSpawnRequestCooldown(short clientId) {
+    spawnRequestTimes.remove(clientId);
+  }
 }

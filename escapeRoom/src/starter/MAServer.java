@@ -14,8 +14,12 @@ import core.game.GameLoop;
 import core.game.PreRunConfiguration;
 import core.level.loader.DungeonLoader;
 import core.network.config.NetworkConfig;
+import core.network.handler.NettyNetworkHandler;
 import core.network.messages.s2c.LevelChangeEvent;
-import core.systems.*;
+import core.systems.FrictionSystem;
+import core.systems.LevelSystem;
+import core.systems.MoveSystem;
+import core.systems.VelocitySystem;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoom;
@@ -74,6 +78,10 @@ public class MAServer {
                         GameLoop.onLevelLoad.execute();
                         Game.network().broadcast(LevelChangeEvent.currentLevel(), true);
                       }));
+
+          if (PreRunConfiguration.isNetworkServer()) {
+            ServerConsole.start((NettyNetworkHandler) Game.network());
+          }
         });
   }
 
