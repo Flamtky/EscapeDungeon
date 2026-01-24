@@ -28,6 +28,7 @@ public final class MAClient {
     DialogFactory.register(EscapeRoomDialogTypes.LOCKPICK, LockPickDialog::build);
     DialogFactory.register(
         EscapeRoomDialogTypes.CRAFTING_BOOK, CraftingBookItem::buildCraftingBookDialog);
+    DialogFactory.register(EscapeRoomDialogTypes.TIMER, TimerDialog::build);
   }
 
   private static boolean firstTick = true;

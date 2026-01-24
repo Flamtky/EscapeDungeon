@@ -369,14 +369,18 @@ final class KickCommand implements ServerCommand {
     }
 
     ServerTransport transport = transportOpt.get();
-    Session session = transport.clientIdToSessionMap().get(clientId);
+    Session session =
+        transport.connectedClients().stream()
+            .filter(c -> c.clientId() == clientId)
+            .findFirst()
+            .flatMap(transport::sessionForClient)
+            .orElse(null);
     if (session == null) {
       System.out.printf("No session found for client %d.%n", clientId);
       return true;
     }
 
-    session.clientState().flatMap(ClientState::playerEntity).ifPresent(Game::remove);
-    transport.clearSpawnRequestCooldown(clientId);
+    session.sendMessage(new GameOverEvent("kicked_by_server"), true);
     session.close();
 
     System.out.printf("Kicked client %d.%n", clientId);

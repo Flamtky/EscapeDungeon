@@ -42,7 +42,7 @@ public final class TimerDialog {
    * @param dialogContext the dialog context used to build the UI
    * @return a new TimerUI instance
    */
-  private static Group build(DialogContext dialogContext) {
+  public static Group build(DialogContext dialogContext) {
     float startTime = dialogContext.find("startTimeSeconds", Float.class).orElse(0f);
 
     if (currentUI != null) { // Dispose of existing UI if present

@@ -295,6 +295,22 @@ public final class ServerTransport {
     udpChannel = ub.bind(port).syncUninterruptibly().channel();
   }
 
+  /**
+   * Finds the session associated with the given ClientState.
+   *
+   * @param clientState The ClientState to search for.
+   * @return An Optional containing the Session if found, or empty if not found.
+   */
+  public Optional<Session> sessionForClient(ClientState clientState) {
+    for (Session session : sessions.values()) {
+      Optional<ClientState> csOpt = session.clientState();
+      if (csOpt.isPresent() && csOpt.get().equals(clientState)) {
+        return Optional.of(session);
+      }
+    }
+    return Optional.empty();
+  }
+
   private final class TcpServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
