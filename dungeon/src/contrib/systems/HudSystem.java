@@ -81,6 +81,13 @@ public final class HudSystem extends System {
       remove.remove();
     }
     entityUIComponentMap.remove(entity);
+    for (Integer targetId :
+        entity.fetch(UIComponent.class).map(UIComponent::targetEntityIds).orElse(new int[0])) {
+      Optional<Entity> target = Game.findEntityById(targetId);
+      target
+          .flatMap(t -> t.fetch(PlayerComponent.class))
+          .ifPresent(PlayerComponent::decrementOpenDialogs);
+    }
   }
 
   /**
