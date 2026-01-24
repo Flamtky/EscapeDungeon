@@ -50,6 +50,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import mobs.EscapeRoomMonsterBuilder;
 import mushRoom.Sounds;
 import mushRoom.modules.journal.CraftingBookItem;
@@ -471,6 +472,8 @@ public class MADungeonRoom extends DungeonLevel {
     createTreeChest();
   }
 
+  private final Set<Integer> lockpickedChests = new HashSet<>();
+
   private Entity addLockpicking(Entity chest) {
     chest
         .fetch(InteractionComponent.class)
@@ -483,32 +486,40 @@ public class MADungeonRoom extends DungeonLevel {
             () ->
                 new Interaction(
                     (interacted, interactor) -> {
+                      if (lockpickedChests.contains(interacted.id())) {
+                        interactor
+                            .fetch(InventoryComponent.class)
+                            .ifPresent(openChest(interacted, interactor));
+                        return;
+                      }
+
                       LockPickDialog.openLockPick(
                           interactor,
                           LockPickDifficulty.MEDIUM,
                           () -> {
+                            lockpickedChests.add(interacted.id());
                             interactor
                                 .fetch(InventoryComponent.class)
-                                .ifPresent(
-                                    whoIc -> {
-                                      DialogContext context =
-                                          DialogContext.builder()
-                                              .type(DialogType.DefaultTypes.DUAL_INVENTORY)
-                                              .put(DialogContextKeys.ENTITY, interactor.id())
-                                              .put(
-                                                  DialogContextKeys.SECONDARY_ENTITY,
-                                                  interacted.id())
-                                              .put(DialogContextKeys.OWNER_ENTITY, interactor.id())
-                                              .build();
-                                      UIComponent ui =
-                                          new UIComponent(context, true, interactor.id());
-                                      interactor.add(ui);
-                                    });
+                                .ifPresent(openChest(interacted, interactor));
                           },
                           () -> {});
                     })));
 
     return chest;
+  }
+
+  private Consumer<InventoryComponent> openChest(Entity interacted, Entity interactor) {
+    return (whoIc) -> {
+      DialogContext context =
+          DialogContext.builder()
+              .type(DialogType.DefaultTypes.DUAL_INVENTORY)
+              .put(DialogContextKeys.ENTITY, interactor.id())
+              .put(DialogContextKeys.SECONDARY_ENTITY, interacted.id())
+              .put(DialogContextKeys.OWNER_ENTITY, interactor.id())
+              .build();
+      UIComponent ui = new UIComponent(context, true, interactor.id());
+      interactor.add(ui);
+    };
   }
 
   private void createTreeChest() {
