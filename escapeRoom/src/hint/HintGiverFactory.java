@@ -1,5 +1,8 @@
 package hint;
 
+import contrib.entities.MiscFactory;
+import contrib.entities.NPCFactory;
+import contrib.hud.DialogUtils;
 import contrib.hud.dialogs.DialogFactory;
 import contrib.modules.interaction.Interaction;
 import contrib.modules.interaction.InteractionComponent;
@@ -20,7 +23,8 @@ public class HintGiverFactory {
   private static final IPath MAILBOX_TEXTURE = new SimpleIPath("objects/mailbox/mailbox_2.png");
   private static final String ASK_FOR_HINT = "Willst du einen Tipp?";
   private static final String AKS_FOR_HINT_TITLE = "Tipps";
-
+  private static final String OPENING_DIALOG = "Tipps";
+  private static boolean showDialog = true;
   /**
    * Creates a mailbox entity at the given position that gives hints to the player.
    *
@@ -35,6 +39,12 @@ public class HintGiverFactory {
     return mailbox;
   }
 
+  public static Entity npc(Point point) {
+    Entity npc = NPCFactory.createNPC(point, "character/wizard");
+    npc.add(new InteractionComponent(() -> new Interaction(wantHintInteraction(), 3)));
+    return npc;
+  }
+
   /**
    * Build the Consumer for the Yes/No Dialog.
    *
@@ -46,7 +56,7 @@ public class HintGiverFactory {
             HintSystem.class,
             hintSystem -> {
               Optional<Hint> hintOpt = hintSystem.nextHint();
-              hintOpt.ifPresent(hint -> showHintConfirmation(player, hint));
+              hintOpt.ifPresentOrElse(hint -> showHintConfirmation(player, hint), () -> DialogFactory.showOkDialog("Ich habe gerade keinen Tipp für dich. Komm später nochmal wieder.", "ZAUBERER", () -> {}, player.id()));
             });
   }
 
@@ -58,8 +68,17 @@ public class HintGiverFactory {
    * @param hint the hint to show
    */
   private static void showHintConfirmation(Entity player, Hint hint) {
-    DialogFactory.showYesNoDialog(
-        ASK_FOR_HINT, AKS_FOR_HINT_TITLE, () -> showHintText(player, hint), () -> {});
+    if (showDialog) {
+      DialogFactory.showOkDialog("Willkommen, bei mir seid ihr sicher. Ich kann euch dabei helfen zu entkommen.", "ZAUBERER", () -> {DialogFactory.showYesNoDialog(
+        ASK_FOR_HINT, AKS_FOR_HINT_TITLE, () -> showHintText(player, hint), () -> {}, player.id());}, player.id());
+      showDialog = false;
+    }
+    else {
+      DialogFactory.showYesNoDialog(
+        ASK_FOR_HINT, AKS_FOR_HINT_TITLE, () -> showHintText(player, hint), () -> {}, player.id());
+    }
+
+
   }
 
   /**
@@ -72,6 +91,6 @@ public class HintGiverFactory {
     DialogFactory.showOkDialog(
         hint.text(),
         hint.title(),
-        () -> player.fetch(HintLogComponent.class).ifPresent(log -> log.addHint(hint)));
+        () -> player.fetch(HintLogComponent.class).ifPresent(log -> log.addHint(hint)), player.id());
   }
 }
