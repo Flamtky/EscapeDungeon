@@ -1,7 +1,6 @@
 package demoDungeon.level;
 
 import analytics.DungeonAnalyticsAPI;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import contrib.components.*;
 import contrib.components.CollideComponent;
@@ -216,22 +215,6 @@ public class MADungeonRoom extends DungeonLevel {
     Game.add(HintGiverFactory.npc(new Point(28, 33)));
     PetriNetSystem petriNetSystem = new PetriNetSystem();
     Game.add(petriNetSystem);
-    // register hint log
-    Game.allPlayers()
-        .forEach(
-            player ->
-                player
-                    .fetch(InputComponent.class)
-                    .ifPresent(
-                        inputComponent ->
-                            inputComponent.registerCallback(
-                                Input.Keys.T,
-                                entity ->
-                                    player
-                                        .fetch(HintLogComponent.class)
-                                        .ifPresent(HintLogDialog::showHintLog),
-                                false,
-                                true)));
 
     staminaRiddle = new Entity("staminaRiddle");
     staminaRiddle.add(new HintComponent(staminaRiddleHints));
@@ -712,6 +695,10 @@ public class MADungeonRoom extends DungeonLevel {
                     });
           }
         });
+
+    if (!player.isPresent(HintLogComponent.class)) {
+      player.add(new HintLogComponent(player.id()));
+    }
   }
 
   private void createChests() {

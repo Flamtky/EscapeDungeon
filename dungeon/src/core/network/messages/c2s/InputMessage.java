@@ -131,7 +131,9 @@ public record InputMessage(
      */
     INV_USE(7, true),
     /** Toggle the visibility of the inventory UI. */
-    TOGGLE_INVENTORY(8, true);
+    TOGGLE_INVENTORY(8, true),
+    /** Opens the hint dialog log. */
+    OPEN_HINT_LOG(9, true);
 
     private final byte value;
     private final boolean ignorePause;

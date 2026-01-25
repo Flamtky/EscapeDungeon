@@ -12,7 +12,6 @@ import core.Entity;
 import core.Game;
 import java.util.Objects;
 import java.util.function.BiFunction;
-import mushRoom.modules.EscapeRoomDialogTypes;
 
 /**
  * Utility class for displaying and navigating through a list of {@link Hint} objects as interactive
@@ -42,7 +41,7 @@ public final class HintLogDialog {
   public static final String CALLBACK_PREV = "prev";
 
   static {
-    DialogFactory.register(EscapeRoomDialogTypes.SIMPLE_HINT, HintLogDialog::createHintDialog);
+    DialogFactory.register(DialogType.DefaultTypes.SIMPLE_HINT, HintLogDialog::createHintDialog);
   }
 
   /**
@@ -75,12 +74,12 @@ public final class HintLogDialog {
 
     DialogContext context =
         DialogContext.builder()
-            .type(EscapeRoomDialogTypes.SIMPLE_HINT)
+            .type(DialogType.DefaultTypes.SIMPLE_HINT)
             .put("hint", hint)
             .put("hintIndex", index)
             .build();
 
-    UIComponent ui = DialogFactory.show(context);
+    UIComponent ui = DialogFactory.show(context, log.ownerId());
 
     // Register navigation callbacks
     ui.registerCallback(
@@ -119,7 +118,7 @@ public final class HintLogDialog {
    * @param context the {@link DialogContext} containing the hint
    * @return a configured {@link Dialog} instance
    */
-  private static Group createHintDialog(DialogContext context) {
+  public static Group createHintDialog(DialogContext context) {
     // On headless server, return placeholder
     if (Game.isHeadless()) {
       Hint hint = context.require("hint", Hint.class);

@@ -1,5 +1,6 @@
 package contrib.entities;
 
+import com.badlogic.gdx.Input;
 import contrib.components.*;
 import contrib.configuration.KeyboardConfig;
 import contrib.hud.DialogUtils;
@@ -401,6 +402,15 @@ public final class HeroBuilder {
                                       dialogId, DialogContextKeys.ON_CLOSE)
                                   .accept(null);
                             }))),
+        false,
+        true);
+
+    // Hint Log
+    inputComp.registerCallback(
+        Input.Keys.T,
+        entity ->
+            Game.network()
+                .sendInput(new InputMessage(InputMessage.Action.OPEN_HINT_LOG, new Point(0, 0))),
         false,
         true);
   }

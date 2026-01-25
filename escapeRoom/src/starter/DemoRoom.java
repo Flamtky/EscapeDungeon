@@ -52,7 +52,7 @@ public class DemoRoom {
 
   private static void createHero() {
     Entity hero = EntityFactory.newHero(CharacterClass.HUNTER);
-    hero.add(new HintLogComponent());
+    hero.add(new HintLogComponent(hero.id()));
     Game.add(hero);
   }
 

@@ -55,7 +55,9 @@ public interface DialogType {
     PROGRESS_BAR("PROGRESS_BAR"),
 
     /** Pause menu dialog. */
-    PAUSE_MENU("PAUSE_MENU");
+    PAUSE_MENU("PAUSE_MENU"),
+    /** Dialog for displaying a list of hints. */
+    SIMPLE_HINT("SIMPLE_HINT");
 
     private final String type;
 

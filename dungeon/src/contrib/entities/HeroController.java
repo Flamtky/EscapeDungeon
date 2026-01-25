@@ -30,6 +30,8 @@ import core.network.server.ClientState;
 import core.utils.*;
 import core.utils.components.MissingComponentException;
 import core.utils.logging.DungeonLogger;
+import hint.HintLogComponent;
+import hint.HintLogDialog;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
@@ -806,6 +808,16 @@ public class HeroController {
         int itemIndex = (int) msg.point().x();
         HeroController.useItem(playerEntity, itemIndex);
       }
+      case OPEN_HINT_LOG ->
+          playerEntity
+              .fetch(HintLogComponent.class)
+              .ifPresentOrElse(
+                  HintLogDialog::showHintLog,
+                  () -> {
+                    LOGGER.warn(
+                        "No HintLogComponent found for entity {} to open hint log",
+                        playerEntity.id());
+                  });
       default -> LOGGER.warn("Unknown action {} for client {}", msg.action(), clientState);
     }
     LOGGER.trace("Applied input for client {} (action: {})", clientState, msg.action());

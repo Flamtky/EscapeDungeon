@@ -9,8 +9,6 @@ import contrib.hud.dialogs.DialogType;
  * types specific to the Escape Room context.
  */
 public enum EscapeRoomDialogTypes implements DialogType {
-  /** A simple {@link hint.HintLogDialog} dialog type. */
-  SIMPLE_HINT("simple_hint"),
   /** The {@link mushRoom.modules.journal.JournalUI} dialog type. */
   JOURNAL("journal"),
   /** The {@link mushRoom.modules.journal.CraftingBookUI} dialog type. */

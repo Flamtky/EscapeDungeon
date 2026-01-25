@@ -19,8 +19,15 @@ public class HintLogComponent implements Component {
   /** The list of collected hints. */
   List<Hint> hints;
 
-  /** Creates an empty hint storage. */
-  public HintLogComponent() {
+  private final int ownerId;
+
+  /**
+   * Creates an empty hint storage.
+   *
+   * @param ownerId the ID of the entity that owns this component
+   */
+  public HintLogComponent(int ownerId) {
+    this.ownerId = ownerId;
     hints = new ArrayList<>();
   }
 
@@ -74,5 +81,14 @@ public class HintLogComponent implements Component {
    */
   public boolean removeHint(Hint[] hints) {
     return this.hints.removeAll(List.of(hints));
+  }
+
+  /**
+   * Returns the ID of the entity that owns this component.
+   *
+   * @return the owner entity ID
+   */
+  public int ownerId() {
+    return ownerId;
   }
 }

@@ -3,6 +3,7 @@ package starter;
 import contrib.entities.CharacterClass;
 import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogFactory;
+import contrib.hud.dialogs.DialogType;
 import contrib.utils.components.Debugger;
 import core.Game;
 import core.configuration.KeyboardConfig;
@@ -12,6 +13,7 @@ import core.network.config.NetworkConfig;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoomClient;
+import hint.HintLogDialog;
 import java.io.IOException;
 import mushRoom.modules.EscapeRoomDialogTypes;
 import mushRoom.modules.journal.CraftingBookItem;
@@ -30,6 +32,7 @@ public final class MAClient {
     DialogFactory.register(
         EscapeRoomDialogTypes.CRAFTING_BOOK, CraftingBookItem::buildCraftingBookDialog);
     DialogFactory.register(EscapeRoomDialogTypes.TIMER, TimerDialog::build);
+    DialogFactory.register(DialogType.DefaultTypes.SIMPLE_HINT, HintLogDialog::createHintDialog);
   }
 
   private static boolean firstTick = true;

@@ -1,12 +1,9 @@
 package starter;
 
 import analytics.RiddleAnalysisSystem;
-import contrib.entities.CharacterClass;
-import contrib.entities.EntityFactory;
 import contrib.entities.HeroController;
 import contrib.modules.levelHide.LevelHideSystem;
 import contrib.systems.*;
-import core.Entity;
 import core.Game;
 import core.game.ECSManagement;
 import core.game.GameLoop;
@@ -23,7 +20,6 @@ import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoom;
 import guard.GuardDetectionSystem;
-import hint.HintLogComponent;
 import hint.HintSystem;
 import java.io.IOException;
 import network.EscapeRoomSnapshotTranslator;
@@ -84,12 +80,6 @@ public class MAServer {
             ServerConsole.start((NettyNetworkHandler) Game.network());
           }
         });
-  }
-
-  private static void createHero() {
-    Entity hero = EntityFactory.newHero(CharacterClass.ROGUE);
-    hero.add(new HintLogComponent());
-    Game.add(hero);
   }
 
   private static void configGame() throws IOException {
