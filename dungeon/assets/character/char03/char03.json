@@ -120,5 +120,20 @@
     "scaleY": 0,
     "isLooping": true,
     "centered": false
+  },
+  "die": {
+    "config": {
+      "spriteWidth": 32,
+      "spriteHeight": 32,
+      "x": 0,
+      "y": 256,
+      "rows": 1,
+      "columns": 4
+    },
+    "framesPerSprite": 10,
+    "scaleX": 2,
+    "scaleY": 0,
+    "isLooping": false,
+    "centered": false
   }
 }
