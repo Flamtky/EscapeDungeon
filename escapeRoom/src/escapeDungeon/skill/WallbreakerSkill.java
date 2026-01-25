@@ -36,6 +36,14 @@ public class WallbreakerSkill extends CursorSkill {
   @Override
   protected boolean executeOnCursor(Entity caster, Point point) {
     if (Game.entityAtPoint(point).anyMatch(e -> e.name().contains("Wall"))) {
+      caster
+          .fetch(IllegalComponent.class)
+          .ifPresent(
+              ic -> {
+                ic.addReason(IllegalComponent.Reason.VANDALISM);
+                EventScheduler.scheduleAction(
+                    () -> ic.removeReason(IllegalComponent.Reason.VANDALISM), 15000);
+              });
       LockPickDialog.openLockPick(
           caster,
           LockPickDifficulty.HARD,
@@ -53,27 +61,9 @@ public class WallbreakerSkill extends CursorSkill {
                   tile.levelElement(LevelElement.FLOOR);
                   tile.refreshTexture();
                 });
-            caster
-                .fetch(IllegalComponent.class)
-                .ifPresent(
-                    ic -> {
-                      ic.addReason(IllegalComponent.Reason.VANDALISM);
-                      EventScheduler.scheduleAction(
-                          () -> ic.removeReason(IllegalComponent.Reason.VANDALISM), 8000);
-                    });
             this.setLastUsedToNow();
           },
-          () -> {
-            caster
-                .fetch(IllegalComponent.class)
-                .ifPresent(
-                    ic -> {
-                      ic.addReason(IllegalComponent.Reason.VANDALISM);
-                      EventScheduler.scheduleAction(
-                          () -> ic.removeReason(IllegalComponent.Reason.VANDALISM), 5000);
-                    });
-            this.setLastUsedToNow();
-          });
+          this::setLastUsedToNow);
       return true;
     }
     return false;

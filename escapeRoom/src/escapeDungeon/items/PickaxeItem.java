@@ -60,7 +60,7 @@ public class PickaxeItem extends Item {
               if (sc.getSkill(WallbreakerSkill.class).isEmpty())
                 sc.addSkill(
                     new WallbreakerSkill(
-                        "WallbreakerSkill", 10000, Tuple.of(Resource.STAMINA, 30)));
+                        "WallbreakerSkill", 10000, Tuple.of(Resource.STAMINA, 100)));
             });
   }
 
