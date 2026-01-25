@@ -51,6 +51,7 @@ public final class LockPickDialog {
         DialogContext.builder()
             .type(EscapeRoomDialogTypes.LOCKPICK)
             .put("difficulty", difficulty)
+            .put(DialogContextKeys.ENTITY, user.id())
             .build();
 
     // Show and wire up onClose to trigger failure if the lock is still locked

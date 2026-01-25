@@ -751,6 +751,13 @@ public class MADungeonRoom extends DungeonLevel {
             () ->
                 new Interaction(
                     (interacted, interactor) -> {
+                      interactor
+                          .fetch(IllegalComponent.class)
+                          .ifPresent(
+                              ic -> {
+                                ic.addReason(IllegalComponent.Reason.STEALING);
+                              });
+
                       if (lockpickedChests.contains(interacted.id())) {
                         interactor
                             .fetch(InventoryComponent.class)
@@ -767,9 +774,12 @@ public class MADungeonRoom extends DungeonLevel {
                                 .fetch(InventoryComponent.class)
                                 .ifPresent(openChest(interacted, interactor));
                           },
-                          () -> {});
+                          () ->
+                              interactor
+                                  .fetch(IllegalComponent.class)
+                                  .ifPresent(
+                                      ic -> ic.removeReason(IllegalComponent.Reason.STEALING)));
                     })));
-
     return chest;
   }
 
@@ -783,6 +793,12 @@ public class MADungeonRoom extends DungeonLevel {
               .put(DialogContextKeys.OWNER_ENTITY, interactor.id())
               .build();
       UIComponent ui = new UIComponent(context, true, interactor.id());
+      ui.registerCallback(
+          DialogContextKeys.ON_CLOSE,
+          (data) ->
+              interactor
+                  .fetch(IllegalComponent.class)
+                  .ifPresent(ic -> ic.removeReason(IllegalComponent.Reason.STEALING)));
       interactor.add(ui);
     };
   }

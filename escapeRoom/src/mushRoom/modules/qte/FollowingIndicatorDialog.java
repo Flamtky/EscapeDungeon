@@ -53,6 +53,7 @@ public final class FollowingIndicatorDialog {
         DialogContext.builder()
             .type(EscapeRoomDialogTypes.FOLLOWING_INDICATOR)
             .put("difficulty", difficulty)
+            .put(DialogContextKeys.ENTITY, user.id())
             .build();
 
     var ui = DialogFactory.show(ctx, user.id());
