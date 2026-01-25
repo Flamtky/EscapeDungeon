@@ -1,17 +1,20 @@
 package hint;
 
+import analytics.DungeonAnalyticsAPI;
 import contrib.entities.NPCFactory;
 import contrib.hud.dialogs.DialogFactory;
 import contrib.modules.interaction.Interaction;
 import contrib.modules.interaction.InteractionComponent;
 import core.Entity;
 import core.Game;
+import core.components.AnalyticsComponent;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
 import core.utils.Point;
 import core.utils.components.draw.animation.Animation;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -110,5 +113,16 @@ public class HintGiverFactory {
         hint.title(),
         () -> player.fetch(HintLogComponent.class).ifPresent(log -> log.addHint(hint)),
         player.id());
+
+    player
+        .fetch(AnalyticsComponent.class)
+        .ifPresent(
+            ac -> {
+              DungeonAnalyticsAPI.logXApiStatement(
+                  ac,
+                  DungeonAnalyticsAPI.Verb.HINT_REQUESTED,
+                  player,
+                  Map.of("hint_title", hint.title(), "hint_text", hint.text()));
+            });
   }
 }
