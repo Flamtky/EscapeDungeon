@@ -3,7 +3,6 @@ package contrib.entities;
 import contrib.components.*;
 import contrib.configuration.KeyboardConfig;
 import contrib.hud.DialogUtils;
-import contrib.hud.UIUtils;
 import contrib.hud.dialogs.DialogCallbackResolver;
 import contrib.hud.dialogs.DialogContextKeys;
 import contrib.systems.HealthSystem;
@@ -399,8 +398,8 @@ public final class HeroBuilder {
 
                               String dialogId = component.dialogContext().dialogId();
                               DialogCallbackResolver.createButtonCallback(
-                                  dialogId, DialogContextKeys.ON_CLOSE)
-                                .accept(null);
+                                      dialogId, DialogContextKeys.ON_CLOSE)
+                                  .accept(null);
                             }))),
         false,
         true);

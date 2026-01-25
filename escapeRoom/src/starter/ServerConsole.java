@@ -1,7 +1,9 @@
 package starter;
 
+import contrib.components.CharacterClassComponent;
 import contrib.components.InventoryComponent;
 import contrib.components.StaminaComponent;
+import contrib.entities.CharacterClass;
 import contrib.item.Item;
 import contrib.item.ItemSnapshot;
 import core.Component;
@@ -707,6 +709,16 @@ final class CheatCommand implements ServerCommand {
           System.out.printf("Component '%s' not found on %s%n", componentName, targetId);
         }
         break;
+      case RESET:
+        var charClass =
+            targetEntity
+                .fetch(CharacterClassComponent.class)
+                .map(CharacterClassComponent::characterClass)
+                .orElse(CharacterClass.APPRENTICE);
+        var newVelocity =
+            VelocityComponent.builder().baseSpeed(charClass.speed()).mass(charClass.mass()).build();
+        targetEntity.add(newVelocity);
+        break;
     }
   }
 
@@ -716,7 +728,8 @@ final class CheatCommand implements ServerCommand {
     GIVE_CONTROL("Give control back to player", "", List.of("gc")),
     GIVE_ITEM("Give an item to the player", "<itemName>", List.of("give")),
     STAMINA("Get/Set stamina", "<get/set> [value]", List.of("s")),
-    REMOVE("Remove a given component from the entity", "<componentName>", List.of());
+    REMOVE("Remove a given component from the entity", "<componentName>", List.of()),
+    RESET("Reset the entity's velocityComponent", "", List.of());
 
     private final String description;
     private final String params;

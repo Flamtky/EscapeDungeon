@@ -54,26 +54,23 @@ public class DungeonAnalyticsAPI {
             // Add more mappings here
             );
 
-    EXECUTOR.submit(
-        () -> {
-          var sql =
-              """
-          INSERT INTO players (player_id, hexad_primary_type, hexad_scores)
-          VALUES (?, ?, ?::jsonb)
-          ON CONFLICT (player_id) DO UPDATE
-          SET hexad_primary_type = EXCLUDED.hexad_primary_type;
-          """;
+    var sql =
+        """
+  INSERT INTO players (player_id, hexad_primary_type, hexad_scores)
+  VALUES (?, ?, ?::jsonb)
+  ON CONFLICT (player_id) DO UPDATE
+  SET hexad_primary_type = EXCLUDED.hexad_primary_type;
+  """;
 
-          try (Connection conn = DatabaseConnector.getConnection();
-              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, stateToId(playerState));
-            pstmt.setString(2, classToType.getOrDefault(characterClass, "unknown"));
-            pstmt.setString(3, "{}");
-            pstmt.executeUpdate();
-          } catch (SQLException e) {
-            LOGGER.error("Failed to upsert player profile: " + e.getMessage(), e);
-          }
-        });
+    try (Connection conn = DatabaseConnector.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(sql)) {
+      pstmt.setString(1, stateToId(playerState));
+      pstmt.setString(2, classToType.getOrDefault(characterClass, "unknown"));
+      pstmt.setString(3, "{}");
+      pstmt.executeUpdate();
+    } catch (SQLException e) {
+      LOGGER.error("Failed to upsert player profile: " + e.getMessage(), e);
+    }
   }
 
   /**

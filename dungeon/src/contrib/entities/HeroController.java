@@ -762,7 +762,7 @@ public class HeroController {
         try {
           applyInput(clientState, msg, playerEntity);
         } catch (Exception e) {
-          LOGGER.error("Failed to apply input for client {}: {}", clientState, e.getMessage(), e);
+          LOGGER.warn("Failed to apply input for client {}: {}", clientState, e.getMessage(), e);
         }
       }
       clientState.updateProcessedSeq(msg.sequence());
