@@ -147,4 +147,13 @@ public final class ServerRuntime {
   public ServerTransport transport() {
     return transport;
   }
+
+  /**
+   * Checks if the server is currently running.
+   *
+   * @return true if the server loop is active, false otherwise.
+   */
+  public boolean isRunning() {
+    return loop != null && loop.isRunning();
+  }
 }

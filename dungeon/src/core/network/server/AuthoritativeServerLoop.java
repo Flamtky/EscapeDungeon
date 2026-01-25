@@ -127,6 +127,13 @@ public final class AuthoritativeServerLoop {
   /** Stops the server loop, shutting down the executor service. */
   public void stop() {
     executor.shutdownNow();
+    try {
+      executor.awaitTermination(1, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      LOGGER.debug(
+          "Interrupted while waiting for executor termination (expected if console is blocking)");
+      // Don't re-interrupt - let the shutdown proceed
+    }
     LOGGER.info("ServerLoop stopped");
   }
 

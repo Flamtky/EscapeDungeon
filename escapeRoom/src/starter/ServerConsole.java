@@ -31,32 +31,56 @@ import java.util.stream.Collectors;
 public final class ServerConsole {
 
   private static final String PROMPT = "MAServer> ";
+  private static volatile boolean running = true;
+  private static Thread consoleThread;
 
   private ServerConsole() {}
 
   /** Starts the server console command loop in a background thread. */
   public static void start(NettyNetworkHandler handler) {
     CommandRegistry registry = new CommandRegistry(handler);
-    Thread consoleThread =
+    running = true;
+    consoleThread =
         new Thread(
             () -> {
               Scanner scanner = new Scanner(System.in);
-              System.out.print(PROMPT);
-              while (scanner.hasNextLine()) {
-                String line = scanner.nextLine().trim();
-                if (!line.isEmpty()) {
-                  boolean continueLoop = registry.dispatch(line);
-                  if (!continueLoop) {
-                    break;
-                  }
-                }
+              try {
                 System.out.print(PROMPT);
+                while (running && scanner.hasNextLine()) {
+                  String line = scanner.nextLine().trim();
+                  if (!line.isEmpty()) {
+                    boolean continueLoop = registry.dispatch(line);
+                    if (!continueLoop) {
+                      break;
+                    }
+                  }
+                  System.out.print(PROMPT);
+                }
+              } finally {
+                scanner.close();
               }
-              scanner.close();
             });
     consoleThread.setDaemon(true);
     consoleThread.setName("MAServer-Console");
     consoleThread.start();
+  }
+
+  /** Shuts down the console thread by setting the running flag to false. */
+  public static void shutdown() {
+    running = false;
+    if (consoleThread != null && consoleThread.isAlive()) {
+      // Wait briefly for the thread to exit naturally
+      try {
+        consoleThread.join(1000); // Wait up to 1 second
+      } catch (InterruptedException e) {
+        // If interrupted, just proceed
+        Thread.currentThread().interrupt();
+      }
+      // If still alive after timeout, interrupt it
+      if (consoleThread.isAlive()) {
+        consoleThread.interrupt();
+      }
+    }
   }
 }
 

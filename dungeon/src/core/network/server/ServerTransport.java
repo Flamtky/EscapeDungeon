@@ -111,8 +111,12 @@ public final class ServerTransport {
       LOGGER.warn("Error closing channels", e);
     } finally {
       try {
-        if (bossGroup != null) bossGroup.shutdownGracefully();
-        if (workerGroup != null) workerGroup.shutdownGracefully();
+        if (bossGroup != null) {
+          bossGroup.shutdownGracefully().syncUninterruptibly();
+        }
+        if (workerGroup != null) {
+          workerGroup.shutdownGracefully().syncUninterruptibly();
+        }
       } catch (Exception e) {
         LOGGER.warn("Error shutting down event loops", e);
       }

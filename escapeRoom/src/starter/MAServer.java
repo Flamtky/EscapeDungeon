@@ -57,6 +57,8 @@ public class MAServer {
     // Enable snapshot debugging to analyze network payload sizes
     // SnapshotDebugger.enable();
 
+    Game.registerShutdownCallback(ServerConsole::shutdown);
+
     Game.windowTitle("Demo-Room");
     Game.run();
   }

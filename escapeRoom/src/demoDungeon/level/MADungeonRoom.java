@@ -1013,7 +1013,11 @@ public class MADungeonRoom extends DungeonLevel {
     Point currentPos = EntityUtils.getPosition(hero);
     VelocityComponent vc = hero.fetch(VelocityComponent.class).orElseThrow();
     InputComponent ic = hero.fetch(InputComponent.class).orElseThrow();
-    Tile currentTile = Game.tileAt(currentPos).orElseThrow();
+    Tile currentTile = Game.tileAt(currentPos).orElse(null);
+
+    if (currentTile == null) {
+      return;
+    }
 
     if (hero.isPresent(IceMovementComponent.class)) {
       return;

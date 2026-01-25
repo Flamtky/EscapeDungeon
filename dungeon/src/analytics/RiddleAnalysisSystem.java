@@ -257,7 +257,10 @@ public class RiddleAnalysisSystem extends System {
 
     private boolean isInRiddle(Entity player) {
       Point pos = EntityUtils.getPosition(player);
-      Tile tile = Game.tileAt(pos).orElseThrow();
+      Tile tile = Game.tileAt(pos).orElse(null);
+      if (tile == null) {
+        return false;
+      }
       return tile.designLabel() == this.designLabel;
     }
   }
