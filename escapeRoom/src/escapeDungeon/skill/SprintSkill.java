@@ -9,7 +9,7 @@ import core.components.VelocityComponent;
 public class SprintSkill extends Skill {
 
   private static final String NAME = "Sprint";
-  private static final float SPRINT_MULTIPLIER = 3.00f;
+  private static final float SPRINT_MULTIPLIER = 2.50f;
   private static final float SPRINT_STAMINA_COST = 0.1f;
 
   /** Creates a new sprint skill. */

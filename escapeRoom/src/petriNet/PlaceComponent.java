@@ -15,6 +15,7 @@ public class PlaceComponent implements Component {
 
   /** The number of tokens currently in this place. */
   private int tokenCounter = 0;
+
   private boolean consumed = false;
 
   /**
@@ -38,7 +39,6 @@ public class PlaceComponent implements Component {
   /** Adds one token to this place. */
   public void produce() {
     tokenCounter++;
-    System.out.println(this);
   }
 
   /**

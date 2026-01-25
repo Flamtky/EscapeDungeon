@@ -37,7 +37,6 @@ public class LeafItem extends Item {
   @Override
   public boolean collect(Entity itemEntity, Entity collector) {
     if (collector != null) {
-      System.out.println("collect" + collector.name());
       if (produceOnce) {
         place.produce();
         produceOnce = false;
@@ -50,15 +49,11 @@ public class LeafItem extends Item {
   @Override
   public void added(Entity collector) {
     if (collector != null) {
-      System.out.println("added" + collector.name());
       if (produceOnce) {
         place.produce();
         produceOnce = false;
       }
       Sounds.KEY_ITEM_PICKUP_SOUND.play();
     }
-
   }
-
-
 }

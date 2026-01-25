@@ -46,13 +46,12 @@ import escapeDungeon.components.IceMovementComponent;
 import escapeDungeon.items.*;
 import escapeDungeon.skill.SprintSkill;
 import guard.GuardBuilder;
+import hint.*;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
-import hint.*;
 import java.util.function.Consumer;
 import mobs.EscapeRoomMonsterBuilder;
 import mushRoom.Sounds;
@@ -68,20 +67,23 @@ import tools.timer.TimerAPI;
 /** The MADungeonRoom level. */
 public class MADungeonRoom extends DungeonLevel {
 
-
   // Labyrinth
   // Stamina Potion
   Entity staminaRiddle;
   PlaceComponent staminaRiddlePlace;
   private final String staminaRiddleTitle = "Ausdauertränke";
   private final Hint[] staminaRiddleHints = {
-    new Hint(staminaRiddleTitle, "Du kannst dir einen Ausdauertrank herstellen, um nicht so oft schlafen zu müssen."),
+    new Hint(
+        staminaRiddleTitle,
+        "Du kannst dir einen Ausdauertrank herstellen, um nicht so oft schlafen zu müssen."),
   };
   Entity staminaRiddle2;
   PlaceComponent staminaRiddle2Place;
   private final String staminaRiddle2Title = "Ausdauertränke 2";
   private final Hint[] staminaRiddle2Hints = {
-    new Hint(staminaRiddle2Title, "Nachdem du einen Ausdauertrank getrunken hast, kannst du das Fläschchen wieder auffüllen."),
+    new Hint(
+        staminaRiddle2Title,
+        "Nachdem du einen Ausdauertrank getrunken hast, kannst du das Fläschchen wieder auffüllen."),
   };
   // Leaf
   Entity leafRiddle;
@@ -215,21 +217,21 @@ public class MADungeonRoom extends DungeonLevel {
     PetriNetSystem petriNetSystem = new PetriNetSystem();
     Game.add(petriNetSystem);
     // register hint log
-    Game.allPlayers().forEach(
-        player ->
-          player
-            .fetch(InputComponent.class)
-            .ifPresent(
-              inputComponent ->
-                inputComponent.registerCallback(
-                  Input.Keys.T,
-                  entity ->
-                    player
-                      .fetch(HintLogComponent.class)
-                      .ifPresent(HintLogDialog::showHintLog),
-                  false,
-                  true)));
-
+    Game.allPlayers()
+        .forEach(
+            player ->
+                player
+                    .fetch(InputComponent.class)
+                    .ifPresent(
+                        inputComponent ->
+                            inputComponent.registerCallback(
+                                Input.Keys.T,
+                                entity ->
+                                    player
+                                        .fetch(HintLogComponent.class)
+                                        .ifPresent(HintLogDialog::showHintLog),
+                                false,
+                                true)));
 
     staminaRiddle = new Entity("staminaRiddle");
     staminaRiddle.add(new HintComponent(staminaRiddleHints));
@@ -249,7 +251,6 @@ public class MADungeonRoom extends DungeonLevel {
     LeafItem.placeComponent(leafRiddlePlace);
 
     TimerAPI.registerCallback(10, () -> leafRiddlePlace.produce());
-
 
     // Craft potion riddle
     bottleRiddle = new Entity("Craft potion riddle");
@@ -285,7 +286,7 @@ public class MADungeonRoom extends DungeonLevel {
     petriNetSystem.addInputArc(t4, sync1, 3);
     petriNetSystem.addOutputArc(t4, staminaRiddle2Place);
 
-    //Remove Hints Riddle solved
+    // Remove Hints Riddle solved
     TransitionComponent t5 = new TransitionComponent();
     petriNetSystem.addInputArc(t5, staminaRiddle2Place, 4);
 
@@ -307,7 +308,6 @@ public class MADungeonRoom extends DungeonLevel {
     LeafItem.placeComponent(leafRiddlePlace);
 
     TimerAPI.registerCallback(10, () -> leafRiddlePlace.produce());
-
 
     // Craft potion riddle
     bottleRiddle = new Entity("Craft potion riddle");

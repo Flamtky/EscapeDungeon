@@ -24,6 +24,7 @@ import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoom;
 import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
+import hint.HintSystem;
 import java.io.IOException;
 import network.EscapeRoomSnapshotTranslator;
 import tools.timer.TimerSystem;
@@ -127,6 +128,7 @@ public class MAServer {
     Game.add(new BedSleepSystem());
     Game.add(new TimerSystem());
     Game.add(new RiddleAnalysisSystem());
+    Game.add(new HintSystem());
   }
 
   private static void onFrame() {

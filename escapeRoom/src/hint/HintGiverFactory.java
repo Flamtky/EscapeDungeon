@@ -1,8 +1,6 @@
 package hint;
 
-import contrib.entities.MiscFactory;
 import contrib.entities.NPCFactory;
-import contrib.hud.DialogUtils;
 import contrib.hud.dialogs.DialogFactory;
 import contrib.modules.interaction.Interaction;
 import contrib.modules.interaction.InteractionComponent;
@@ -25,6 +23,7 @@ public class HintGiverFactory {
   private static final String AKS_FOR_HINT_TITLE = "Tipps";
   private static final String OPENING_DIALOG = "Tipps";
   private static boolean showDialog = true;
+
   /**
    * Creates a mailbox entity at the given position that gives hints to the player.
    *
@@ -56,7 +55,14 @@ public class HintGiverFactory {
             HintSystem.class,
             hintSystem -> {
               Optional<Hint> hintOpt = hintSystem.nextHint();
-              hintOpt.ifPresentOrElse(hint -> showHintConfirmation(player, hint), () -> DialogFactory.showOkDialog("Ich habe gerade keinen Tipp für dich. Komm später nochmal wieder.", "ZAUBERER", () -> {}, player.id()));
+              hintOpt.ifPresentOrElse(
+                  hint -> showHintConfirmation(player, hint),
+                  () ->
+                      DialogFactory.showOkDialog(
+                          "Ich habe gerade keinen Tipp für dich. Komm später nochmal wieder.",
+                          "ZAUBERER",
+                          () -> {},
+                          player.id()));
             });
   }
 
@@ -69,16 +75,27 @@ public class HintGiverFactory {
    */
   private static void showHintConfirmation(Entity player, Hint hint) {
     if (showDialog) {
-      DialogFactory.showOkDialog("Willkommen, bei mir seid ihr sicher. Ich kann euch dabei helfen zu entkommen.", "ZAUBERER", () -> {DialogFactory.showYesNoDialog(
-        ASK_FOR_HINT, AKS_FOR_HINT_TITLE, () -> showHintText(player, hint), () -> {}, player.id());}, player.id());
+      DialogFactory.showOkDialog(
+          "Willkommen, bei mir seid ihr sicher. Ich kann euch dabei helfen zu entkommen.",
+          "ZAUBERER",
+          () -> {
+            DialogFactory.showYesNoDialog(
+                ASK_FOR_HINT,
+                AKS_FOR_HINT_TITLE,
+                () -> showHintText(player, hint),
+                () -> {},
+                player.id());
+          },
+          player.id());
       showDialog = false;
-    }
-    else {
+    } else {
       DialogFactory.showYesNoDialog(
-        ASK_FOR_HINT, AKS_FOR_HINT_TITLE, () -> showHintText(player, hint), () -> {}, player.id());
+          ASK_FOR_HINT,
+          AKS_FOR_HINT_TITLE,
+          () -> showHintText(player, hint),
+          () -> {},
+          player.id());
     }
-
-
   }
 
   /**
@@ -91,6 +108,7 @@ public class HintGiverFactory {
     DialogFactory.showOkDialog(
         hint.text(),
         hint.title(),
-        () -> player.fetch(HintLogComponent.class).ifPresent(log -> log.addHint(hint)), player.id());
+        () -> player.fetch(HintLogComponent.class).ifPresent(log -> log.addHint(hint)),
+        player.id());
   }
 }
