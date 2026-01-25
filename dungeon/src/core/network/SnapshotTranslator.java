@@ -71,7 +71,7 @@ public interface SnapshotTranslator {
    *   <li>Entities with UIComponent (transient, always send)
    *   <li>Player entities (always send)
    *   <li>Entities with InventoryComponent (can have contents changed)
-   *   <li>Entities with VelocityComponent where stationary is false (can move)
+   *   <li>Entities with VelocityComponent (that can move)
    * </ul>
    *
    * <p>Static entities (deco, items on ground, etc.) are only sent in full snapshots and don't need
@@ -89,6 +89,6 @@ public interface SnapshotTranslator {
     // Inventory holders can change contents without moving
     if (entity.isPresent(InventoryComponent.class)) return true;
     // Entities with velocity that can move
-    return entity.fetch(VelocityComponent.class).map(vc -> !vc.isStationary()).orElse(false);
+    return entity.isPresent(VelocityComponent.class);
   }
 }

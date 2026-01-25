@@ -72,8 +72,6 @@ public final class VelocityComponent implements Component {
   private boolean canEnterGitter;
   private boolean canEnterGlasswalls;
 
-  private final boolean isStationary;
-
   private VelocityComponent(Builder builder) {
     this.onWallHit = builder.onWallHit;
     this.currentVelocity = builder.currentVelocity;
@@ -82,7 +80,6 @@ public final class VelocityComponent implements Component {
     this.canEnterWalls = builder.canEnterWalls;
     this.canEnterGitter = builder.canEnterGitter;
     this.canEnterGlasswalls = builder.canEnterGlasswalls;
-    this.isStationary = builder.isStationary;
     this.modifiers.putAll(builder.modifiers);
     this.appliedForces.putAll(builder.appliedForces);
   }
@@ -116,15 +113,6 @@ public final class VelocityComponent implements Component {
   }
 
   /**
-   * Creates a stationary VelocityComponent that does not move.
-   *
-   * @return A stationary VelocityComponent instance.
-   */
-  public static VelocityComponent stationary() {
-    return VelocityComponent.builder().isStationary(true).build();
-  }
-
-  /**
    * Gets the base speed from the modifiers.
    *
    * <p>The base speed is calculated as the average of the x and y components of the "baseSpeed"
@@ -145,7 +133,6 @@ public final class VelocityComponent implements Component {
     private boolean canEnterWalls = false;
     private boolean canEnterGitter = false;
     private boolean canEnterGlasswalls = false;
-    private boolean isStationary = false;
     private final Map<String, Vector2> modifiers = new HashMap<>();
     private final Map<String, Vector2> appliedForces = new HashMap<>();
 
@@ -225,17 +212,6 @@ public final class VelocityComponent implements Component {
      */
     public Builder canEnterGlasswalls(boolean canEnterGlasswalls) {
       this.canEnterGlasswalls = canEnterGlasswalls;
-      return this;
-    }
-
-    /**
-     * Sets whether the entity is stationary.
-     *
-     * @param isStationary true if the entity should be stationary, false otherwise.
-     * @return This builder instance for chaining.
-     */
-    public Builder isStationary(boolean isStationary) {
-      this.isStationary = isStationary;
       return this;
     }
 
@@ -574,14 +550,5 @@ public final class VelocityComponent implements Component {
   /** Remove all modifiers. */
   public void removeAllModifiers() {
     modifiers.clear();
-  }
-
-  /**
-   * Returns whether the VelocityComponent is stationary and will not move.
-   *
-   * @return true if the VelocityComponent is stationary, false otherwise
-   */
-  public boolean isStationary() {
-    return isStationary;
   }
 }

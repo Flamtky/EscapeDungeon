@@ -313,9 +313,7 @@ public final class CollisionSystem extends System {
   }
 
   private boolean isStationary(Entity e) {
-    return e.fetch(VelocityComponent.class)
-        .map(vc -> vc.totalModifiers().length() == 0)
-        .orElse(true);
+    return !e.isPresent(VelocityComponent.class);
   }
 
   /**
