@@ -1,14 +1,13 @@
 package starter;
 
-import contrib.components.CharacterClassComponent;
-import contrib.components.InventoryComponent;
-import contrib.components.StaminaComponent;
+import contrib.components.*;
 import contrib.entities.CharacterClass;
 import contrib.item.Item;
 import contrib.item.ItemSnapshot;
 import core.Component;
 import core.Entity;
 import core.Game;
+import core.components.DrawComponent;
 import core.components.InputComponent;
 import core.components.PositionComponent;
 import core.components.VelocityComponent;
@@ -19,8 +18,10 @@ import core.network.messages.s2c.GameOverEvent;
 import core.network.messages.s2c.LevelChangeEvent;
 import core.network.server.*;
 import core.utils.Point;
+import core.utils.Vector2;
 import demoDungeon.level.MADungeonRoom;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -710,14 +711,49 @@ final class CheatCommand implements ServerCommand {
         }
         break;
       case RESET:
+        var selectedType = params.trim().toLowerCase();
+        if (selectedType.isEmpty()) {
+          System.out.println("Usage for RESET: cheat <target> RESET <v/c>");
+          return;
+        }
+        if (!selectedType.equals("v") && !selectedType.equals("c")) {
+          System.out.println(
+              "Invalid parameter for RESET. Use 'v' for velocity or 'c' for collide.");
+          return;
+        }
         var charClass =
             targetEntity
                 .fetch(CharacterClassComponent.class)
                 .map(CharacterClassComponent::characterClass)
                 .orElse(CharacterClass.APPRENTICE);
-        var newVelocity =
-            VelocityComponent.builder().baseSpeed(charClass.speed()).mass(charClass.mass()).build();
-        targetEntity.add(newVelocity);
+
+        Map<String, Supplier<? extends Component>> componentMap =
+            Map.of(
+                "v",
+                () ->
+                    VelocityComponent.builder()
+                        .baseSpeed(charClass.speed())
+                        .mass(charClass.mass())
+                        .build(),
+                "c",
+                () -> {
+                  var dc = targetEntity.fetch(DrawComponent.class).orElse(null);
+                  if (dc == null) {
+                    System.out.println(
+                        "DrawComponent not found on target entity. Needed for CollideComponent.");
+                    return null;
+                  }
+                  return new CollideComponent(
+                      Vector2.of(dc.getWidth() / 2 - 0.4f, 0.4f), Vector2.of(0.8f, 0.8f));
+                });
+        var newComp = componentMap.get(selectedType).get();
+        if (newComp == null) {
+          return;
+        }
+        targetEntity.add(newComp);
+        System.out.printf(
+            "Reset %s component on %s%n",
+            selectedType.equals("v") ? "Velocity" : "Collide", targetId);
         break;
     }
   }
@@ -729,7 +765,7 @@ final class CheatCommand implements ServerCommand {
     GIVE_ITEM("Give an item to the player", "<itemName>", List.of("give")),
     STAMINA("Get/Set stamina", "<get/set> [value]", List.of("s")),
     REMOVE("Remove a given component from the entity", "<componentName>", List.of()),
-    RESET("Reset the entity's velocityComponent", "", List.of());
+    RESET("Reset a component (v=Velocity, c=Collide)", "<v/c>", List.of());
 
     private final String description;
     private final String params;
