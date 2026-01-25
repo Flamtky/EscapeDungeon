@@ -10,6 +10,7 @@ import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
 import core.utils.Point;
 import core.utils.Tuple;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A skill that allows the caster to create a bridge over water tiles or convert certain entities
@@ -33,7 +34,8 @@ public class BridgeSkill extends CursorSkill {
    * @param point The current cursor position in the game world.
    */
   @Override
-  protected void executeOnCursor(Entity caster, Point point) {
+  protected boolean executeOnCursor(Entity caster, Point point) {
+    AtomicBoolean success = new AtomicBoolean(false);
     Game.tileAt(point)
         .ifPresent(
             (tile -> {
@@ -51,6 +53,8 @@ public class BridgeSkill extends CursorSkill {
                   Game.add(DecoFactory.createDeco(point.floor(), Deco.BRIDGESHorizontalGray));
                 }
               }
+              success.set(true);
             }));
+    return success.get();
   }
 }

@@ -5,6 +5,8 @@ import com.badlogic.gdx.ai.pfa.GraphPath;
 import contrib.utils.EntityUtils;
 import core.Entity;
 import core.Game;
+import core.components.DrawComponent;
+import core.components.PositionComponent;
 import core.level.Tile;
 import core.level.elements.tile.DoorTile;
 import core.utils.*;
@@ -478,5 +480,45 @@ public final class LevelUtils {
         Game.tileAt(new Coordinate(x, y)).ifPresent(t -> t.tintColor(color));
       }
     }
+  }
+
+  /**
+   * Returns a set of tiles occupied by the given entity.
+   *
+   * @param entity The entity whose occupied tiles are to be retrieved.
+   * @return A set of tiles occupied by the entity.
+   */
+  public static Set<Tile> occupiedTiles(final Entity entity) {
+    Set<Tile> occupiedTiles = new HashSet<>();
+    Game.currentLevel()
+        .ifPresent(
+            level -> {
+              Tile[][] layout = level.layout();
+              Tuple<Integer, Integer> levelSize = level.size();
+
+              entity
+                  .fetch(DrawComponent.class)
+                  .ifPresent(
+                      drawBox -> {
+                        var bottomLeft =
+                            entity.fetch(PositionComponent.class).orElseThrow().position();
+                        var topRight =
+                            bottomLeft.translate(
+                                Vector2.of(
+                                    drawBox.getWidth() - 0.01f, drawBox.getHeight() - 0.01f));
+                        int startX = Math.max(0, (int) Math.floor(bottomLeft.x()));
+                        int endX = Math.min(levelSize.a() - 1, (int) Math.floor(topRight.x()));
+                        int startY = Math.max(0, (int) Math.floor(bottomLeft.y()));
+                        int endY = Math.min(levelSize.b() - 1, (int) Math.floor(topRight.y()));
+                        for (int x = startX; x <= endX; x++) {
+                          for (int y = startY; y <= endY; y++) {
+                            if (layout[y][x] != null) {
+                              occupiedTiles.add(layout[y][x]);
+                            }
+                          }
+                        }
+                      });
+            });
+    return occupiedTiles;
   }
 }

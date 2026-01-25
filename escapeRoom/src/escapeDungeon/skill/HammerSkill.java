@@ -31,9 +31,10 @@ public class HammerSkill extends CursorSkill {
   /**
    * @param caster The entity using the skill.
    * @param point The current cursor position in the game world.
+   * @return whether the skill was successfully executed.
    */
   @Override
-  protected void executeOnCursor(Entity caster, Point point) {
+  protected boolean executeOnCursor(Entity caster, Point point) {
     StaminaComponent sc = caster.fetch(StaminaComponent.class).get();
     if (Game.entityAtPoint(point).anyMatch(e -> e.name().contains("Stone"))) {
       if (sc.currentAmount() < staminaCost) {
@@ -61,6 +62,8 @@ public class HammerSkill extends CursorSkill {
             },
             () -> {});
       }
+      return true;
     }
+    return false;
   }
 }

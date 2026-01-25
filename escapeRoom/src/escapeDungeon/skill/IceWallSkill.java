@@ -11,6 +11,7 @@ import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
 import core.utils.Point;
 import core.utils.Tuple;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** A skill that allows the caster to create or remove ice walls on ice-designated tiles. */
 public class IceWallSkill extends CursorSkill {
@@ -34,9 +35,11 @@ public class IceWallSkill extends CursorSkill {
   /**
    * @param caster The entity using the skill.
    * @param point The current cursor position in the game world.
+   * @return whether the skill was successfully executed.
    */
   @Override
-  protected void executeOnCursor(Entity caster, Point point) {
+  protected boolean executeOnCursor(Entity caster, Point point) {
+    AtomicBoolean success = new AtomicBoolean(false);
     Game.tileAt(point)
         .ifPresent(
             (tile -> {
@@ -67,6 +70,8 @@ public class IceWallSkill extends CursorSkill {
                   }
                 }
               }
+              success.set(true);
             }));
+    return success.get();
   }
 }

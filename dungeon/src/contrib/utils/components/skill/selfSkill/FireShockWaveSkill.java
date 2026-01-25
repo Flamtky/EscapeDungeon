@@ -55,11 +55,11 @@ public class FireShockWaveSkill extends Skill {
   }
 
   @Override
-  protected void executeSkill(Entity caster) {
+  protected boolean executeSkill(Entity caster) {
     Point casterPos = caster.fetch(PositionComponent.class).orElseThrow().position();
     Tile casterTile = Game.tileAt(casterPos).orElse(null);
     if (casterTile == null) {
-      return;
+      return false;
     }
     List<Coordinate> placedPositions = new ArrayList<>();
     LevelUtils.explosionAt(
@@ -90,5 +90,6 @@ public class FireShockWaveSkill extends Skill {
 
           EventScheduler.scheduleAction(() -> Game.remove(entity), REMOVE_AFTER);
         }));
+    return true;
   }
 }
