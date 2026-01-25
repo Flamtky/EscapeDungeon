@@ -1020,6 +1020,10 @@ public class MADungeonRoom extends DungeonLevel {
     }
 
     if (hero.isPresent(IceMovementComponent.class)) {
+      addCallbacks(ic);
+      ic.deactivateControls(false);
+      vc.onWallHit(e -> {});
+      hero.remove(FlyComponent.class);
       return;
     }
 
