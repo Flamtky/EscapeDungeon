@@ -23,7 +23,6 @@ import core.network.messages.s2c.GameOverEvent;
 import core.network.messages.s2c.LevelState;
 import core.network.messages.s2c.SnapshotMessage;
 import core.utils.logging.DungeonLogger;
-
 import java.util.UUID;
 import java.util.concurrent.*;
 
@@ -288,7 +287,9 @@ public final class AuthoritativeServerLoop {
   private Entity spawnHeroForClient(ClientState state) {
     CharacterClass charClass;
     try {
-      charClass = CharacterClass.valueOf(state.username().toUpperCase()); // TODO: Only workaround
+      var fullName = state.username();
+      var className = fullName.substring(fullName.lastIndexOf('#') + 1);
+      charClass = CharacterClass.valueOf(className.toUpperCase());
     } catch (IllegalArgumentException e) {
       charClass = CharacterClass.ROGUE;
     }

@@ -1123,6 +1123,11 @@ public class MADungeonRoom extends DungeonLevel {
                   Map.of("totalTime", String.valueOf(TimerAPI.elapsedSeconds())));
             });
 
-    DialogUtils.showTextPopup("Du bist entkommen!", "ENTKOMMEN!", Game::exit);
+    DialogUtils.showTextPopup(
+        "Du bist entkommen!",
+        "ENTKOMMEN!",
+        () -> {
+          Game.exit("Level completed - players escaped.");
+        });
   }
 }

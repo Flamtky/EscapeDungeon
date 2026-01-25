@@ -840,6 +840,7 @@ public final class Game {
    * @param reason The reason for exiting the game.
    */
   public static void exit(String reason) {
+    java.lang.System.out.println("Exiting game: " + reason);
     LOGGER.info("Exiting game: " + reason);
 
     if (shutdownCallback != null) {

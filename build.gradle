@@ -126,6 +126,7 @@ spotless {
     java {
         targetExclude('build/generated-src/**')
         googleJavaFormat()
+        toggleOffOn()
 
         target '**/*.java'
     }

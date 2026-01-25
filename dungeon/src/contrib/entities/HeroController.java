@@ -261,10 +261,7 @@ public class HeroController {
               .ifPresent(
                   ac -> {
                     DungeonAnalyticsAPI.logXApiStatement(
-                        ac,
-                        DungeonAnalyticsAPI.Verb.INTERACTED,
-                        hero,
-                        Map.of("success", true));
+                        ac, DungeonAnalyticsAPI.Verb.INTERACTED, hero, Map.of("success", true));
                   });
         },
         () -> {

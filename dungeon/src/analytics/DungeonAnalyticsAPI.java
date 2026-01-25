@@ -17,11 +17,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Service API for logging Educational Escape Room (EER) data to the evaluation database.
- * Supports xAPI statements, user profiles, and multi-player session management.
+ * Service API for logging Educational Escape Room (EER) data to the evaluation database. Supports
+ * xAPI statements, user profiles, and multi-player session management.
  *
- * <p>All database operations are non-blocking except for {@link #startSession(String)},
- * which blocks to return the session UUID synchronously.
+ * <p>All database operations are non-blocking except for {@link #startSession(String)}, which
+ * blocks to return the session UUID synchronously.
  */
 public class DungeonAnalyticsAPI {
 
@@ -30,7 +30,7 @@ public class DungeonAnalyticsAPI {
   private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4);
 
   private static String stateToId(ClientState state) {
-    return state.username() + "#" + state.clientId();
+    return state.username();
   }
 
   private static String entityToId(Entity entity) {
@@ -38,44 +38,47 @@ public class DungeonAnalyticsAPI {
   }
 
   /**
-   * Registers a new player or updates an existing player's Hexad profile.
-   * This is typically called when a player logs into the server.
+   * Registers a new player or updates an existing player's Hexad profile. This is typically called
+   * when a player logs into the server.
    *
-   * @param playerState    The client's state containing player identifiers.
+   * @param playerState The client's state containing player identifiers.
    * @param characterClass The player's chosen class/Hexad type.
    */
   public static void upsertPlayer(ClientState playerState, CharacterClass characterClass) {
     if (!ENABLED) return;
 
-    final Map<CharacterClass, String> classToType = Map.of(
-      CharacterClass.ROGUE, "Achiever",
-      CharacterClass.APPRENTICE, "Socialiser"
-      // Add more mappings here
-    );
+    final Map<CharacterClass, String> classToType =
+        Map.of(
+            CharacterClass.ROGUE, "Achiever",
+            CharacterClass.APPRENTICE, "Socialiser"
+            // Add more mappings here
+            );
 
-    EXECUTOR.submit(() -> {
-      var sql = """
+    EXECUTOR.submit(
+        () -> {
+          var sql =
+              """
           INSERT INTO players (player_id, hexad_primary_type, hexad_scores)
           VALUES (?, ?, ?::jsonb)
           ON CONFLICT (player_id) DO UPDATE
           SET hexad_primary_type = EXCLUDED.hexad_primary_type;
           """;
 
-      try (Connection conn = DatabaseConnector.getConnection();
-           PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        pstmt.setString(1, stateToId(playerState));
-        pstmt.setString(2, classToType.getOrDefault(characterClass, "unknown"));
-        pstmt.setString(3, "{}");
-        pstmt.executeUpdate();
-      } catch (SQLException e) {
-        LOGGER.error("Failed to upsert player profile: " + e.getMessage(), e);
-      }
-    });
+          try (Connection conn = DatabaseConnector.getConnection();
+              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, stateToId(playerState));
+            pstmt.setString(2, classToType.getOrDefault(characterClass, "unknown"));
+            pstmt.setString(3, "{}");
+            pstmt.executeUpdate();
+          } catch (SQLException e) {
+            LOGGER.error("Failed to upsert player profile: " + e.getMessage(), e);
+          }
+        });
   }
 
   /**
-   * Initializes a new gameplay session without a specific player.
-   * This represents the creation of the Dungeon world instance.
+   * Initializes a new gameplay session without a specific player. This represents the creation of
+   * the Dungeon world instance.
    *
    * @param configJson JSON configuration for this session (e.g., difficulty, adaptivity).
    * @return The generated {@link UUID} of the session. Null if the operation fails or analytics is
@@ -87,7 +90,7 @@ public class DungeonAnalyticsAPI {
     var sql = "INSERT INTO sessions (session_config) VALUES (?::jsonb) RETURNING session_id";
 
     try (Connection conn = DatabaseConnector.getConnection();
-         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        PreparedStatement pstmt = conn.prepareStatement(sql)) {
       pstmt.setString(1, configJson);
 
       try (ResultSet rs = pstmt.executeQuery()) {
@@ -104,23 +107,25 @@ public class DungeonAnalyticsAPI {
   /**
    * Links a player to an active session. Call this when a client connects to the dungeon.
    *
-   * @param sessionId   The ID of the session to join.
+   * @param sessionId The ID of the session to join.
    * @param playerState The state of the joining player.
    */
   public static void joinSession(UUID sessionId, ClientState playerState) {
     if (!ENABLED) return;
 
-    EXECUTOR.submit(() -> {
-      var sql = "INSERT INTO session_participants (session_id, player_id) VALUES (?, ?) ON CONFLICT DO NOTHING";
-      try (Connection conn = DatabaseConnector.getConnection();
-           PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        pstmt.setObject(1, sessionId);
-        pstmt.setString(2, stateToId(playerState));
-        pstmt.executeUpdate();
-      } catch (SQLException e) {
-        LOGGER.error("Failed to link player to session: " + e.getMessage(), e);
-      }
-    });
+    EXECUTOR.submit(
+        () -> {
+          var sql =
+              "INSERT INTO session_participants (session_id, player_id) VALUES (?, ?) ON CONFLICT DO NOTHING";
+          try (Connection conn = DatabaseConnector.getConnection();
+              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setObject(1, sessionId);
+            pstmt.setString(2, stateToId(playerState));
+            pstmt.executeUpdate();
+          } catch (SQLException e) {
+            LOGGER.error("Failed to link player to session: " + e.getMessage(), e);
+          }
+        });
   }
 
   /**
@@ -133,7 +138,7 @@ public class DungeonAnalyticsAPI {
    * @param resultJsonMap JSON containing metrics, skill tags, and pyramid data.
    */
   public static void logXApiStatement(
-    AnalyticsComponent ac, Verb verb, String objectId, Map<String, Object> resultJsonMap) {
+      AnalyticsComponent ac, Verb verb, String objectId, Map<String, Object> resultJsonMap) {
     logXApiStatement(ac, verb, objectId, resultJsonMap, null);
   }
 
@@ -148,12 +153,26 @@ public class DungeonAnalyticsAPI {
    * @param context JSON containing additional context for the statement. Can be null.
    */
   public static void logXApiStatement(
-    AnalyticsComponent ac,
-    Verb verb,
-    Entity objectId,
-    Map<String, Object> resultJsonMap,
-    Map<String, Object> context) {
+      AnalyticsComponent ac,
+      Verb verb,
+      Entity objectId,
+      Map<String, Object> resultJsonMap,
+      Map<String, Object> context) {
     logXApiStatement(ac, verb, entityToId(objectId), resultJsonMap, context);
+  }
+
+  /**
+   * Logs an xAPI statement documenting an event during the escape room. This operation is executed
+   * asynchronously and does not block the caller.
+   *
+   * @param ac The AnalyticsComponent containing session and player info.
+   * @param verb The action performed (e.g., "solved", "attempted").
+   * @param objectId The target of the action (e.g., "puzzle_01").
+   * @param resultJsonMap JSON containing metrics, skill tags, and pyramid data.
+   */
+  public static void logXApiStatement(
+      AnalyticsComponent ac, Verb verb, Entity objectId, Map<String, Object> resultJsonMap) {
+    logXApiStatement(ac, verb, entityToId(objectId), resultJsonMap);
   }
 
   /**
@@ -243,35 +262,36 @@ public class DungeonAnalyticsAPI {
    */
   public static void submitSurvey(UUID sessionId, SurveyType type, String responsesJson) {
     if (!ENABLED) return;
-    EXECUTOR.submit(() -> {
-      var sql = "INSERT INTO survey_responses (session_id, survey_type, responses) VALUES (?, ?, ?::jsonb)";
-      try (Connection conn = DatabaseConnector.getConnection();
-           PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        pstmt.setObject(1, sessionId);
-        pstmt.setString(2, type.toString().toLowerCase());
-        pstmt.setString(3, responsesJson);
-        pstmt.executeUpdate();
-      } catch (SQLException e) {
-        LOGGER.error("Failed to submit survey: " + e.getMessage(), e);
-      }
-    });
+    EXECUTOR.submit(
+        () -> {
+          var sql =
+              "INSERT INTO survey_responses (session_id, survey_type, responses) VALUES (?, ?, ?::jsonb)";
+          try (Connection conn = DatabaseConnector.getConnection();
+              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setObject(1, sessionId);
+            pstmt.setString(2, type.toString().toLowerCase());
+            pstmt.setString(3, responsesJson);
+            pstmt.executeUpdate();
+          } catch (SQLException e) {
+            LOGGER.error("Failed to submit survey: " + e.getMessage(), e);
+          }
+        });
   }
 
-  /**
-   * Terminates a session.
-   */
+  /** Terminates a session. */
   public static void endSession(UUID sessionId) {
     if (!ENABLED) return;
-    EXECUTOR.submit(() -> {
-      var sql = "UPDATE sessions SET end_time = CURRENT_TIMESTAMP WHERE session_id = ?";
-      try (Connection conn = DatabaseConnector.getConnection();
-           PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        pstmt.setObject(1, sessionId);
-        pstmt.executeUpdate();
-      } catch (SQLException e) {
-        LOGGER.error("Failed to end session: " + e.getMessage(), e);
-      }
-    });
+    EXECUTOR.submit(
+        () -> {
+          var sql = "UPDATE sessions SET end_time = CURRENT_TIMESTAMP WHERE session_id = ?";
+          try (Connection conn = DatabaseConnector.getConnection();
+              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setObject(1, sessionId);
+            pstmt.executeUpdate();
+          } catch (SQLException e) {
+            LOGGER.error("Failed to end session: " + e.getMessage(), e);
+          }
+        });
   }
 
   public enum Verb {

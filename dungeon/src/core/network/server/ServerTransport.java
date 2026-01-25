@@ -592,6 +592,7 @@ public final class ServerTransport {
     session.sendMessage(new ConnectAck(clientId, ServerRuntime.SESSION_ID, newSessionToken), true);
 
     sendInitialLevel(session.tcpCtx(), clientId);
+    oldClientState.lastFullSnapshotTick(0); // force full snapshot on reconnect
 
     // Resync dialogs for the reconnecting client
     DialogTracker.instance().resyncDialogsToClient(clientId);
