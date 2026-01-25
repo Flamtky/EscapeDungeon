@@ -67,7 +67,6 @@ import tools.timer.TimerAPI;
 /** The MADungeonRoom level. */
 public class MADungeonRoom extends DungeonLevel {
 
-
   // Labyrinth
   // Stamina Potion
   Entity staminaRiddle;
@@ -100,65 +99,72 @@ public class MADungeonRoom extends DungeonLevel {
   // empty Bottle
   Entity torchRiddle;
   PlaceComponent torchRiddlePlace;
-  private final String torchRiddleTitle = "Fläschchen";
+  private final String torchRiddleTitle = "Licht im 'Dunkeln";
   private final Hint[] torchRiddleHints = {
-    new Hint(torchRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(torchRiddleTitle + " 1", "Finde einen Weg Licht ins Labyrinth zu bringen."),
+    new Hint(torchRiddleTitle + " 2", "Fackeln erhellen die Umgebung."),
   };
 
   // empty Bottle
   Entity coalRiddle;
   PlaceComponent coalRiddlePlace;
-  private final String coalRiddleTitle = "Fläschchen";
+  private final String coalRiddleTitle = "Brennmaterialien";
   private final Hint[] coalRiddleHints = {
-    new Hint(coalRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(coalRiddleTitle, "Es ist mehr als nur ein Stück Kohle versteckt."),
   };
 
   // empty Bottle
   Entity stickRiddle;
   PlaceComponent stickRiddlePlace;
-  private final String stickRiddleTitle = "Fläschchen";
+  private final String stickRiddleTitle = "nachwachsende Rohstoffe";
   private final Hint[] stickRiddleHints = {
-    new Hint(stickRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(stickRiddleTitle + " 1", "Stöcker wachsen an Bäumen."),
+    new Hint(stickRiddleTitle + " 2", "Versuche mit einem Baum zu interagieren."),
+    new Hint(stickRiddleTitle + " 3", "Es werden immer wieder Stöcker vom Baum abfallen."),
   };
 
   // empty Bottle
   Entity iceRiddle;
   PlaceComponent iceRiddlePlace;
-  private final String iceRiddleTitle = "Fläschchen";
+  private final String iceRiddleTitle = "Kalte Gefilde";
   private final Hint[] iceRiddleHints = {
-    new Hint(iceRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(iceRiddleTitle, "Ich habe gehört tief im Labyrinth ist ein alter Teil des Verlies gänzlich eingefroren."),
   };
 
   // empty Bottle
   Entity iceRingRiddle;
   PlaceComponent iceRingRiddlePlace;
-  private final String iceRingRiddleTitle = "Fläschchen";
+  private final String iceRingRiddleTitle = "Rutschige Böden";
   private final Hint[] iceRingRiddleHints = {
-    new Hint(iceRingRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(iceRingRiddleTitle + " 1", "Es soll ein Item geben, dass es einem erlaubt auf dem Eis zu laufen."),
+    new Hint(iceRingRiddleTitle + " 2", "Nur einer von euch kann dieses Item tragen."),
   };
 
   // empty Bottle
   Entity blueGemRiddle;
   PlaceComponent blueGemRiddlePlace;
-  private final String blueGemRiddleTitle = "Fläschchen";
+  private final String blueGemRiddleTitle = "Eisig blau";
   private final Hint[] blueGemRiddleHints = {
-    new Hint(blueGemRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(blueGemRiddleTitle, "Ein seltener blauer Edelstein soll am tiefsten Ende des Labyrinths versteckt sein."),
+    new Hint(blueGemRiddleTitle, "Um zum Edelstein zu gelangen musst du den versteckten Durchgang finden."),
+    new Hint(blueGemRiddleTitle, "Kurz vor dem Edelstein scheint der Weg versperrt aber du kannst durch die Wand hindurch gehen."),
   };
 
   // empty Bottle
   Entity strenghtRiddle;
   PlaceComponent strenghtRiddlePlace;
-  private final String strenghtRiddleTitle = "Fläschchen";
+  private final String strenghtRiddleTitle = "Sisyphos";
   private final Hint[] strenghtRiddleHints = {
-    new Hint(strenghtRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(strenghtRiddleTitle + " 1", "Wenn du die Steine bewegen willst musst du stärker werden."),
+    new Hint(strenghtRiddleTitle  + " 2", "Ich habe gehört es soll ein Item geben, das dich stärker macht."),
   };
 
   // empty Bottle
   Entity redGemRiddle;
   PlaceComponent redGemRiddlePlace;
-  private final String redGemRiddleTitle = "Fläschchen";
   private final Hint[] redGemRiddleHints = {
-    new Hint(redGemRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint("Morgengrauen", "ein roter Stein der besondere Stärke verleiht soll in einem dunklen Labyrinth liegen."),
+    new Hint("Abenddämmerung", "Ich habe gehört, dass auch ein zweiter mächtiger Stein im Labyrinth verloren gegangen ist."),
   };
 
   // empty Bottle
@@ -863,7 +869,7 @@ public class MADungeonRoom extends DungeonLevel {
               int index = tuple.b();
               if (riddle == 0) {
                 if (index == 0 || index == 20) {
-                  pushStones1.add(createStone(index, pos));
+                  createStone(index, pos);
                 }
               }
               if (riddle == 1) {
