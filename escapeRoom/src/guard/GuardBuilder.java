@@ -175,7 +175,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         DungeonAnalyticsAPI.logXApiStatement(
             player.fetch(AnalyticsComponent.class).orElseThrow(),
             DungeonAnalyticsAPI.Verb.DETECTED,
-            guard.name() + "#" + guard.id(),
+            guard,
             Map.of("alertness", ac.alertness()),
             null);
         return true;
@@ -186,7 +186,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         DungeonAnalyticsAPI.logXApiStatement(
             player.fetch(AnalyticsComponent.class).orElseThrow(),
             DungeonAnalyticsAPI.Verb.LOST_DETECTION,
-            guard.name() + "#" + guard.id(),
+            guard,
             Map.of(
                 "alertness",
                 ac.alertness(),
@@ -242,7 +242,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
       DungeonAnalyticsAPI.logXApiStatement(
           player.fetch(AnalyticsComponent.class).orElseThrow(),
           DungeonAnalyticsAPI.Verb.CAPTURED,
-          guard.name() + "#" + guard.id(),
+          guard,
           Map.of("position", posData),
           null);
     }
@@ -288,7 +288,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         DungeonAnalyticsAPI.logXApiStatement(
             grabbedPlayer.fetch(AnalyticsComponent.class).orElseThrow(),
             DungeonAnalyticsAPI.Verb.RELEASED,
-            guard.name() + "#" + guard.id(),
+            guard,
             Map.of("time_captured_ms", System.currentTimeMillis() - capturedTime),
             null);
 

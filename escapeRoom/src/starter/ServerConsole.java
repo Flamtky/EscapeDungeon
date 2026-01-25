@@ -431,12 +431,7 @@ final class StopCommand implements ServerCommand {
 
   @Override
   public boolean execute(String arg, CommandContext ctx) {
-    try {
-      Game.network().shutdown("console stop");
-    } catch (Exception e) {
-      System.out.printf("Error while shutting down network: %s%n", e.getMessage());
-    }
-    Game.exit("console stop");
+    Game.exit("stopped_by_server_console");
     return false;
   }
 }

@@ -23,6 +23,8 @@ import core.network.messages.s2c.GameOverEvent;
 import core.network.messages.s2c.LevelState;
 import core.network.messages.s2c.SnapshotMessage;
 import core.utils.logging.DungeonLogger;
+
+import java.util.UUID;
 import java.util.concurrent.*;
 
 /**
@@ -65,6 +67,9 @@ public final class AuthoritativeServerLoop {
   private int timingIndex = 0;
   private int timingFilled = 0;
 
+  // for analytics session tracking
+  private UUID sessionID = null;
+
   /**
    * Creates a new AuthoritativeServerLoop with the given ServerTransport.
    *
@@ -87,6 +92,8 @@ public final class AuthoritativeServerLoop {
    */
   public void start() {
     PreRunConfiguration.frameRate(SERVER_TICK_HZ);
+
+    sessionID = DungeonAnalyticsAPI.startSession("{}");
 
     try {
       DungeonLoader.afterAllLevels(
@@ -126,6 +133,8 @@ public final class AuthoritativeServerLoop {
 
   /** Stops the server loop, shutting down the executor service. */
   public void stop() {
+    DungeonAnalyticsAPI.endSession(sessionID);
+
     executor.shutdownNow();
     try {
       executor.awaitTermination(1, TimeUnit.SECONDS);
@@ -291,7 +300,8 @@ public final class AuthoritativeServerLoop {
             .build();
 
     DungeonAnalyticsAPI.upsertPlayer(state, charClass);
-    hero.add(new AnalyticsComponent(state, DungeonAnalyticsAPI.startSession(state, "{}")));
+    DungeonAnalyticsAPI.joinSession(sessionID, state);
+    hero.add(new AnalyticsComponent(state, sessionID));
 
     hero.fetch(PositionComponent.class)
         .ifPresent(
