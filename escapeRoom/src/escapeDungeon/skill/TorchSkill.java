@@ -9,6 +9,7 @@ import core.Game;
 import core.level.utils.LevelElement;
 import core.utils.Point;
 import core.utils.Tuple;
+import java.util.concurrent.atomic.AtomicBoolean;
 import mushRoom.modules.qte.FollowingIndicatorDialog;
 import mushRoom.modules.qte.FollowingIndicatorDifficulty;
 
@@ -35,9 +36,11 @@ public class TorchSkill extends CursorSkill {
   /**
    * @param caster The entity using the skill.
    * @param point The current cursor position in the game world.
+   * @return whether the skill was successfully executed.
    */
   @Override
-  protected void executeOnCursor(Entity caster, Point point) {
+  protected boolean executeOnCursor(Entity caster, Point point) {
+    AtomicBoolean success = new AtomicBoolean(false);
     Game.tileAt(point)
         .ifPresent(
             (tile -> {
@@ -52,7 +55,7 @@ public class TorchSkill extends CursorSkill {
                 } else if (placed < maxAmount) {
                   FollowingIndicatorDialog.openFollowingIndicator(
                       caster,
-                      FollowingIndicatorDifficulty.EASY,
+                      FollowingIndicatorDifficulty.FAST.apply(RANDOM.nextInt(3, 6)),
                       () -> {
                         Entity torch =
                             DecoFactory.createDeco(tile.position(), Deco.TorchGrayAnimatedPlaced);
@@ -62,6 +65,8 @@ public class TorchSkill extends CursorSkill {
                       () -> {});
                 }
               }
+              success.set(true);
             }));
+    return success.get();
   }
 }

@@ -571,6 +571,11 @@ public final class VelocityComponent implements Component {
     return modifiers.remove(key) != null;
   }
 
+  /** Remove all modifiers. */
+  public void removeAllModifiers() {
+    modifiers.clear();
+  }
+
   /**
    * Returns whether the VelocityComponent is stationary and will not move.
    *

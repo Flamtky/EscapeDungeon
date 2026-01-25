@@ -25,7 +25,7 @@ public final class FollowingIndicatorDialog {
       DungeonLogger.getLogger(FollowingIndicatorDialog.class);
 
   /** Delay after success/failure before closing. */
-  private static final long DELAY_AFTER_END = 2000;
+  private static final long DELAY_AFTER_END = 0;
 
   static {
     DialogFactory.register(

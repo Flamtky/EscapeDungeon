@@ -6,9 +6,12 @@ import contrib.utils.components.skill.Resource;
 import contrib.utils.components.skill.cursorSkill.CursorSkill;
 import core.Entity;
 import core.Game;
+import core.level.Tile;
 import core.level.utils.LevelElement;
+import core.level.utils.LevelUtils;
 import core.utils.Point;
 import core.utils.Tuple;
+import java.util.ArrayList;
 import mushRoom.modules.lockpick.LockPickDialog;
 import mushRoom.modules.lockpick.LockPickDifficulty;
 
@@ -31,29 +34,38 @@ public class WallbreakerSkill extends CursorSkill {
    * @param point The current cursor position in the game world.
    */
   @Override
-  protected void executeOnCursor(Entity caster, Point point) {
+  protected boolean executeOnCursor(Entity caster, Point point) {
     if (Game.entityAtPoint(point).anyMatch(e -> e.name().contains("Wall"))) {
+      caster
+          .fetch(IllegalComponent.class)
+          .ifPresent(
+              ic -> {
+                ic.addReason(IllegalComponent.Reason.VANDALISM);
+                EventScheduler.scheduleAction(
+                    () -> ic.removeReason(IllegalComponent.Reason.VANDALISM), 15000);
+              });
       LockPickDialog.openLockPick(
           caster,
           LockPickDifficulty.HARD,
           () -> {
-            Game.entityAtPoint(point).filter(e -> e.name().contains("Wall")).forEach(Game::remove);
-            Game.tileAt(point)
-                .ifPresent(
-                    (tile -> {
-                      tile.levelElement(LevelElement.FLOOR);
-                      tile.refreshTexture();
-                    }));
-            caster
-                .fetch(IllegalComponent.class)
-                .ifPresent(
-                    ic -> {
-                      ic.addReason(IllegalComponent.Reason.VANDALISM);
-                      EventScheduler.scheduleAction(
-                          () -> ic.removeReason(IllegalComponent.Reason.VANDALISM), 5000);
+            ArrayList<Tile> entityTiles = new ArrayList<>();
+            Game.entityAtPoint(point)
+                .filter(e -> e.name().contains("Wall"))
+                .forEach(
+                    entity -> {
+                      Game.remove(entity);
+                      entityTiles.addAll(LevelUtils.occupiedTiles(entity));
                     });
+            entityTiles.forEach(
+                tile -> {
+                  tile.levelElement(LevelElement.FLOOR);
+                  tile.refreshTexture();
+                });
+            this.setLastUsedToNow();
           },
-          () -> {});
+          this::setLastUsedToNow);
+      return true;
     }
+    return false;
   }
 }

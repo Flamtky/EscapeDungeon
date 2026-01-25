@@ -1,7 +1,6 @@
 package starter;
 
 import analytics.RiddleAnalysisSystem;
-import contrib.crafting.Crafting;
 import contrib.entities.CharacterClass;
 import contrib.entities.EntityFactory;
 import contrib.entities.HeroController;
@@ -14,13 +13,18 @@ import core.game.GameLoop;
 import core.game.PreRunConfiguration;
 import core.level.loader.DungeonLoader;
 import core.network.config.NetworkConfig;
+import core.network.handler.NettyNetworkHandler;
 import core.network.messages.s2c.LevelChangeEvent;
-import core.systems.*;
+import core.systems.FrictionSystem;
+import core.systems.LevelSystem;
+import core.systems.MoveSystem;
+import core.systems.VelocitySystem;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoom;
 import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
+import hint.HintSystem;
 import java.io.IOException;
 import network.EscapeRoomSnapshotTranslator;
 import tools.timer.TimerSystem;
@@ -54,6 +58,8 @@ public class MAServer {
     // Enable snapshot debugging to analyze network payload sizes
     // SnapshotDebugger.enable();
 
+    Game.registerShutdownCallback(ServerConsole::shutdown);
+
     Game.windowTitle("Demo-Room");
     Game.run();
   }
@@ -64,7 +70,6 @@ public class MAServer {
           DungeonLoader.addLevel(Tuple.of("maroom", MADungeonRoom.class));
           createSystems();
           // createHero();
-          Crafting.loadRecipes();
 
           ECSManagement.system(
               LevelSystem.class,
@@ -74,6 +79,10 @@ public class MAServer {
                         GameLoop.onLevelLoad.execute();
                         Game.network().broadcast(LevelChangeEvent.currentLevel(), true);
                       }));
+
+          if (PreRunConfiguration.isNetworkServer()) {
+            ServerConsole.start((NettyNetworkHandler) Game.network());
+          }
         });
   }
 
@@ -119,6 +128,7 @@ public class MAServer {
     Game.add(new BedSleepSystem());
     Game.add(new TimerSystem());
     Game.add(new RiddleAnalysisSystem());
+    Game.add(new HintSystem());
   }
 
   private static void onFrame() {

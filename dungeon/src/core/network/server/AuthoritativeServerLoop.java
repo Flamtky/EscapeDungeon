@@ -23,6 +23,7 @@ import core.network.messages.s2c.GameOverEvent;
 import core.network.messages.s2c.LevelState;
 import core.network.messages.s2c.SnapshotMessage;
 import core.utils.logging.DungeonLogger;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 /**
@@ -50,7 +51,9 @@ public final class AuthoritativeServerLoop {
   private static final DungeonLogger LOGGER =
       DungeonLogger.getLogger(AuthoritativeServerLoop.class);
   private static final boolean PRINT_RTT = false; // to debug latency issues
-  private static final boolean PRINT_TIMING = true; // to debug performance issues
+
+  /** Enable detailed timing prints for ticks and snapshots */
+  public static boolean PRINT_TIMING = true; // to debug performance issues
 
   private final ServerTransport net;
   private final ScheduledExecutorService executor;
@@ -62,6 +65,9 @@ public final class AuthoritativeServerLoop {
   private final long[] snapshotTimesNs = new long[TIMING_PRINT_INTERVAL];
   private int timingIndex = 0;
   private int timingFilled = 0;
+
+  // for analytics session tracking
+  private UUID sessionID = null;
 
   /**
    * Creates a new AuthoritativeServerLoop with the given ServerTransport.
@@ -85,6 +91,8 @@ public final class AuthoritativeServerLoop {
    */
   public void start() {
     PreRunConfiguration.frameRate(SERVER_TICK_HZ);
+
+    sessionID = DungeonAnalyticsAPI.startSession("{}");
 
     try {
       DungeonLoader.afterAllLevels(
@@ -124,7 +132,16 @@ public final class AuthoritativeServerLoop {
 
   /** Stops the server loop, shutting down the executor service. */
   public void stop() {
+    DungeonAnalyticsAPI.endSession(sessionID);
+
     executor.shutdownNow();
+    try {
+      executor.awaitTermination(1, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      LOGGER.debug(
+          "Interrupted while waiting for executor termination (expected if console is blocking)");
+      // Don't re-interrupt - let the shutdown proceed
+    }
     LOGGER.info("ServerLoop stopped");
   }
 
@@ -270,7 +287,9 @@ public final class AuthoritativeServerLoop {
   private Entity spawnHeroForClient(ClientState state) {
     CharacterClass charClass;
     try {
-      charClass = CharacterClass.valueOf(state.username().toUpperCase()); // TODO: Only workaround
+      var fullName = state.username();
+      var className = fullName.substring(fullName.lastIndexOf('#') + 1);
+      charClass = CharacterClass.valueOf(className.toUpperCase());
     } catch (IllegalArgumentException e) {
       charClass = CharacterClass.ROGUE;
     }
@@ -282,7 +301,8 @@ public final class AuthoritativeServerLoop {
             .build();
 
     DungeonAnalyticsAPI.upsertPlayer(state, charClass);
-    hero.add(new AnalyticsComponent(state, DungeonAnalyticsAPI.startSession(state, "{}")));
+    DungeonAnalyticsAPI.joinSession(sessionID, state);
+    hero.add(new AnalyticsComponent(state, sessionID));
 
     hero.fetch(PositionComponent.class)
         .ifPresent(

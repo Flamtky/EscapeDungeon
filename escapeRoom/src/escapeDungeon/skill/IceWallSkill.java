@@ -3,6 +3,7 @@ package escapeDungeon.skill;
 import contrib.components.DecoComponent;
 import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
+import contrib.utils.EntityUtils;
 import contrib.utils.components.skill.Resource;
 import contrib.utils.components.skill.cursorSkill.CursorSkill;
 import core.Entity;
@@ -11,6 +12,8 @@ import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
 import core.utils.Point;
 import core.utils.Tuple;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** A skill that allows the caster to create or remove ice walls on ice-designated tiles. */
 public class IceWallSkill extends CursorSkill {
@@ -34,9 +37,11 @@ public class IceWallSkill extends CursorSkill {
   /**
    * @param caster The entity using the skill.
    * @param point The current cursor position in the game world.
+   * @return whether the skill was successfully executed.
    */
   @Override
-  protected void executeOnCursor(Entity caster, Point point) {
+  protected boolean executeOnCursor(Entity caster, Point point) {
+    AtomicBoolean success = new AtomicBoolean(false);
     Game.tileAt(point)
         .ifPresent(
             (tile -> {
@@ -58,15 +63,26 @@ public class IceWallSkill extends CursorSkill {
                                       && t.designLabel() == DesignLabel.ICE)
                           .size()
                       < maxWallAmount) {
-                    if (Game.entityAtPoint(point).noneMatch(e -> e.name().contains("hero"))) {
-                      tile.levelElement(LevelElement.HOLE);
-                      tile.refreshTexture();
-                      var iceWallEntity = DecoFactory.createDeco(tile.position(), Deco.IceWall);
-                      Game.add(iceWallEntity);
+                    var playerTiles =
+                        Game.allPlayers()
+                            .map(EntityUtils::getPosition)
+                            .map(Game::tileAt)
+                            .flatMap(Optional::stream)
+                            .toList();
+
+                    if (playerTiles.contains(tile)) {
+                      return; // Prevent placing ice wall on player's own tile
                     }
+
+                    tile.levelElement(LevelElement.HOLE);
+                    tile.refreshTexture();
+                    var iceWallEntity = DecoFactory.createDeco(tile.position(), Deco.IceWall);
+                    Game.add(iceWallEntity);
                   }
                 }
               }
+              success.set(true);
             }));
+    return success.get();
   }
 }

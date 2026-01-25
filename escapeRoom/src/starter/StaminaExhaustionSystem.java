@@ -43,7 +43,7 @@ public class StaminaExhaustionSystem extends System {
    * The stamina percentage (0.0 to 1.0) of max stamina at which an exhausted entity recovers. The
    * entity must reach this percentage of their max stamina to exit the exhausted state.
    */
-  private static final float RECOVERY_THRESHOLD_PERCENT = 0.90f;
+  private static final float RECOVERY_THRESHOLD_PERCENT = 0.30f;
 
   private final Map<Entity, Long> exhaustionTimestamps = new HashMap<>();
 

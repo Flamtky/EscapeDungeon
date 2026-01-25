@@ -74,7 +74,7 @@ public class HeroController {
                 DungeonAnalyticsAPI.logXApiStatement(
                     ac,
                     DungeonAnalyticsAPI.Verb.MOVED,
-                    hero.name() + "#" + hero.id(),
+                    hero,
                     Map.of("success", false, "reason", "controls_deactivated"));
               });
       return;
@@ -105,7 +105,7 @@ public class HeroController {
                     DungeonAnalyticsAPI.logXApiStatement(
                         ac,
                         DungeonAnalyticsAPI.Verb.MOVED,
-                        hero.name() + "#" + hero.id(),
+                        hero,
                         Map.of(
                             "success",
                             false,
@@ -261,10 +261,7 @@ public class HeroController {
               .ifPresent(
                   ac -> {
                     DungeonAnalyticsAPI.logXApiStatement(
-                        ac,
-                        DungeonAnalyticsAPI.Verb.INTERACTED,
-                        hero.name() + "#" + hero.id(),
-                        Map.of("success", true));
+                        ac, DungeonAnalyticsAPI.Verb.INTERACTED, hero, Map.of("success", true));
                   });
         },
         () -> {
@@ -275,7 +272,7 @@ public class HeroController {
                     DungeonAnalyticsAPI.logXApiStatement(
                         ac,
                         DungeonAnalyticsAPI.Verb.INTERACTED,
-                        hero.name() + "#" + hero.id(),
+                        hero,
                         Map.of("success", false, "reason", "no_entity_found"));
                   });
         });
@@ -343,7 +340,7 @@ public class HeroController {
                 DungeonAnalyticsAPI.logXApiStatement(
                     ac,
                     DungeonAnalyticsAPI.Verb.OPENED,
-                    hero.name() + "#" + hero.id(),
+                    hero,
                     Map.of("success", false, "reason", "missing_components"));
               });
       return;
@@ -358,7 +355,7 @@ public class HeroController {
                 DungeonAnalyticsAPI.logXApiStatement(
                     ac,
                     DungeonAnalyticsAPI.Verb.OPENED,
-                    hero.name() + "#" + hero.id(),
+                    hero,
                     Map.of("success", false, "reason", "other_dialogs_open"));
               });
       return;
@@ -462,7 +459,7 @@ public class HeroController {
                 DungeonAnalyticsAPI.logXApiStatement(
                     ac,
                     DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-                    player.name() + "#" + player.id(),
+                    player,
                     Map.of("success", false, "reason", "no_ui_component"));
               });
       return false;
@@ -478,7 +475,7 @@ public class HeroController {
                 DungeonAnalyticsAPI.logXApiStatement(
                     ac,
                     DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-                    player.name() + "#" + player.id(),
+                    player,
                     Map.of("success", false, "reason", "no_player_inventory"));
               });
       return false;
@@ -510,7 +507,7 @@ public class HeroController {
                 DungeonAnalyticsAPI.logXApiStatement(
                     ac,
                     DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-                    player.name() + "#" + player.id(),
+                    player,
                     Map.of(
                         "success",
                         false,
@@ -535,7 +532,7 @@ public class HeroController {
                 DungeonAnalyticsAPI.logXApiStatement(
                     ac,
                     DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-                    player.name() + "#" + player.id(),
+                    player,
                     Map.of(
                         "success",
                         false,
@@ -565,7 +562,7 @@ public class HeroController {
                           DungeonAnalyticsAPI.logXApiStatement(
                               ac,
                               DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-                              player.name() + "#" + player.id(),
+                              player,
                               Map.of(
                                   "success",
                                   false,
@@ -590,7 +587,7 @@ public class HeroController {
                           DungeonAnalyticsAPI.logXApiStatement(
                               ac,
                               DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-                              player.name() + "#" + player.id(),
+                              player,
                               Map.of(
                                   "success",
                                   false,
@@ -622,7 +619,7 @@ public class HeroController {
                           DungeonAnalyticsAPI.logXApiStatement(
                               ac,
                               DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-                              player.name() + "#" + player.id(),
+                              player,
                               Map.of(
                                   "success",
                                   false,
@@ -646,7 +643,7 @@ public class HeroController {
               DungeonAnalyticsAPI.logXApiStatement(
                   ac,
                   DungeonAnalyticsAPI.Verb.MOVED_ITEM,
-                  player.name() + "#" + player.id(),
+                  player,
                   Map.of(
                       "success",
                       true,
@@ -686,7 +683,7 @@ public class HeroController {
                 DungeonAnalyticsAPI.logXApiStatement(
                     ac,
                     DungeonAnalyticsAPI.Verb.USED_ITEM,
-                    entity.name() + "#" + entity.id(),
+                    entity,
                     Map.of("success", false, "reason", "no_item_in_slot", "item_slot", itemSlot));
               });
       return false;
@@ -765,7 +762,7 @@ public class HeroController {
         try {
           applyInput(clientState, msg, playerEntity);
         } catch (Exception e) {
-          LOGGER.error("Failed to apply input for client {}: {}", clientState, e.getMessage(), e);
+          LOGGER.warn("Failed to apply input for client {}: {}", clientState, e.getMessage(), e);
         }
       }
       clientState.updateProcessedSeq(msg.sequence());

@@ -415,7 +415,7 @@ public final class ECSManagement {
         return Stream.empty();
       }
       for (Entity entity : cachedEntities) {
-        if (entity.isPresent(VelocityComponent.class)) {
+        if (entity.fetch(VelocityComponent.class).map(vc -> !vc.isStationary()).orElse(false)) {
           toRevalidate.add(entity);
         } else {
           result.add(entity);

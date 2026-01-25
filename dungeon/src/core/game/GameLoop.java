@@ -375,7 +375,7 @@ public final class GameLoop extends ScreenAdapter {
             boolean isLocal = Objects.equals(pc.playerName(), PreRunConfiguration.username());
 
             if (alreadyGotAHero) {
-              LOGGER.info("Already got a hero, checking if local player...");
+              LOGGER.debug("Already got a hero, checking if local player...");
               if (isLocal) {
                 LOGGER.warn(
                     "Received spawn event for local player, but we already have a local player! ID: {} ",

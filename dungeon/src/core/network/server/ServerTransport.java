@@ -51,7 +51,7 @@ import java.util.function.Consumer;
 public final class ServerTransport {
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(ServerTransport.class);
   private static final short SERVER_PROTOCOL_VERSION = 1;
-  private static final long SPAWN_REQUEST_COOLDOWN_MS = 5000L;
+  private static final long SPAWN_REQUEST_COOLDOWN_MS = 500L;
 
   private final Queue<Tuple<Session, NetworkMessage>> inboundQueue = new ConcurrentLinkedQueue<>();
 
@@ -111,8 +111,12 @@ public final class ServerTransport {
       LOGGER.warn("Error closing channels", e);
     } finally {
       try {
-        if (bossGroup != null) bossGroup.shutdownGracefully();
-        if (workerGroup != null) workerGroup.shutdownGracefully();
+        if (bossGroup != null) {
+          bossGroup.shutdownGracefully().syncUninterruptibly();
+        }
+        if (workerGroup != null) {
+          workerGroup.shutdownGracefully().syncUninterruptibly();
+        }
       } catch (Exception e) {
         LOGGER.warn("Error shutting down event loops", e);
       }
@@ -293,6 +297,22 @@ public final class ServerTransport {
     Bootstrap ub = new Bootstrap();
     ub.group(workerGroup).channel(NioDatagramChannel.class).handler(new UdpServerHandler());
     udpChannel = ub.bind(port).syncUninterruptibly().channel();
+  }
+
+  /**
+   * Finds the session associated with the given ClientState.
+   *
+   * @param clientState The ClientState to search for.
+   * @return An Optional containing the Session if found, or empty if not found.
+   */
+  public Optional<Session> sessionForClient(ClientState clientState) {
+    for (Session session : sessions.values()) {
+      Optional<ClientState> csOpt = session.clientState();
+      if (csOpt.isPresent() && csOpt.get().equals(clientState)) {
+        return Optional.of(session);
+      }
+    }
+    return Optional.empty();
   }
 
   private final class TcpServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
@@ -572,6 +592,7 @@ public final class ServerTransport {
     session.sendMessage(new ConnectAck(clientId, ServerRuntime.SESSION_ID, newSessionToken), true);
 
     sendInitialLevel(session.tcpCtx(), clientId);
+    oldClientState.lastFullSnapshotTick(0); // force full snapshot on reconnect
 
     // Resync dialogs for the reconnecting client
     DialogTracker.instance().resyncDialogsToClient(clientId);
@@ -825,5 +846,14 @@ public final class ServerTransport {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Removes the spawn request cooldown tracking entry for the given client.
+   *
+   * @param clientId the client whose cooldown entry should be cleared
+   */
+  public void clearSpawnRequestCooldown(short clientId) {
+    spawnRequestTimes.remove(clientId);
   }
 }

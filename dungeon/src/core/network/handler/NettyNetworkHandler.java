@@ -92,7 +92,7 @@ public class NettyNetworkHandler implements INetworkHandler {
 
   @Override
   public boolean isConnected() {
-    return serverMode || client.isConnected();
+    return (serverMode && server.isRunning()) || client.isConnected();
   }
 
   @Override

@@ -32,7 +32,9 @@ public abstract class Skill {
   public static final Skill NONE =
       new Skill() {
         @Override
-        protected void executeSkill(Entity caster) {}
+        protected boolean executeSkill(Entity caster) {
+          return true;
+        }
       };
 
   /** The name of the skill. */
@@ -82,8 +84,9 @@ public abstract class Skill {
    * triggered.
    *
    * @param caster the entity using the skill
+   * @return {@code true} if the skill executed successfully, {@code false} otherwise
    */
-  protected abstract void executeSkill(Entity caster);
+  protected abstract boolean executeSkill(Entity caster);
 
   /**
    * Attempts to execute the skill for the given entity.
@@ -103,8 +106,11 @@ public abstract class Skill {
    */
   public final boolean execute(final Entity entity) {
     if (canBeUsedAgain() && checkResources(entity)) {
+      var suc = executeSkill(entity);
+      if (!suc) {
+        return false;
+      }
       consumeResources(entity);
-      executeSkill(entity);
       lastUsed = Instant.now();
       activateCoolDown();
       return true;

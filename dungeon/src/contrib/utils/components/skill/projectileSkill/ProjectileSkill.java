@@ -143,10 +143,12 @@ public abstract class ProjectileSkill extends Skill {
    * and sets up collision and lifetime handlers.
    *
    * @param caster The entity that casts this skill.
+   * @return true if the skill was executed successfully.
    */
   @Override
-  protected void executeSkill(Entity caster) {
+  protected boolean executeSkill(Entity caster) {
     shootProjectile(caster, start(caster), endPoint());
+    return true;
   }
 
   /**

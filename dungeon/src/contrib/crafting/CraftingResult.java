@@ -15,4 +15,8 @@ public interface CraftingResult {
    * @return The type of the crafting result.
    */
   CraftingType resultType();
+
+  void setAmount(int count);
+
+  int getAmount();
 }

@@ -50,17 +50,22 @@ public class TorchPostProcessing extends AbstractShader {
     /** Light radius. */
     public float radius;
 
+    /** Associated entity ID. */
+    public int entityId;
+
     /**
      * Constructs a Light with specified position and radius.
      *
      * @param x The X coordinate of the light position
      * @param y The Y coordinate of the light position
      * @param radius The radius of the light
+     * @param entityId The associated entity ID
      */
-    public Light(float x, float y, float radius) {
+    public Light(float x, float y, float radius, int entityId) {
       this.x = x;
       this.y = y;
       this.radius = radius;
+      this.entityId = entityId;
     }
 
     /**

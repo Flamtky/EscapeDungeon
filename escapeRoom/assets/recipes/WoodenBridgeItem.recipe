@@ -7,17 +7,15 @@
                 "id": "LogItem",
                 "count": 2
             }
+        },
+        {
+            "type": "item",
+            "item": {
+                "id": "RopeItem",
+                "count": 1
+            }
         }
     ],
-    "ingredients": [
-            {
-                "type": "item",
-                "item": {
-                    "id": "RopeItem",
-                    "count": 1
-                }
-            }
-        ],
     "results": [
         {
             "type": "item",

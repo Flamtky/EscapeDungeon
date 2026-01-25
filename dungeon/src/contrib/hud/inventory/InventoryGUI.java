@@ -473,7 +473,12 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Dis
           @Override
           public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
             Entity player = Game.player().orElseThrow();
-            if (UIUtils.getPlayerInventoryGUI(player).isPresent()) {
+            UIComponent uiComponent = player.fetch(UIComponent.class).orElse(null);
+            InventoryComponent inventoryComponent =
+                player.fetch(InventoryComponent.class).orElse(null);
+            if (uiComponent != null
+                && UIUtils.getInventoriesFromUI(uiComponent)
+                    .allMatch(ic -> ic == inventoryComponent)) {
               if (KeyboardConfig.MOUSE_USE_ITEM.value() == button) {
                 if (Game.network().isServer()) {
                   return HeroController.useItem(player, getSlotByMousePosition());
@@ -490,8 +495,6 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Dis
               return false;
             }
 
-            UIComponent uiComponent =
-                Game.player().flatMap(e -> e.fetch(UIComponent.class)).orElse(null);
             if (uiComponent != null && uiComponent.dialog() instanceof GUICombination) {
               // if two inventories are open, transfer items between them if key is pressed
               if (KeyboardConfig.TRANSFER_ITEM.value() == button) {
@@ -589,7 +592,7 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Dis
     }
 
     // clear drag and drop holding item
-    if (this.dragAndDrop().isDragging()) {
+    if (this.dragAndDrop() != null && this.dragAndDrop().isDragging()) {
       this.dragAndDrop().getDragActor().remove();
     }
   }

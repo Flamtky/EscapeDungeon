@@ -65,16 +65,16 @@ public class MADungeonRoomClient extends DungeonLevel {
               PositionComponent pos = e.fetch(PositionComponent.class).orElseThrow();
               torchShader.addLight(
                   new TorchPostProcessing.Light(
-                      pos.position().x() + 0.5f, pos.position().y(), radius));
+                      pos.position().x() + 0.5f, pos.position().y(), radius, e.id()));
               initLightEntityIds.add(e.id());
             });
 
-    torchShader
-        .lights()
+    torchShader.lights().stream()
+        .filter(light -> Game.findEntityById(light.entityId).isEmpty())
         .forEach(
             light -> {
-              if (Game.entityAtPoint(new Point(light.x, light.y)).findAny().isEmpty())
-                torchShader.removeLight(light);
+              torchShader.removeLight(light);
+              initLightEntityIds.remove(light.entityId);
             });
 
     Game.player()

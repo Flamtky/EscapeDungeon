@@ -36,7 +36,6 @@ public class IceWallPlacer extends Item {
   public boolean collect(Entity itemEntity, Entity collector) {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
-    collector.add(new IceMovementComponent());
     giveSkill(collector);
     return super.collect(itemEntity, collector);
   }
@@ -45,11 +44,11 @@ public class IceWallPlacer extends Item {
   public void added(Entity collector) {
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
-    collector.add(new IceMovementComponent());
     giveSkill(collector);
   }
 
   private void giveSkill(Entity entity) {
+    entity.add(new IceMovementComponent());
     entity
         .fetch(SkillComponent.class)
         .ifPresent(

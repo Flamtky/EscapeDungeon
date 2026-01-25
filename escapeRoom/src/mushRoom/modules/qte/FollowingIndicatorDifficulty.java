@@ -2,6 +2,7 @@ package mushRoom.modules.qte;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.function.Function;
 
 /**
  * Represents difficulty configuration for the Following Indicator QTE minigame.
@@ -24,6 +25,10 @@ public final class FollowingIndicatorDifficulty implements Serializable {
   /** Easy: Slow speed, 3 zones, 3 successes needed3 attempts. */
   public static final FollowingIndicatorDifficulty EASY =
       new FollowingIndicatorDifficulty(120f, 3, 3, 3);
+
+  /** Fast: Very fast speed, 3 zones, 1 success needed, 1 attempt. */
+  public static final Function<Integer, FollowingIndicatorDifficulty> FAST =
+      (zoneCount) -> new FollowingIndicatorDifficulty(300f, zoneCount, 1, 1);
 
   /** Medium: Moderate speed, 5 zones, 4 successes needed, 3 attempts. */
   public static final FollowingIndicatorDifficulty MEDIUM =

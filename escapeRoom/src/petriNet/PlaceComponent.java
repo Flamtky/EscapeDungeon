@@ -16,6 +16,8 @@ public class PlaceComponent implements Component {
   /** The number of tokens currently in this place. */
   private int tokenCounter = 0;
 
+  private boolean consumed = false;
+
   /**
    * Returns the current number of tokens in this place.
    *
@@ -50,6 +52,7 @@ public class PlaceComponent implements Component {
   public boolean consume(int amount) {
     if (tokenCounter >= amount) {
       tokenCounter -= amount;
+      consumed = true;
       return true;
     }
     return false;
@@ -64,5 +67,13 @@ public class PlaceComponent implements Component {
    */
   public boolean consume() {
     return consume(1);
+  }
+
+  public boolean wasConsumed() {
+    return consumed;
+  }
+
+  public void resetConsumed() {
+    consumed = false;
   }
 }

@@ -1,5 +1,6 @@
 package starter;
 
+import contrib.entities.CharacterClass;
 import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogFactory;
 import contrib.utils.components.Debugger;
@@ -28,9 +29,21 @@ public final class MAClient {
     DialogFactory.register(EscapeRoomDialogTypes.LOCKPICK, LockPickDialog::build);
     DialogFactory.register(
         EscapeRoomDialogTypes.CRAFTING_BOOK, CraftingBookItem::buildCraftingBookDialog);
+    DialogFactory.register(EscapeRoomDialogTypes.TIMER, TimerDialog::build);
   }
 
   private static boolean firstTick = true;
+
+  ///////////////////////////////////
+  ///////////////////////////////////
+  ///
+  static final int SEED = 1;
+  private static final String NAME = RandomNameGenerator.generateName();
+  private static final CharacterClass CLASS = CharacterClass.APPRENTICE;
+
+  ///
+  ///////////////////////////////////
+  ///////////////////////////////////
 
   /**
    * Main method to start the dev client.
@@ -47,14 +60,14 @@ public final class MAClient {
 
     NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
     MASinglePlayer.registerItems();
-    PreRunConfiguration.username("APPRENTICE");
-    // PreRunConfiguration.username("ROGUE");
+
+    PreRunConfiguration.username(NAME + "#" + CLASS.name());
 
     // Game Settings
     Game.loadConfig(new SimpleIPath("dungeon_config.json"), KeyboardConfig.class);
     Game.disableAudio(false);
     Game.frameRate(90);
-    Game.windowTitle("Prison Escape - " + PreRunConfiguration.username());
+    Game.windowTitle("Prison Escape - " + NAME);
     Game.userOnSetup(
         () -> {
           Game.add(new Debugger());

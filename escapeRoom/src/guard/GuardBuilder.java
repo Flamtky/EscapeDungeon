@@ -175,7 +175,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         DungeonAnalyticsAPI.logXApiStatement(
             player.fetch(AnalyticsComponent.class).orElseThrow(),
             DungeonAnalyticsAPI.Verb.DETECTED,
-            guard.name() + "#" + guard.id(),
+            guard,
             Map.of("alertness", ac.alertness()),
             null);
         return true;
@@ -186,7 +186,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         DungeonAnalyticsAPI.logXApiStatement(
             player.fetch(AnalyticsComponent.class).orElseThrow(),
             DungeonAnalyticsAPI.Verb.LOST_DETECTION,
-            guard.name() + "#" + guard.id(),
+            guard,
             Map.of(
                 "alertness",
                 ac.alertness(),
@@ -225,6 +225,10 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
     }
 
     private void grabPlayer(Entity guard, Entity player) {
+      if (this.grabbedPlayer != null) {
+        return; // Already grabbing a player
+      }
+
       this.grabbedPlayer = player;
       this.capturedTime = System.currentTimeMillis();
 
@@ -242,7 +246,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
       DungeonAnalyticsAPI.logXApiStatement(
           player.fetch(AnalyticsComponent.class).orElseThrow(),
           DungeonAnalyticsAPI.Verb.CAPTURED,
-          guard.name() + "#" + guard.id(),
+          guard,
           Map.of("position", posData),
           null);
     }
@@ -259,27 +263,13 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         FollowingIndicatorDialog.openFollowingIndicator(
             grabbedPlayer,
             FollowingIndicatorDifficulty.HARD,
-            () -> {
-              grabbedPlayer.fetch(CollideComponent.class).ifPresent(cc -> cc.isSolid(true));
-              grabbedPlayer.remove(AttachmentComponent.class);
-              this.grabbedPlayer = null;
-              guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(true));
-            },
+            () -> releasePlayer(guard),
             () ->
                 DialogUtils.showTextPopup(
                     "Das hat nicht geklappt! Jetzt muss ich kurz warten, bis ich mich wieder bewegen darf.",
                     "Einzelhaft",
                     () -> {
-                      EventScheduler.scheduleAction(
-                          () -> {
-                            grabbedPlayer.remove(AttachmentComponent.class);
-                            grabbedPlayer
-                                .fetch(CollideComponent.class)
-                                .ifPresent(cc -> cc.isSolid(true));
-                            this.grabbedPlayer = null;
-                            guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(true));
-                          },
-                          10000);
+                      EventScheduler.scheduleAction(() -> releasePlayer(guard), 10000);
                     },
                     grabbedPlayer.id()));
         guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
@@ -288,7 +278,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         DungeonAnalyticsAPI.logXApiStatement(
             grabbedPlayer.fetch(AnalyticsComponent.class).orElseThrow(),
             DungeonAnalyticsAPI.Verb.RELEASED,
-            guard.name() + "#" + guard.id(),
+            guard,
             Map.of("time_captured_ms", System.currentTimeMillis() - capturedTime),
             null);
 
@@ -302,6 +292,23 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
           .fetch(VelocityComponent.class)
           .ifPresent(vc -> vc.modifier("sprint", 1.5f)); // increase speed to cell
       AIUtils.followPath(guard, path);
+    }
+
+    private void releasePlayer(Entity guard) {
+      grabbedPlayer.remove(AttachmentComponent.class);
+      grabbedPlayer.fetch(CollideComponent.class).ifPresent(cc -> cc.isSolid(true));
+      guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(true));
+      Game.tileAt(EntityUtils.getPosition(grabbedPlayer))
+          .ifPresent(
+              tile -> {
+                if (tile.isAccessible()) return;
+
+                var dropPos =
+                    LevelUtils.randomAccessibleTileInRangeAsPoint(tile.position(), 2)
+                        .orElse(tile.position());
+                grabbedPlayer.fetch(PositionComponent.class).ifPresent(pc -> pc.position(dropPos));
+              });
+      this.grabbedPlayer = null;
     }
   }
 }

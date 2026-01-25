@@ -1,6 +1,7 @@
 package demoDungeon.level;
 
 import analytics.DungeonAnalyticsAPI;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import contrib.components.*;
 import contrib.components.CollideComponent;
@@ -45,21 +46,285 @@ import escapeDungeon.components.IceMovementComponent;
 import escapeDungeon.items.*;
 import escapeDungeon.skill.SprintSkill;
 import guard.GuardBuilder;
+import hint.*;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import mobs.EscapeRoomMonsterBuilder;
 import mushRoom.Sounds;
 import mushRoom.modules.journal.CraftingBookItem;
 import mushRoom.modules.lockpick.LockPickDialog;
 import mushRoom.modules.lockpick.LockPickDifficulty;
 import mushRoom.shaders.TorchPostProcessing;
+import petriNet.PetriNetSystem;
+import petriNet.PlaceComponent;
+import petriNet.TransitionComponent;
 import tools.timer.TimerAPI;
 
 /** The MADungeonRoom level. */
 public class MADungeonRoom extends DungeonLevel {
+
+  // Labyrinth
+  // Stamina Potion
+  Entity staminaRiddle;
+  PlaceComponent staminaRiddlePlace;
+  private final String staminaRiddleTitle = "Ausdauertränke";
+  private final Hint[] staminaRiddleHints = {
+    new Hint(
+        staminaRiddleTitle,
+        "Du kannst dir einen Ausdauertrank herstellen, um nicht so oft schlafen zu müssen."),
+  };
+  Entity staminaRiddle2;
+  PlaceComponent staminaRiddle2Place;
+  private final String staminaRiddle2Title = "Ausdauertränke 2";
+  private final Hint[] staminaRiddle2Hints = {
+    new Hint(
+        staminaRiddle2Title,
+        "Nachdem du einen Ausdauertrank getrunken hast, kannst du das Fläschchen wieder auffüllen."),
+  };
+  // Leaf
+  Entity leafRiddle;
+  PlaceComponent leafRiddlePlace;
+  private final String leafRiddleTitle = "Blatt";
+  private final Hint[] leafRiddleHints = {
+    new Hint(leafRiddleTitle, "Die Blätter im Baum wachsen nach."),
+  };
+  // empty Bottle
+  Entity bottleRiddle;
+  PlaceComponent bottleRiddlePlace;
+  private final String bottleRiddleTitle = "Fläschchen";
+  private final Hint[] bottleRiddleHints = {
+    new Hint(bottleRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity torchRiddle;
+  PlaceComponent torchRiddlePlace;
+  private final String torchRiddleTitle = "Fläschchen";
+  private final Hint[] torchRiddleHints = {
+    new Hint(torchRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity coalRiddle;
+  PlaceComponent coalRiddlePlace;
+  private final String coalRiddleTitle = "Fläschchen";
+  private final Hint[] coalRiddleHints = {
+    new Hint(coalRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity stickRiddle;
+  PlaceComponent stickRiddlePlace;
+  private final String stickRiddleTitle = "Fläschchen";
+  private final Hint[] stickRiddleHints = {
+    new Hint(stickRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity iceRiddle;
+  PlaceComponent iceRiddlePlace;
+  private final String iceRiddleTitle = "Fläschchen";
+  private final Hint[] iceRiddleHints = {
+    new Hint(iceRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity iceRingRiddle;
+  PlaceComponent iceRingRiddlePlace;
+  private final String iceRingRiddleTitle = "Fläschchen";
+  private final Hint[] iceRingRiddleHints = {
+    new Hint(iceRingRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity blueGemRiddle;
+  PlaceComponent blueGemRiddlePlace;
+  private final String blueGemRiddleTitle = "Fläschchen";
+  private final Hint[] blueGemRiddleHints = {
+    new Hint(blueGemRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity strenghtRiddle;
+  PlaceComponent strenghtRiddlePlace;
+  private final String strenghtRiddleTitle = "Fläschchen";
+  private final Hint[] strenghtRiddleHints = {
+    new Hint(strenghtRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity redGemRiddle;
+  PlaceComponent redGemRiddlePlace;
+  private final String redGemRiddleTitle = "Fläschchen";
+  private final Hint[] redGemRiddleHints = {
+    new Hint(redGemRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity pushRiddle;
+  PlaceComponent pushRiddlePlace;
+  private final String pushRiddleTitle = "Fläschchen";
+  private final Hint[] pushRiddleHints = {
+    new Hint(pushRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity wallRiddle;
+  PlaceComponent wallRiddlePlace;
+  private final String wallRiddleTitle = "Fläschchen";
+  private final Hint[] wallRiddleHints = {
+    new Hint(wallRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity pickaxeRiddle;
+  PlaceComponent pickaxeRiddlePlace;
+  private final String pickaxeRiddleTitle = "Fläschchen";
+  private final Hint[] pickaxeRiddleHints = {
+    new Hint(pickaxeRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity axeRiddle;
+  PlaceComponent axeRiddlePlace;
+  private final String axeRiddleTitle = "Fläschchen";
+  private final Hint[] axeRiddleHints = {
+    new Hint(axeRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity bridgeRiddle;
+  PlaceComponent bridgeRiddlePlace;
+  private final String bridgeRiddleTitle = "Fläschchen";
+  private final Hint[] bridgeRiddleHints = {
+    new Hint(bridgeRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  // empty Bottle
+  Entity RopeRiddle;
+  PlaceComponent RopeRiddlePlace;
+  private final String RopeRiddleTitle = "Fläschchen";
+  private final Hint[] RopeRiddleHints = {
+    new Hint(RopeRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  };
+
+  private void setupHints() {
+    Game.add(HintGiverFactory.npc(new Point(28, 33)));
+    PetriNetSystem petriNetSystem = new PetriNetSystem();
+    Game.add(petriNetSystem);
+    // register hint log
+    Game.allPlayers()
+        .forEach(
+            player ->
+                player
+                    .fetch(InputComponent.class)
+                    .ifPresent(
+                        inputComponent ->
+                            inputComponent.registerCallback(
+                                Input.Keys.T,
+                                entity ->
+                                    player
+                                        .fetch(HintLogComponent.class)
+                                        .ifPresent(HintLogDialog::showHintLog),
+                                false,
+                                true)));
+
+    staminaRiddle = new Entity("staminaRiddle");
+    staminaRiddle.add(new HintComponent(staminaRiddleHints));
+    staminaRiddlePlace = new PlaceComponent();
+    staminaRiddle.add(staminaRiddlePlace);
+    Game.add(staminaRiddle);
+    // This is the first hint so activate it
+    staminaRiddlePlace.produce();
+
+    EventScheduler.scheduleAction(() -> staminaRiddlePlace.produce(), 10000);
+
+    leafRiddle = new Entity("Find recipe riddle");
+    leafRiddlePlace = new PlaceComponent();
+    leafRiddle.add(new HintComponent(leafRiddleHints));
+    leafRiddle.add(leafRiddlePlace);
+    Game.add(leafRiddle);
+    LeafItem.placeComponent(leafRiddlePlace);
+
+    TimerAPI.registerCallback(10, () -> leafRiddlePlace.produce());
+
+    // Craft potion riddle
+    bottleRiddle = new Entity("Craft potion riddle");
+    bottleRiddlePlace = new PlaceComponent();
+    bottleRiddle.add(new HintComponent(bottleRiddleHints));
+    bottleRiddle.add(bottleRiddlePlace);
+    Game.add(bottleRiddle);
+
+    EventScheduler.scheduleAction(() -> bottleRiddlePlace.produce(), 10000);
+    EventScheduler.scheduleAction(() -> bottleRiddlePlace.produce(), 20000);
+
+    staminaRiddle2 = new Entity("staminaRiddle2");
+    staminaRiddle2.add(new HintComponent(staminaRiddle2Hints));
+    staminaRiddle2Place = new PlaceComponent();
+    staminaRiddle2.add(staminaRiddle2Place);
+    Game.add(staminaRiddle2);
+
+    PlaceComponent sync1 = new PlaceComponent();
+
+    TransitionComponent t1 = new TransitionComponent();
+    petriNetSystem.addInputArc(t1, staminaRiddlePlace, 2);
+    petriNetSystem.addOutputArc(t1, sync1);
+
+    TransitionComponent t2 = new TransitionComponent();
+    petriNetSystem.addInputArc(t2, bottleRiddlePlace, 2);
+    petriNetSystem.addOutputArc(t2, sync1);
+
+    TransitionComponent t3 = new TransitionComponent();
+    petriNetSystem.addInputArc(t3, leafRiddlePlace, 2);
+    petriNetSystem.addOutputArc(t3, sync1);
+
+    TransitionComponent t4 = new TransitionComponent();
+    petriNetSystem.addInputArc(t4, sync1, 3);
+    petriNetSystem.addOutputArc(t4, staminaRiddle2Place);
+
+    // Remove Hints Riddle solved
+    TransitionComponent t5 = new TransitionComponent();
+    petriNetSystem.addInputArc(t5, staminaRiddle2Place, 4);
+
+    torchRiddle = new Entity("torchRiddle");
+    torchRiddle.add(new HintComponent(torchRiddleHints));
+    torchRiddlePlace = new PlaceComponent();
+    torchRiddle.add(torchRiddlePlace);
+    Game.add(torchRiddle);
+    // This is the first hint so activate it
+    staminaRiddlePlace.produce();
+
+    EventScheduler.scheduleAction(() -> staminaRiddlePlace.produce(), 10000);
+
+    leafRiddle = new Entity("Find recipe riddle");
+    leafRiddlePlace = new PlaceComponent();
+    leafRiddle.add(new HintComponent(leafRiddleHints));
+    leafRiddle.add(leafRiddlePlace);
+    Game.add(leafRiddle);
+    LeafItem.placeComponent(leafRiddlePlace);
+
+    TimerAPI.registerCallback(10, () -> leafRiddlePlace.produce());
+
+    // Craft potion riddle
+    bottleRiddle = new Entity("Craft potion riddle");
+    bottleRiddlePlace = new PlaceComponent();
+    bottleRiddle.add(new HintComponent(bottleRiddleHints));
+    bottleRiddle.add(bottleRiddlePlace);
+    Game.add(bottleRiddle);
+
+    EventScheduler.scheduleAction(() -> bottleRiddlePlace.produce(), 10000);
+    EventScheduler.scheduleAction(() -> bottleRiddlePlace.produce(), 20000);
+
+    staminaRiddle2 = new Entity("staminaRiddle2");
+    staminaRiddle2.add(new HintComponent(staminaRiddle2Hints));
+    staminaRiddle2Place = new PlaceComponent();
+    staminaRiddle2.add(staminaRiddle2Place);
+    Game.add(staminaRiddle2);
+  }
 
   private boolean resetPushStones21 = false;
   private boolean resetPushStones22 = false;
@@ -369,6 +634,7 @@ public class MADungeonRoom extends DungeonLevel {
     initGuards();
     Game.add(MiscFactory.newCraftingCauldron(getPoint("crafting0")));
     timer = scheduler.schedule(() -> {}, 10, TimeUnit.SECONDS);
+    setupHints();
   }
 
   @Override
@@ -471,6 +737,8 @@ public class MADungeonRoom extends DungeonLevel {
     createTreeChest();
   }
 
+  private final Set<Integer> lockpickedChests = new HashSet<>();
+
   private Entity addLockpicking(Entity chest) {
     chest
         .fetch(InteractionComponent.class)
@@ -483,32 +751,40 @@ public class MADungeonRoom extends DungeonLevel {
             () ->
                 new Interaction(
                     (interacted, interactor) -> {
+                      if (lockpickedChests.contains(interacted.id())) {
+                        interactor
+                            .fetch(InventoryComponent.class)
+                            .ifPresent(openChest(interacted, interactor));
+                        return;
+                      }
+
                       LockPickDialog.openLockPick(
                           interactor,
                           LockPickDifficulty.MEDIUM,
                           () -> {
+                            lockpickedChests.add(interacted.id());
                             interactor
                                 .fetch(InventoryComponent.class)
-                                .ifPresent(
-                                    whoIc -> {
-                                      DialogContext context =
-                                          DialogContext.builder()
-                                              .type(DialogType.DefaultTypes.DUAL_INVENTORY)
-                                              .put(DialogContextKeys.ENTITY, interactor.id())
-                                              .put(
-                                                  DialogContextKeys.SECONDARY_ENTITY,
-                                                  interacted.id())
-                                              .put(DialogContextKeys.OWNER_ENTITY, interactor.id())
-                                              .build();
-                                      UIComponent ui =
-                                          new UIComponent(context, true, interactor.id());
-                                      interactor.add(ui);
-                                    });
+                                .ifPresent(openChest(interacted, interactor));
                           },
                           () -> {});
                     })));
 
     return chest;
+  }
+
+  private Consumer<InventoryComponent> openChest(Entity interacted, Entity interactor) {
+    return (whoIc) -> {
+      DialogContext context =
+          DialogContext.builder()
+              .type(DialogType.DefaultTypes.DUAL_INVENTORY)
+              .put(DialogContextKeys.ENTITY, interactor.id())
+              .put(DialogContextKeys.SECONDARY_ENTITY, interacted.id())
+              .put(DialogContextKeys.OWNER_ENTITY, interactor.id())
+              .build();
+      UIComponent ui = new UIComponent(context, true, interactor.id());
+      interactor.add(ui);
+    };
   }
 
   private void createTreeChest() {
@@ -910,16 +1186,16 @@ public class MADungeonRoom extends DungeonLevel {
               PositionComponent pos = e.fetch(PositionComponent.class).orElseThrow();
               torchShader.addLight(
                   new TorchPostProcessing.Light(
-                      pos.position().x() + 0.5f, pos.position().y(), radius));
+                      pos.position().x() + 0.5f, pos.position().y(), radius, e.id()));
               initLightEntityIds.add(e.id());
             });
 
-    torchShader
-        .lights()
+    torchShader.lights().stream()
+        .filter(light -> Game.findEntityById(light.entityId).isEmpty())
         .forEach(
             light -> {
-              if (Game.entityAtPoint(new Point(light.x, light.y)).findAny().isEmpty())
-                torchShader.removeLight(light);
+              torchShader.removeLight(light);
+              initLightEntityIds.remove(light.entityId);
             });
 
     Game.player()
@@ -973,7 +1249,12 @@ public class MADungeonRoom extends DungeonLevel {
     };
   }
 
-  private void addCallbacks(InputComponent inputComp) {
+  /**
+   * Adds the default hero movement callbacks to the given input component.
+   *
+   * @param inputComp The input component to add the callbacks to.
+   */
+  public static void addCallbacks(InputComponent inputComp) {
     inputComp.registerCallback(
         core.configuration.KeyboardConfig.MOVEMENT_UP.value(),
         (caller) ->
@@ -997,9 +1278,17 @@ public class MADungeonRoom extends DungeonLevel {
     Point currentPos = EntityUtils.getPosition(hero);
     VelocityComponent vc = hero.fetch(VelocityComponent.class).orElseThrow();
     InputComponent ic = hero.fetch(InputComponent.class).orElseThrow();
-    Tile currentTile = Game.tileAt(currentPos).orElseThrow();
+    Tile currentTile = Game.tileAt(currentPos).orElse(null);
 
-    if (!hero.isPresent(IceMovementComponent.class)) {
+    if (currentTile == null) {
+      return;
+    }
+
+    if (hero.isPresent(IceMovementComponent.class)) {
+      addCallbacks(ic);
+      ic.deactivateControls(false);
+      vc.onWallHit(e -> {});
+      hero.remove(FlyComponent.class);
       return;
     }
 
@@ -1103,6 +1392,11 @@ public class MADungeonRoom extends DungeonLevel {
                   Map.of("totalTime", String.valueOf(TimerAPI.elapsedSeconds())));
             });
 
-    DialogUtils.showTextPopup("Du bist entkommen!", "ENTKOMMEN!", Game::exit);
+    DialogUtils.showTextPopup(
+        "Du bist entkommen!",
+        "ENTKOMMEN!",
+        () -> {
+          Game.exit("Level completed - players escaped.");
+        });
   }
 }

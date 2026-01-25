@@ -220,6 +220,16 @@ public final class Crafting {
           } else {
             ingredientsArray[i] = Item.getItem(id).getDeclaredConstructor().newInstance();
           }
+          if (itemMap.containsKey("count")) {
+            Object countObj = itemMap.get("count");
+            int count;
+            try {
+              count = Integer.parseInt(String.valueOf(countObj));
+            } catch (ClassCastException ex) {
+              throw new IllegalArgumentException("'count' must be an integer. File: " + name, ex);
+            }
+            ingredientsArray[i].setAmount(count);
+          }
         } else {
           throw new RuntimeException("Unknown ingredient type: " + type + ". File: " + name);
         }
@@ -260,6 +270,16 @@ public final class Crafting {
             resultsArray[i] = (CraftingResult) fittingCons.newInstance(params);
           } else {
             resultsArray[i] = Item.getItem(id).getDeclaredConstructor().newInstance();
+          }
+          if (itemMap.containsKey("count")) {
+            Object countObj = itemMap.get("count");
+            int count;
+            try {
+              count = Integer.parseInt(String.valueOf(countObj));
+            } catch (ClassCastException ex) {
+              throw new IllegalArgumentException("'count' must be an integer. File: " + name, ex);
+            }
+            resultsArray[i].setAmount(count);
           }
         } else {
           throw new RuntimeException("Unknown result type: " + type + ". File: " + name);

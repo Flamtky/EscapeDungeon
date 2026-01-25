@@ -69,6 +69,19 @@ public final class Game {
 
   private static final boolean SLOW_NETWORK = false;
 
+  // Shutdown callback for cleanup operations
+  private static Runnable shutdownCallback;
+
+  /**
+   * Registers a callback to be executed when the game exits. Useful for server-specific cleanup
+   * like console shutdown.
+   *
+   * @param callback The callback to execute on shutdown
+   */
+  public static void registerShutdownCallback(Runnable callback) {
+    shutdownCallback = callback;
+  }
+
   /**
    * Starts the dungeon.
    *
@@ -813,14 +826,31 @@ public final class Game {
   /**
    * Exits the GDX application and shuts down the network handler.
    *
-   * <p>If the network handler is not initialized, it will simply exit the application.
+   * <p>If the network handler is not initialized, it will simply exit the application. /** Exits
+   * the game.
    *
-   * <p>If no GDX application is present, it will call {@link java.lang.System#exit(int)}.
+   * <p>Executes the following cleanup operations in order:
+   *
+   * <ul>
+   *   <li>Calls any registered shutdown callback (e.g., server console cleanup)
+   *   <li>Shuts down the network handler
+   *   <li>Exits the GDX application (or JVM directly in server mode)
+   * </ul>
    *
    * @param reason The reason for exiting the game.
    */
   public static void exit(String reason) {
+    java.lang.System.out.println("Exiting game: " + reason);
     LOGGER.info("Exiting game: " + reason);
+
+    if (shutdownCallback != null) {
+      try {
+        shutdownCallback.run();
+      } catch (Exception e) {
+        LOGGER.warn("Error executing shutdown callback", e);
+      }
+    }
+
     if (networkHandler != null) {
       try {
         networkHandler.shutdown(reason);
@@ -828,8 +858,12 @@ public final class Game {
         LOGGER.warn("Error shutting down network handler", e);
       }
     }
+
     if (Gdx.app != null) {
       Gdx.app.exit();
+    } else if (PreRunConfiguration.isNetworkServer()) {
+      // Headless server mode: exit the JVM
+      java.lang.System.exit(0);
     }
   }
 

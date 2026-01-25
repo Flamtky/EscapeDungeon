@@ -72,7 +72,7 @@ public enum CharacterClass {
    * <p>A bow-focused class with high durability and stamina, starts with bow and arrows and can do
    * a short bursts of speed.
    */
-  ROGUE("character/rogue", Vector2.of(5.5, 5.5), 1.2f, 20, Set.of(), Set.of(), 10, 0, 0, 120, 5),
+  ROGUE("character/rogue", Vector2.of(5.5, 5.5), 1.2f, 20, Set.of(), Set.of(), 10, 0, 0, 160, 5),
 
   /**
    * Rogue character class.
@@ -81,7 +81,7 @@ public enum CharacterClass {
    * a short bursts of speed.
    */
   APPRENTICE(
-      "character/char03", Vector2.of(5.5, 5.5), 1.2f, 20, Set.of(), Set.of(), 10, 0, 0, 120, 5),
+      "character/char03", Vector2.of(5.5, 5.5), 1.2f, 20, Set.of(), Set.of(), 10, 0, 0, 160, 5),
   ;
 
   private final IPath textures;

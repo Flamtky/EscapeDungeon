@@ -70,12 +70,10 @@ public final class DialogTracker {
    * Registers a new dialog for network tracking.
    *
    * @param uiComponent the UIComponent representing the dialog
-   * @throws IllegalArgumentException if dialogId is null or already registered
    */
   public void registerDialog(UIComponent uiComponent) {
     if (dialogs.containsKey(uiComponent.dialogContext().dialogId())) {
-      throw new IllegalArgumentException(
-          "Dialog with id '" + uiComponent.dialogContext().dialogId() + "' is already registered");
+      return; // Already registered
     }
 
     DialogInfo info =

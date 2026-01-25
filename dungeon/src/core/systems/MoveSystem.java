@@ -198,7 +198,7 @@ public class MoveSystem extends System {
                   DungeonAnalyticsAPI.logXApiStatement(
                       ac,
                       DungeonAnalyticsAPI.Verb.MOVED,
-                      data.e.name() + "#" + data.e.id(),
+                      data.e,
                       Map.of(
                           "success",
                           true,
