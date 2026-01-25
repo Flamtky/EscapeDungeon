@@ -23,6 +23,8 @@ import escapeDungeon.items.*;
 import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
 import java.io.IOException;
+
+import hint.HintSystem;
 import mushRoom.modules.EscapeRoomDialogTypes;
 import mushRoom.modules.journal.CraftingBookItem;
 import network.EscapeRoomSnapshotTranslator;
@@ -60,7 +62,7 @@ public class MASinglePlayer {
     Game.userOnSetup(
         () -> {
           setupMusic();
-          DungeonLoader.addLevel(Tuple.of("tutorial", Tutorial.class));
+          //DungeonLoader.addLevel(Tuple.of("tutorial", Tutorial.class));
           DungeonLoader.addLevel(Tuple.of("maroom", MADungeonRoom.class));
           createSystems();
           createHero();
@@ -137,6 +139,7 @@ public class MASinglePlayer {
     Game.add(new BedSleepSystem());
     if (DEBUG_MODE) Game.add(new Debugger());
     Game.add(new TimerSystem());
+    Game.add(new HintSystem());
   }
 
   private static void setupMusic() {

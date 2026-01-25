@@ -51,11 +51,12 @@ public class NPCFactory {
     dc.depth(DepthLayer.Player.depth());
     npc.add(dc);
 
-    CollideComponent cc = new CollideComponent(Vector2.of(0.5f, 0), Vector2.of(0.9f, 0.9f));
+    CollideComponent cc = new CollideComponent(Vector2.of(0.05f, 0), Vector2.of(0.9f, 0.9f));
     cc.isSolid(true);
     npc.add(cc);
-
-    npc.add(VelocityComponent.stationary());
+    VelocityComponent vc = VelocityComponent.stationary();
+    vc.mass(10);
+    npc.add(vc);
     return npc;
   }
 }
