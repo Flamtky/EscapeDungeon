@@ -397,17 +397,10 @@ public final class HeroBuilder {
                             firstUI -> {
                               UIComponent component = firstUI.b();
 
-                              // For network dialogs (received from server), send close message
-                              if (firstUI.a().id()
-                                  >= 0) { // positive IDs are network entities ; negative are local
-                                String dialogId = component.dialogContext().dialogId();
-                                DialogCallbackResolver.createButtonCallback(
-                                        dialogId, DialogContextKeys.ON_CLOSE)
-                                    .accept(null);
-                              } else {
-                                // Remove the UI component
-                                UIUtils.closeDialog(component);
-                              }
+                              String dialogId = component.dialogContext().dialogId();
+                              DialogCallbackResolver.createButtonCallback(
+                                  dialogId, DialogContextKeys.ON_CLOSE)
+                                .accept(null);
                             }))),
         false,
         true);
