@@ -19,7 +19,7 @@ public class BlueGemItem extends Item {
   /** Constructs a new AxeItem. */
   public BlueGemItem() {
     super(
-        "BLauer Edelstein",
+        "Blauer Edelstein",
         "Strahlt eine kalte Energie aus.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
