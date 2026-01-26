@@ -47,9 +47,9 @@ public class StartTilesMode extends LevelEditorMode {
     // Primary Up/Down to change selected start tile index. The index can be between 0 and the lists
     // size. if its equal to the lists size, it adds a new point to the list.
     int maxIndex = getLevel().startTiles().size();
-    if (InputManager.isButtonJustPressed(PRIMARY_UP)) {
+    if (InputManager.isKeyJustPressed(PRIMARY_UP)) {
       currentStartTileIndex = (currentStartTileIndex + 1) % (maxIndex + 1);
-    } else if (InputManager.isButtonJustPressed(PRIMARY_DOWN)) {
+    } else if (InputManager.isKeyJustPressed(PRIMARY_DOWN)) {
       currentStartTileIndex = Math.floorMod(currentStartTileIndex - 1, maxIndex + 1);
     }
 

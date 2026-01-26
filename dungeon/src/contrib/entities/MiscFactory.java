@@ -187,6 +187,7 @@ public final class MiscFactory {
     // sm.addEpsilonTransition(stOpening, State::isAnimationFinished, stOpen, () -> ic.count() ==
     // 0);
     DrawComponent dc = new DrawComponent(sm);
+    dc.depth(DepthLayer.Player.depth());
     chest.add(dc);
 
     chest.add(

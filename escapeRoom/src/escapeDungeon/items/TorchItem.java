@@ -11,6 +11,7 @@ import core.utils.components.path.SimpleIPath;
 import escapeDungeon.skill.TorchSkill;
 import java.util.Optional;
 import mushRoom.Sounds;
+import petriNet.PlaceComponent;
 
 /** An AxeItem can be used to chop down certain trees. */
 public class TorchItem extends Item {
@@ -19,13 +20,21 @@ public class TorchItem extends Item {
 
   private Entity itemHolder;
 
+  private static PlaceComponent place;
+
+  private static boolean produceOnce = true;
+
   /** Constructs a new AxeItem. */
   public TorchItem() {
     super(
-        "Fackel",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "20 Fackeln",
+        "Bringt Licht ins Dunkel. Du hast eine neue Fähigkeit. Spare Rohstoffe, sammel deine Fackeln auch wieder auf.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
+  }
+
+  public static void placeComponent(PlaceComponent place) {
+    TorchItem.place = place;
   }
 
   @Override
@@ -33,6 +42,12 @@ public class TorchItem extends Item {
 
   @Override
   public boolean collect(Entity itemEntity, Entity collector) {
+    if (collector != null) {
+      if (produceOnce) {
+        place.produce();
+        produceOnce = false;
+      }
+    }
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     if (itemHolder != null) {
@@ -43,6 +58,12 @@ public class TorchItem extends Item {
 
   @Override
   public void added(Entity collector) {
+    if (collector != null) {
+      if (produceOnce) {
+        place.produce();
+        produceOnce = false;
+      }
+    }
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     if (itemHolder != null) {
@@ -56,7 +77,7 @@ public class TorchItem extends Item {
         .ifPresent(
             (sc) -> {
               if (sc.getSkill(TorchSkill.class).isEmpty())
-                sc.addSkill(new TorchSkill("TorchSkill", 500, 5, Tuple.of(Resource.MANA, 0)));
+                sc.addSkill(new TorchSkill("TorchSkill", 500, 20, Tuple.of(Resource.MANA, 0)));
             });
   }
 

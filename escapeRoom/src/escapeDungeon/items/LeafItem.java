@@ -20,7 +20,7 @@ public class LeafItem extends Item {
   public LeafItem() {
     super(
         "Kräuter",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Gemüse?",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

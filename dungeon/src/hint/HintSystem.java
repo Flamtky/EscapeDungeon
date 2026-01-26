@@ -2,10 +2,7 @@ package hint;
 
 import core.Entity;
 import core.System;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import petriNet.PlaceComponent;
 
 /**
@@ -113,7 +110,7 @@ public class HintSystem extends System {
 
     if (currentHint.isLastHintShown()) {
       // this allows requesting the hint again.
-      currentHint.resetIndex();
+      // currentHint.resetIndex();
       currentHint = fetchNextEntityHint();
     }
     return hint;

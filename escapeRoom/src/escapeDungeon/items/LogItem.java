@@ -5,19 +5,28 @@ import core.Entity;
 import core.utils.components.draw.animation.Animation;
 import core.utils.components.path.SimpleIPath;
 import mushRoom.Sounds;
+import petriNet.PlaceComponent;
 
 /** An AxeItem can be used to chop down certain trees. */
 public class LogItem extends Item {
 
   private static final String PATH = "items/resource/wood.png";
 
+  private static PlaceComponent place;
+
+  private static boolean produceOnce = true;
+
   /** Constructs a new AxeItem. */
   public LogItem() {
     super(
         "Baumstamm",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Ob der wohl auch auf dem Wasser schwimmt?",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
+  }
+
+  public static void placeComponent(PlaceComponent place) {
+    LogItem.place = place;
   }
 
   @Override
@@ -27,7 +36,24 @@ public class LogItem extends Item {
 
   @Override
   public boolean collect(Entity itemEntity, Entity collector) {
-    Sounds.KEY_ITEM_PICKUP_SOUND.play();
+    if (collector != null) {
+      if (produceOnce) {
+        place.produce();
+        produceOnce = false;
+      }
+      Sounds.KEY_ITEM_PICKUP_SOUND.play();
+    }
     return super.collect(itemEntity, collector);
+  }
+
+  @Override
+  public void added(Entity collector) {
+    if (collector != null) {
+      if (produceOnce) {
+        place.produce();
+        produceOnce = false;
+      }
+      Sounds.KEY_ITEM_PICKUP_SOUND.play();
+    }
   }
 }

@@ -15,7 +15,7 @@ public class RingSilverItem extends Item {
   public RingSilverItem() {
     super(
         "Silberring",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Silber passt zu kalten Farben.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

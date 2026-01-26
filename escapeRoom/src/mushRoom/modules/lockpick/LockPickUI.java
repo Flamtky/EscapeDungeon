@@ -108,16 +108,16 @@ public class LockPickUI extends Group implements Disposable {
   private static final float DELTA_TIME_MULTIPLIER = 60f;
 
   // UI Text constants
-  private static final String TITLE_TEXT = "PICK THE LOCK";
-  private static final String ATTEMPTS_FORMAT = "Attempts: %d/%d";
+  private static final String TITLE_TEXT = "BRECHE DURCH DIE RINGE";
+  private static final String ATTEMPTS_FORMAT = "Versuche: %d/%d";
   private static final String INSTRUCTIONS_FULL_TEXT =
-      "A/D to rotate (Hold SHIFT for slower) | SPACE to confirm ring | Click to select ";
+      "A/D zum Drehen (Halte SHIFT zum Verlangsamen) | LEERTASTE um den Ring einzuloggen | Klicke zum Auswählen ";
   private static final String INSTRUCTIONS_SHORT_TEXT =
-      "A/D to rotate | SPACE to confirm ring | Click to select";
-  private static final String UNLOCKED_TEXT = "UNLOCKED!";
-  private static final String LOCK_JAMMED_TEXT = "LOCK JAMMED!";
+      "A/D zum Drehen | SPACE zum Bestätigen des Rings | Klicke zum Auswählen";
+  private static final String UNLOCKED_TEXT = "GESCHAFFT!";
+  private static final String LOCK_JAMMED_TEXT = "DAS HAT NICHT GEKLAPPT!";
   private static final String WRONG_ALIGNMENT_TEXT =
-      "Wrong alignment! Adjust the highlighted ring.";
+      "Falsche Ausrichtung! Passe den markierten Ring an!";
 
   /** Static ShapeRenderer to avoid creating per frame. */
   private static ShapeRenderer shapeRenderer;

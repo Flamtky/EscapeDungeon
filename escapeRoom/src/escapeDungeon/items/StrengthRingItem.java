@@ -18,7 +18,7 @@ public class StrengthRingItem extends Item {
   public StrengthRingItem() {
     super(
         "Ring der Stärke",
-        "Dieser Ring ermöglicht es neue Dinge zu bewegen.",
+        "Du hast das Gefühl du kannst Berge versetzen.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

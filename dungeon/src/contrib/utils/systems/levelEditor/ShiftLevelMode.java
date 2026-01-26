@@ -28,15 +28,15 @@ public class ShiftLevelMode extends LevelEditorMode {
 
   @Override
   public void execute() {
-    if (InputManager.isButtonJustPressed(PRIMARY_UP)) {
+    if (InputManager.isKeyJustPressed(PRIMARY_UP)) {
       shiftLevel(0, 1);
-    } else if (InputManager.isButtonJustPressed(PRIMARY_DOWN)) {
+    } else if (InputManager.isKeyJustPressed(PRIMARY_DOWN)) {
       shiftLevel(0, -1);
     }
 
-    if (InputManager.isButtonJustPressed(SECONDARY_UP)) {
+    if (InputManager.isKeyJustPressed(SECONDARY_UP)) {
       shiftLevel(1, 0);
-    } else if (InputManager.isButtonJustPressed(SECONDARY_DOWN)) {
+    } else if (InputManager.isKeyJustPressed(SECONDARY_DOWN)) {
       shiftLevel(-1, 0);
     }
   }

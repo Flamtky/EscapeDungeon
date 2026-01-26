@@ -13,6 +13,7 @@ import contrib.entities.deco.DecoFactory;
 import contrib.hud.DialogUtils;
 import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogContextKeys;
+import contrib.hud.dialogs.DialogFactory;
 import contrib.hud.dialogs.DialogType;
 import contrib.item.Item;
 import contrib.modules.interaction.Interaction;
@@ -70,31 +71,30 @@ public class MADungeonRoom extends DungeonLevel {
   // Stamina Potion
   Entity staminaRiddle;
   PlaceComponent staminaRiddlePlace;
-  private final String staminaRiddleTitle = "Ausdauertränke";
+  private final String staminaRiddleTitle = "Aus der Puste?";
   private final Hint[] staminaRiddleHints = {
-    new Hint(
-        staminaRiddleTitle,
-        "Du kannst dir einen Ausdauertrank herstellen, um nicht so oft schlafen zu müssen."),
+    new Hint(staminaRiddleTitle, "Ein guter Kräutertee soll dabei helfen wieder fit zu werden."),
   };
+
   Entity staminaRiddle2;
   PlaceComponent staminaRiddle2Place;
-  private final String staminaRiddle2Title = "Ausdauertränke 2";
+  private final String staminaRiddle2Title = "Energie aus der Flasche";
   private final Hint[] staminaRiddle2Hints = {
     new Hint(
         staminaRiddle2Title,
-        "Nachdem du einen Ausdauertrank getrunken hast, kannst du das Fläschchen wieder auffüllen."),
+        "Nachdem du einen Ausdauertrank getrunken hast, kannst du das Fläschchen wieder nutzen."),
   };
   // Leaf
   Entity leafRiddle;
   PlaceComponent leafRiddlePlace;
-  private final String leafRiddleTitle = "Blatt";
+  private final String leafRiddleTitle = "Wie Unkraut";
   private final Hint[] leafRiddleHints = {
-    new Hint(leafRiddleTitle, "Die Blätter im Baum wachsen nach."),
+    new Hint(leafRiddleTitle, "Die Blätter am Baum wachsen nach."),
   };
   // empty Bottle
   Entity bottleRiddle;
   PlaceComponent bottleRiddlePlace;
-  private final String bottleRiddleTitle = "Fläschchen";
+  private final String bottleRiddleTitle = "Durst?";
   private final Hint[] bottleRiddleHints = {
     new Hint(bottleRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
   };
@@ -102,119 +102,174 @@ public class MADungeonRoom extends DungeonLevel {
   // empty Bottle
   Entity torchRiddle;
   PlaceComponent torchRiddlePlace;
-  private final String torchRiddleTitle = "Fläschchen";
+  private final String torchRiddleTitle = "Licht im Dunkeln";
   private final Hint[] torchRiddleHints = {
-    new Hint(torchRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(torchRiddleTitle + " 1", "Finde einen Weg Licht ins Labyrinth zu bringen."),
+    new Hint(torchRiddleTitle + " 2", "Fackeln erhellen die Umgebung."),
   };
 
   // empty Bottle
   Entity coalRiddle;
   PlaceComponent coalRiddlePlace;
-  private final String coalRiddleTitle = "Fläschchen";
+  private final String coalRiddleTitle = "Brennmaterialien";
   private final Hint[] coalRiddleHints = {
-    new Hint(coalRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(coalRiddleTitle, "Es ist mehr als nur ein Stück Kohle versteckt."),
   };
 
   // empty Bottle
   Entity stickRiddle;
   PlaceComponent stickRiddlePlace;
-  private final String stickRiddleTitle = "Fläschchen";
+  private final String stickRiddleTitle = "nachwachsende Rohstoffe";
   private final Hint[] stickRiddleHints = {
-    new Hint(stickRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(stickRiddleTitle + " 1", "Stöcker wachsen an Bäumen."),
+    new Hint(stickRiddleTitle + " 2", "Versuche mit einem Baum zu interagieren."),
+    new Hint(stickRiddleTitle + " 3", "Es werden immer wieder Stöcker vom Baum abfallen."),
   };
 
   // empty Bottle
   Entity iceRiddle;
   PlaceComponent iceRiddlePlace;
-  private final String iceRiddleTitle = "Fläschchen";
+  private final String iceRiddleTitle = "Kalte Gefilde";
   private final Hint[] iceRiddleHints = {
-    new Hint(iceRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(
+        iceRiddleTitle,
+        "Ich habe gehört tief im Labyrinth ist ein alter Teil des Verlies gänzlich eingefroren."),
   };
 
   // empty Bottle
   Entity iceRingRiddle;
   PlaceComponent iceRingRiddlePlace;
-  private final String iceRingRiddleTitle = "Fläschchen";
+  private final String iceRingRiddleTitle = "Rutschige Böden";
+  private final String blueGemRiddleTitle = "Eisig blau";
   private final Hint[] iceRingRiddleHints = {
-    new Hint(iceRingRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(
+        iceRingRiddleTitle + " 1",
+        "Es soll ein Item geben, dass es einem erlaubt auf dem Eis zu laufen."),
+    new Hint(iceRingRiddleTitle + " 2", "Nur einer von euch kann dieses Item tragen."),
+    new Hint(
+        blueGemRiddleTitle + " 1",
+        "Ein seltener blauer Edelstein soll am tiefsten Ende des Labyrinths versteckt sein."),
+    new Hint(
+        blueGemRiddleTitle + " 2",
+        "Um zum Edelstein zu gelangen musst du den versteckten Durchgang finden."),
   };
 
   // empty Bottle
   Entity blueGemRiddle;
   PlaceComponent blueGemRiddlePlace;
-  private final String blueGemRiddleTitle = "Fläschchen";
   private final Hint[] blueGemRiddleHints = {
-    new Hint(blueGemRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(
+        blueGemRiddleTitle + " 3",
+        "Kurz vor dem Edelstein scheint der Weg versperrt aber du kannst durch die Wand hindurch gehen."),
   };
 
   // empty Bottle
-  Entity strenghtRiddle;
-  PlaceComponent strenghtRiddlePlace;
-  private final String strenghtRiddleTitle = "Fläschchen";
-  private final Hint[] strenghtRiddleHints = {
-    new Hint(strenghtRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+  Entity strengthRiddle;
+  PlaceComponent strengthRiddlePlace;
+  private final String strengthRiddleTitle = "Sisyphos";
+  private final Hint[] strengthRiddleHints = {
+    new Hint(
+        strengthRiddleTitle + " 1", "Wenn du die Steine bewegen willst musst du stärker werden."),
+    new Hint(
+        strengthRiddleTitle + " 2",
+        "Ich habe gehört es soll ein Item geben, das dich stärker macht."),
   };
 
   // empty Bottle
   Entity redGemRiddle;
   PlaceComponent redGemRiddlePlace;
-  private final String redGemRiddleTitle = "Fläschchen";
   private final Hint[] redGemRiddleHints = {
-    new Hint(redGemRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(
+        "Morgengrauen",
+        "ein roter Stein der besondere Stärke verleiht soll in einem dunklen Labyrinth liegen."),
+    new Hint(
+        "Abenddämmerung",
+        "Ich habe gehört, dass auch ein zweiter mächtiger Stein im Labyrinth verloren gegangen ist."),
   };
 
   // empty Bottle
   Entity pushRiddle;
   PlaceComponent pushRiddlePlace;
-  private final String pushRiddleTitle = "Fläschchen";
+  private final String pushRiddleTitle = "Steine. Farben. Platten.";
   private final Hint[] pushRiddleHints = {
-    new Hint(pushRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(
+        pushRiddleTitle + " 1",
+        "Pass auf, dass du die Steine nicht in die Ecke schiebst. Du kannst sie nicht zurück ziehen."),
+    new Hint(
+        pushRiddleTitle + " 2",
+        "Wenn ihr beide auf den beiden Druckplatten nebeneinander steht, wird der aktuelle Teil des Rätsels zurückgesetzt."),
+    new Hint(
+        pushRiddleTitle + " 3", "Die farbigen Flächen auf dem Boden ändern die Farbe der Steine."),
+    new Hint(
+        pushRiddleTitle + " 4",
+        "Am Ende eines Rätselbereichs gibt es einen Checkpoint mit dem ihr später wieder zum Rätsel zurück kommen könnt."),
   };
 
   // empty Bottle
   Entity wallRiddle;
   PlaceComponent wallRiddlePlace;
-  private final String wallRiddleTitle = "Fläschchen";
+  private final String wallRiddleTitle = "Flucht";
   private final Hint[] wallRiddleHints = {
-    new Hint(wallRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(wallRiddleTitle, "Ihr wollt hier raus? Ich habe gehört es gibt verschiedene Wege."),
+  };
+
+  // empty Bottle
+  Entity wallRiddle2;
+  PlaceComponent wallRiddle2Place;
+  private final String wallRiddle2Title = "Ausbruch";
+  private final Hint[] wallRiddle2Hints = {
+    new Hint(wallRiddleTitle + " 1", "Werkzeuge? Was habt ihr damit vor?"),
+    new Hint(
+        wallRiddleTitle + " 2",
+        "Wenn ihr Rohstoffe für eure Werkzeuge braucht müsst ihr euch ins Labyrinth begeben."),
   };
 
   // empty Bottle
   Entity pickaxeRiddle;
   PlaceComponent pickaxeRiddlePlace;
-  private final String pickaxeRiddleTitle = "Fläschchen";
+  private final String pickaxeRiddleTitle = "Tief schürfen";
   private final Hint[] pickaxeRiddleHints = {
-    new Hint(pickaxeRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(
+        pickaxeRiddleTitle + " 1",
+        "Bergbau ist kein einfaches Unterfangen. Überanstrengt euch nicht."),
+    new Hint(
+        pickaxeRiddleTitle + " 2",
+        "Die Wachen mögen es nicht, wenn ihr euch an der Festung zu schaffen macht."),
   };
 
   // empty Bottle
   Entity axeRiddle;
   PlaceComponent axeRiddlePlace;
-  private final String axeRiddleTitle = "Fläschchen";
+  private final String axeRiddleTitle = "Holz hacken";
   private final Hint[] axeRiddleHints = {
-    new Hint(axeRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(
+        axeRiddleTitle + " 1", "Was habt ihr mit der Axt vor? Lasst unseren einzigen Baum heile!"),
+    new Hint(
+        axeRiddleTitle + " 2",
+        "Mit dem richtigen Werkzeug scheint man von einem Baum auch mehr als nur Stöcker zu bekommen."),
   };
 
   // empty Bottle
   Entity bridgeRiddle;
   PlaceComponent bridgeRiddlePlace;
-  private final String bridgeRiddleTitle = "Fläschchen";
+  private final String bridgeRiddleTitle = "Schwimmen? Was ist das?";
   private final Hint[] bridgeRiddleHints = {
-    new Hint(bridgeRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
-  };
-
-  // empty Bottle
-  Entity RopeRiddle;
-  PlaceComponent RopeRiddlePlace;
-  private final String RopeRiddleTitle = "Fläschchen";
-  private final Hint[] RopeRiddleHints = {
-    new Hint(RopeRiddleTitle, "Das Fläschchen kann am Wasser nachgefüllt werden."),
+    new Hint(bridgeRiddleTitle + " 1", "Ein Burggraben sagt ihr? Das Wasser ist zu tief für euch."),
+    new Hint(bridgeRiddleTitle + " 2", "Wenn ihr doch nur die Baumstämme verbinden könntet."),
+    new Hint(
+        bridgeRiddleTitle + " 3",
+        "Ihr wollt ein Seil? Das werden die Wachen hier sicher nicht einfach rumliegen lassen."),
+    new Hint(
+        bridgeRiddleTitle + " 4",
+        "ES gibt Gerüchte das vor Jahren ein Seil in einer ungenutzten Zelle eingemauert wurde."),
   };
 
   private void setupHints() {
-    Game.add(HintGiverFactory.npc(new Point(28, 33)));
+    Game.add(HintGiverFactory.npc(getPoint("hintGiver")));
     PetriNetSystem petriNetSystem = new PetriNetSystem();
     Game.add(petriNetSystem);
+
+    /// Ausdauertrank Rätsel
 
     staminaRiddle = new Entity("staminaRiddle");
     staminaRiddle.add(new HintComponent(staminaRiddleHints));
@@ -273,40 +328,166 @@ public class MADungeonRoom extends DungeonLevel {
     TransitionComponent t5 = new TransitionComponent();
     petriNetSystem.addInputArc(t5, staminaRiddle2Place, 4);
 
+    ///  Fackelrätsel
+
     torchRiddle = new Entity("torchRiddle");
     torchRiddle.add(new HintComponent(torchRiddleHints));
     torchRiddlePlace = new PlaceComponent();
     torchRiddle.add(torchRiddlePlace);
     Game.add(torchRiddle);
-    // This is the first hint so activate it
-    staminaRiddlePlace.produce();
+    TorchItem.placeComponent(torchRiddlePlace);
 
-    EventScheduler.scheduleAction(() -> staminaRiddlePlace.produce(), 10000);
-
-    leafRiddle = new Entity("Find recipe riddle");
-    leafRiddlePlace = new PlaceComponent();
-    leafRiddle.add(new HintComponent(leafRiddleHints));
-    leafRiddle.add(leafRiddlePlace);
-    Game.add(leafRiddle);
-    LeafItem.placeComponent(leafRiddlePlace);
-
-    TimerAPI.registerCallback(10, () -> leafRiddlePlace.produce());
+    coalRiddle = new Entity("coalRiddle");
+    coalRiddlePlace = new PlaceComponent();
+    coalRiddle.add(new HintComponent(coalRiddleHints));
+    coalRiddle.add(coalRiddlePlace);
+    Game.add(coalRiddle);
+    CoalItem.placeComponent(coalRiddlePlace);
 
     // Craft potion riddle
-    bottleRiddle = new Entity("Craft potion riddle");
-    bottleRiddlePlace = new PlaceComponent();
-    bottleRiddle.add(new HintComponent(bottleRiddleHints));
-    bottleRiddle.add(bottleRiddlePlace);
-    Game.add(bottleRiddle);
+    stickRiddle = new Entity("stickRiddle");
+    stickRiddlePlace = new PlaceComponent();
+    stickRiddle.add(new HintComponent(stickRiddleHints));
+    stickRiddle.add(stickRiddlePlace);
+    Game.add(stickRiddle);
 
-    EventScheduler.scheduleAction(() -> bottleRiddlePlace.produce(), 10000);
-    EventScheduler.scheduleAction(() -> bottleRiddlePlace.produce(), 20000);
+    TimerAPI.registerCallback(
+        240,
+        () -> {
+          if (stickRiddlePlace.tokenCount() == 0) {
+            stickRiddlePlace.produce();
+          }
+        });
 
-    staminaRiddle2 = new Entity("staminaRiddle2");
-    staminaRiddle2.add(new HintComponent(staminaRiddle2Hints));
-    staminaRiddle2Place = new PlaceComponent();
-    staminaRiddle2.add(staminaRiddle2Place);
-    Game.add(staminaRiddle2);
+    TransitionComponent t6 = new TransitionComponent();
+    petriNetSystem.addInputArc(t6, torchRiddlePlace, 2);
+
+    TransitionComponent t7 = new TransitionComponent();
+    petriNetSystem.addInputArc(t7, coalRiddlePlace, 2);
+
+    TransitionComponent t8 = new TransitionComponent();
+    petriNetSystem.addInputArc(t8, stickRiddlePlace, 2);
+
+    /// Eisrätsel
+
+    iceRiddle = new Entity("iceRiddle");
+    iceRiddle.add(new HintComponent(iceRiddleHints));
+    iceRiddlePlace = new PlaceComponent();
+    iceRiddle.add(iceRiddlePlace);
+    Game.add(iceRiddle);
+
+    iceRiddlePlace.produce();
+
+    iceRingRiddle = new Entity("coalRiddle");
+    iceRingRiddlePlace = new PlaceComponent();
+    iceRingRiddle.add(new HintComponent(iceRingRiddleHints));
+    iceRingRiddle.add(iceRingRiddlePlace);
+    Game.add(iceRingRiddle);
+
+    // Craft potion riddle
+    blueGemRiddle = new Entity("blueGemRiddle");
+    blueGemRiddlePlace = new PlaceComponent();
+    blueGemRiddle.add(new HintComponent(blueGemRiddleHints));
+    blueGemRiddle.add(blueGemRiddlePlace);
+    Game.add(blueGemRiddle);
+    BlueGemItem.placeComponent(blueGemRiddlePlace);
+
+    TransitionComponent t9 = new TransitionComponent();
+    petriNetSystem.addInputArc(t9, iceRiddlePlace, 2);
+    petriNetSystem.addOutputArc(t9, iceRingRiddlePlace);
+
+    TransitionComponent t10 = new TransitionComponent();
+    petriNetSystem.addInputArc(t10, iceRingRiddlePlace, 2);
+    petriNetSystem.addOutputArc(t10, blueGemRiddlePlace);
+
+    TransitionComponent t11 = new TransitionComponent();
+    petriNetSystem.addInputArc(t11, blueGemRiddlePlace, 2);
+
+    /// Stärkerätsel
+
+    strengthRiddle = new Entity("strengthRiddle");
+    strengthRiddle.add(new HintComponent(strengthRiddleHints));
+    strengthRiddlePlace = new PlaceComponent();
+    strengthRiddle.add(strengthRiddlePlace);
+    Game.add(strengthRiddle);
+
+    redGemRiddle = new Entity("redGemRiddle");
+    redGemRiddlePlace = new PlaceComponent();
+    redGemRiddle.add(new HintComponent(redGemRiddleHints));
+    redGemRiddle.add(redGemRiddlePlace);
+    Game.add(redGemRiddle);
+    RedGemItem.placeComponent(redGemRiddlePlace);
+
+    TimerAPI.registerCallback(300, () -> redGemRiddlePlace.produce());
+
+    // Craft potion riddle
+    pushRiddle = new Entity("pushRiddle");
+    pushRiddlePlace = new PlaceComponent();
+    pushRiddle.add(new HintComponent(pushRiddleHints));
+    pushRiddle.add(pushRiddlePlace);
+    Game.add(pushRiddle);
+
+    TransitionComponent t12 = new TransitionComponent();
+    petriNetSystem.addInputArc(t12, strengthRiddlePlace, 2);
+    petriNetSystem.addOutputArc(t12, pushRiddlePlace);
+
+    TransitionComponent t13 = new TransitionComponent();
+    petriNetSystem.addInputArc(t13, redGemRiddlePlace, 3);
+    petriNetSystem.addOutputArc(t13, pushRiddlePlace);
+
+    /// Ausbruchrätsel
+
+    wallRiddle = new Entity("wallRiddle");
+    wallRiddle.add(new HintComponent(wallRiddleHints));
+    wallRiddlePlace = new PlaceComponent();
+    wallRiddle.add(wallRiddlePlace);
+    Game.add(wallRiddle);
+
+    wallRiddlePlace.produce();
+
+    wallRiddle2 = new Entity("wallRiddle2");
+    wallRiddle2.add(new HintComponent(wallRiddle2Hints));
+    wallRiddle2Place = new PlaceComponent();
+    wallRiddle2.add(wallRiddle2Place);
+    Game.add(wallRiddle2);
+    PickaxeItem.placeComponent(wallRiddle2Place);
+    AxeItem.placeComponent(wallRiddle2Place);
+
+    TimerAPI.registerCallback(360, () -> wallRiddle2Place.produce());
+
+    pickaxeRiddle = new Entity("pickaxeRiddle");
+    pickaxeRiddlePlace = new PlaceComponent();
+    pickaxeRiddle.add(new HintComponent(pickaxeRiddleHints));
+    pickaxeRiddle.add(pickaxeRiddlePlace);
+    Game.add(pickaxeRiddle);
+
+    // Craft potion riddle
+    axeRiddle = new Entity("axeRiddle");
+    axeRiddlePlace = new PlaceComponent();
+    axeRiddle.add(new HintComponent(axeRiddleHints));
+    axeRiddle.add(axeRiddlePlace);
+    Game.add(axeRiddle);
+    LogItem.placeComponent(axeRiddlePlace);
+
+    // Craft potion riddle
+    bridgeRiddle = new Entity("bridgeRiddle");
+    bridgeRiddlePlace = new PlaceComponent();
+    bridgeRiddle.add(new HintComponent(bridgeRiddleHints));
+    bridgeRiddle.add(bridgeRiddlePlace);
+    Game.add(bridgeRiddle);
+    RopeItem.placeComponent(bridgeRiddlePlace);
+
+    TransitionComponent t14 = new TransitionComponent();
+    petriNetSystem.addInputArc(t14, wallRiddle2Place, 3);
+    petriNetSystem.addOutputArc(t14, pickaxeRiddlePlace);
+    petriNetSystem.addOutputArc(t14, axeRiddlePlace);
+
+    TransitionComponent t15 = new TransitionComponent();
+    petriNetSystem.addInputArc(t15, axeRiddlePlace, 2);
+    petriNetSystem.addOutputArc(t15, bridgeRiddlePlace);
+
+    TransitionComponent t16 = new TransitionComponent();
+    petriNetSystem.addInputArc(t16, bridgeRiddlePlace, 2);
   }
 
   private boolean resetPushStones21 = false;
@@ -349,11 +530,11 @@ public class MADungeonRoom extends DungeonLevel {
     Color.BLUE,
     Color.RED,
     Color.BLUE,
+    Color.GREEN,
+    Color.BLUE,
     Color.RED,
     Color.BLUE,
     Color.GREEN,
-    Color.BLUE,
-    Color.GREEN,
     Color.WHITE,
     Color.RED,
     Color.WHITE,
@@ -361,7 +542,7 @@ public class MADungeonRoom extends DungeonLevel {
     Color.WHITE,
     Color.GREEN,
     Color.BLUE,
-    Color.GREEN,
+    Color.RED,
     Color.BLUE,
     Color.RED,
     Color.YELLOW
@@ -638,14 +819,48 @@ public class MADungeonRoom extends DungeonLevel {
             player -> {
               iceControls(player);
               checkEscape(player);
-
               handleStartLogic(player);
+              checkPosition(player);
             });
 
     if (!escaped
         && Game.allPlayers().allMatch(player -> player.isPresent(EscapedComponent.class))) {
       Game.allPlayers().forEach(this::escaped);
     }
+  }
+
+  Rectangle labyrinth1 = new Rectangle(getPoint("labyrinth11"), getPoint("labyrinth12"));
+  Rectangle ice = new Rectangle(getPoint("fire11"), getPoint("fire12"));
+  Rectangle hiddenRoom = new Rectangle(getPoint("hidden11"), getPoint("hidden12"));
+  Rectangle push = new Rectangle(getPoint("temple11"), getPoint("temple12"));
+
+  private void checkPosition(Entity player) {
+    player
+        .fetch(CollideComponent.class)
+        .ifPresent(
+            cc -> {
+              Point position = cc.collider().absoluteCenter();
+              if (!torchRiddlePlace.wasConsumed() && torchRiddlePlace.tokenCount() == 0) {
+                if (labyrinth1.contains(position)) {
+                  torchRiddlePlace.produce();
+                }
+              }
+              if (!iceRiddlePlace.wasConsumed() && iceRiddlePlace.tokenCount() == 0) {
+                if (ice.contains(position)) {
+                  iceRiddlePlace.produce();
+                }
+              }
+              if (!iceRingRiddlePlace.wasConsumed() && iceRingRiddlePlace.tokenCount() == 0) {
+                if (hiddenRoom.contains(position)) {
+                  iceRingRiddlePlace.produce();
+                }
+              }
+              if (!strengthRiddlePlace.wasConsumed() && strengthRiddlePlace.tokenCount() == 0) {
+                if (push.contains(position)) {
+                  strengthRiddlePlace.produce();
+                }
+              }
+            });
   }
 
   private void handleStartLogic(Entity player) {
@@ -699,6 +914,13 @@ public class MADungeonRoom extends DungeonLevel {
     if (!player.isPresent(HintLogComponent.class)) {
       player.add(new HintLogComponent(player.id()));
     }
+
+    DialogFactory.showOkDialog(
+        "Oh nein! Wo sind wir hier. Sieht als wären wir in ein Verlies gebracht worden. "
+            + "Es muss hier doch einen Weg raus geben. Wir sollten uns hier mal umschauen.",
+        "Gefangen",
+        () -> {},
+        player.id());
   }
 
   private void createChests() {
@@ -706,20 +928,24 @@ public class MADungeonRoom extends DungeonLevel {
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new CoalItem()), getPoint("chest1"))));
     Game.add(
         addLockpicking(MiscFactory.newChest(Set.of(new EmptyBottleItem()), getPoint("chest2"))));
-    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest3"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest3"))));
     Game.add(
         addLockpicking(MiscFactory.newChest(Set.of(new EmptyBottleItem()), getPoint("chest4"))));
-    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new MetalItem()), getPoint("chest5"))));
-    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new MetalItem()), getPoint("chest6"))));
+    Game.add(
+        addLockpicking(MiscFactory.newChest(Set.of(new EmptyBottleItem()), getPoint("chest5"))));
+    Game.add(
+        addLockpicking(MiscFactory.newChest(Set.of(new EmptyBottleItem()), getPoint("chest6"))));
     Game.add(
         addLockpicking(MiscFactory.newChest(Set.of(new RingSilverItem()), getPoint("chest7"))));
-    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest0"))));
-    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new BlueGemItem()), getPoint("chest9"))));
-    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest10"))));
-    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest11"))));
-    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest12"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest8"))));
+    // Labyrinth
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest9"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new BlueGemItem()), getPoint("chest10"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new MetalItem()), getPoint("chest11"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RedGemItem()), getPoint("chest12"))));
+    //
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new CoalItem()), getPoint("chest13"))));
-    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new GoldItem()), getPoint("chest14"))));
+    Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RingGoldItem()), getPoint("chest14"))));
     Game.add(addLockpicking(MiscFactory.newChest(Set.of(new RopeItem()), getPoint("chest15"))));
     createTreeChest();
   }
@@ -793,6 +1019,12 @@ public class MADungeonRoom extends DungeonLevel {
   private void createTreeChest() {
     Entity chest = MiscFactory.newChest(Set.of(new StickItem()), getPoint("TreeChest"));
     chest
+        .fetch(DrawComponent.class)
+        .ifPresent(
+            dc -> {
+              dc.depth(DepthLayer.Normal.depth());
+            });
+    chest
         .fetch(InteractionComponent.class)
         .ifPresent(
             (ic) -> {
@@ -844,6 +1076,9 @@ public class MADungeonRoom extends DungeonLevel {
                                                       () -> {}, 10, TimeUnit.SECONDS);
                                             }
                                           });
+                                  if (stickRiddlePlace.tokenCount() == 1) {
+                                    stickRiddlePlace.produce();
+                                  }
                                   DialogContext context =
                                       DialogContext.builder()
                                           .type(DialogType.DefaultTypes.DUAL_INVENTORY)
@@ -877,7 +1112,7 @@ public class MADungeonRoom extends DungeonLevel {
               int index = tuple.b();
               if (riddle == 0) {
                 if (index == 0 || index == 20) {
-                  pushStones1.add(createStone(index, pos));
+                  createStone(index, pos);
                 }
               }
               if (riddle == 1) {
