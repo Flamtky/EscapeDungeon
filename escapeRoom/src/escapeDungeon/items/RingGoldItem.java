@@ -15,7 +15,7 @@ public class RingGoldItem extends Item {
   public RingGoldItem() {
     super(
         "Goldring",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Wie gemacht für einen Edelstein.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

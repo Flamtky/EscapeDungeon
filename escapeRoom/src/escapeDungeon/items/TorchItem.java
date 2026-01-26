@@ -22,8 +22,8 @@ public class TorchItem extends Item {
   /** Constructs a new AxeItem. */
   public TorchItem() {
     super(
-        "Fackel",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "20 Fackeln",
+        "Bringt Licht ins Dunkel. Du hast eine neue Fähigkeit. Spare Rohstoffe, sammel deine Fackeln auch wieder auf.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

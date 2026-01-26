@@ -19,8 +19,8 @@ public class EmptyBottleItem extends Item {
   /** Constructs a new AxeItem. */
   public EmptyBottleItem() {
     super(
-        "Leeres Fläschen",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Leeres Fläschchen",
+        "Durst? Befülle mich am Wasser.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

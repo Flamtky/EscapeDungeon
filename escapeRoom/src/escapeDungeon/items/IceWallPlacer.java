@@ -23,8 +23,8 @@ public class IceWallPlacer extends Item {
   /** Constructs a new IceWallPlacer item. */
   public IceWallPlacer() {
     super(
-        "ein magischer Eisring",
-        "",
+        "magischer Eisring",
+        "Du wirst von kalter Magie durchströmt. Du kannst nun das Eis kontrollieren. Du hast eine neue Fähigkeit.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

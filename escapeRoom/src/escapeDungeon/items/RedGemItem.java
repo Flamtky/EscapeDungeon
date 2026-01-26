@@ -15,7 +15,7 @@ public class RedGemItem extends Item {
   public RedGemItem() {
     super(
         "Rubin",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "eine starke Kraft geht von diesem Stein aus.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

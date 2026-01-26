@@ -15,7 +15,7 @@ public class CoalItem extends Item {
   public CoalItem() {
     super(
         "Kohle",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Kohle Kohle Kohle",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

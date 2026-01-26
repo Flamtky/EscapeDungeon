@@ -15,7 +15,7 @@ public class LogItem extends Item {
   public LogItem() {
     super(
         "Baumstamm",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Ob der wohl auch auf dem Wasser schwimmt?",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

@@ -15,7 +15,7 @@ public class EnvelopeItem extends Item {
   public EnvelopeItem() {
     super(
         "Briefumschlag",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Damit können bestimmte Bäume gefällt werden. Können sie definitiv nicht.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

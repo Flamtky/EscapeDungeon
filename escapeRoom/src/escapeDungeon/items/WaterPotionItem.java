@@ -14,8 +14,8 @@ public class WaterPotionItem extends Item {
   /** Constructs a new AxeItem. */
   public WaterPotionItem() {
     super(
-        "Fläschen Wasser",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Fläschchen Wasser",
+        "Wasser alleine schmeckt doch nicht.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }
