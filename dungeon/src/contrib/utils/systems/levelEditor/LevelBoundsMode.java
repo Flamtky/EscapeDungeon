@@ -19,15 +19,15 @@ public class LevelBoundsMode extends LevelEditorMode {
 
   @Override
   public void execute() {
-    if (InputManager.isButtonJustPressed(PRIMARY_UP)) {
+    if (InputManager.isKeyJustPressed(PRIMARY_UP)) {
       addSize(0, 1);
-    } else if (InputManager.isButtonJustPressed(PRIMARY_DOWN)) {
+    } else if (InputManager.isKeyJustPressed(PRIMARY_DOWN)) {
       addSize(0, -1);
     }
 
-    if (InputManager.isButtonJustPressed(SECONDARY_UP)) {
+    if (InputManager.isKeyJustPressed(SECONDARY_UP)) {
       addSize(1, 0);
-    } else if (InputManager.isButtonJustPressed(SECONDARY_DOWN)) {
+    } else if (InputManager.isKeyJustPressed(SECONDARY_DOWN)) {
       addSize(-1, 0);
     }
   }

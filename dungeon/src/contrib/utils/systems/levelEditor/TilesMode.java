@@ -46,26 +46,26 @@ public class TilesMode extends LevelEditorMode {
 
   @Override
   public void execute() {
-    if (InputManager.isButtonJustPressed(PRIMARY_DOWN)) {
+    if (InputManager.isKeyJustPressed(PRIMARY_DOWN)) {
       if (InputManager.isButtonPressed(Input.Buttons.RIGHT)) {
         selectedTileIndexR -= 1;
       } else {
         selectedTileIndexL -= 1;
       }
-    } else if (InputManager.isButtonJustPressed(PRIMARY_UP)) {
+    } else if (InputManager.isKeyJustPressed(PRIMARY_UP)) {
       if (InputManager.isButtonPressed(Input.Buttons.RIGHT)) {
         selectedTileIndexR += 1;
       } else {
         selectedTileIndexL += 1;
       }
     }
-    if (InputManager.isButtonJustPressed(SECONDARY_UP)) {
+    if (InputManager.isKeyJustPressed(SECONDARY_UP)) {
       brushSize = Math.min(MAX_BRUSH_SIZE, brushSize + 1);
-    } else if (InputManager.isButtonJustPressed(SECONDARY_DOWN)) {
+    } else if (InputManager.isKeyJustPressed(SECONDARY_DOWN)) {
       brushSize = Math.max(1, brushSize - 1);
     }
 
-    if (InputManager.isButtonJustPressed(QUARTERNARY)) {
+    if (InputManager.isKeyJustPressed(QUARTERNARY)) {
       // Pick tile under cursor to LMB
       Point cursorPos = getCursorPosition();
       getLevel()

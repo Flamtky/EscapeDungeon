@@ -11,6 +11,7 @@ import core.utils.components.path.SimpleIPath;
 import escapeDungeon.skill.TorchSkill;
 import java.util.Optional;
 import mushRoom.Sounds;
+import petriNet.PlaceComponent;
 
 /** An AxeItem can be used to chop down certain trees. */
 public class TorchItem extends Item {
@@ -18,6 +19,10 @@ public class TorchItem extends Item {
   private static final String PATH = "items/rpg/item_torch.png";
 
   private Entity itemHolder;
+
+  private static PlaceComponent place;
+
+  private static boolean produceOnce = true;
 
   /** Constructs a new AxeItem. */
   public TorchItem() {
@@ -28,11 +33,21 @@ public class TorchItem extends Item {
         new Animation(new SimpleIPath(PATH)));
   }
 
+  public static void placeComponent(PlaceComponent place) {
+    TorchItem.place = place;
+  }
+
   @Override
   public void use(Entity user) {}
 
   @Override
   public boolean collect(Entity itemEntity, Entity collector) {
+    if (collector != null) {
+      if (produceOnce) {
+        place.produce();
+        produceOnce = false;
+      }
+    }
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     if (itemHolder != null) {
@@ -43,6 +58,12 @@ public class TorchItem extends Item {
 
   @Override
   public void added(Entity collector) {
+    if (collector != null) {
+      if (produceOnce) {
+        place.produce();
+        produceOnce = false;
+      }
+    }
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     if (itemHolder != null) {
@@ -56,7 +77,7 @@ public class TorchItem extends Item {
         .ifPresent(
             (sc) -> {
               if (sc.getSkill(TorchSkill.class).isEmpty())
-                sc.addSkill(new TorchSkill("TorchSkill", 500, 5, Tuple.of(Resource.MANA, 0)));
+                sc.addSkill(new TorchSkill("TorchSkill", 500, 20, Tuple.of(Resource.MANA, 0)));
             });
   }
 

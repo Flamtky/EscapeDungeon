@@ -11,6 +11,7 @@ import core.utils.components.path.SimpleIPath;
 import escapeDungeon.skill.WallbreakerSkill;
 import java.util.Optional;
 import mushRoom.Sounds;
+import petriNet.PlaceComponent;
 
 /** An AxeItem can be used to chop down certain trees. */
 public class PickaxeItem extends Item {
@@ -18,6 +19,10 @@ public class PickaxeItem extends Item {
   private static final String PATH = "items/rpg/pickaxe_silver.png";
 
   private Entity itemHolder;
+
+  private static PlaceComponent place;
+
+  private static boolean produceOnce = true;
 
   /** Constructs a new AxeItem. */
   public PickaxeItem() {
@@ -28,6 +33,10 @@ public class PickaxeItem extends Item {
         new Animation(new SimpleIPath(PATH)));
   }
 
+  public static void placeComponent(PlaceComponent place) {
+    PickaxeItem.place = place;
+  }
+
   @Override
   public void use(Entity user) {
     // Nothing
@@ -35,6 +44,12 @@ public class PickaxeItem extends Item {
 
   @Override
   public boolean collect(Entity itemEntity, Entity collector) {
+    if (collector != null) {
+      if (produceOnce) {
+        place.produce();
+        produceOnce = false;
+      }
+    }
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     if (itemHolder != null) {
@@ -45,6 +60,12 @@ public class PickaxeItem extends Item {
 
   @Override
   public void added(Entity collector) {
+    if (collector != null) {
+      if (produceOnce) {
+        place.produce();
+        produceOnce = false;
+      }
+    }
     itemHolder = collector;
     Sounds.KEY_ITEM_PICKUP_SOUND.play();
     if (itemHolder != null) {

@@ -38,7 +38,7 @@ public class PointMode extends LevelEditorMode {
   @Override
   public void execute() {
 
-    if (InputManager.isButtonJustPressed(SECONDARY_UP)) {
+    if (InputManager.isKeyJustPressed(SECONDARY_UP)) {
       snapMode = snapMode.nextMode();
     }
 
@@ -81,7 +81,7 @@ public class PointMode extends LevelEditorMode {
         String newPointName = baseName + (getLevel().getHighestPointNumber(baseName) + 1);
         getLevel().addNamedPoint(newPointName, snapPos);
       }
-    } else if (InputManager.isButtonPressed(TERTIARY)) {
+    } else if (InputManager.isKeyPressed(TERTIARY)) {
       // Delete deco on cursor
       getOnPosition(cursorPos).ifPresent(getLevel()::removeNamedPoint);
     }

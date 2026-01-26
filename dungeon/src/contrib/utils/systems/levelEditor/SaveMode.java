@@ -17,7 +17,7 @@ public class SaveMode extends LevelEditorMode {
 
   @Override
   public void execute() {
-    if (InputManager.isButtonJustPressed(PRIMARY_UP)) {
+    if (InputManager.isKeyJustPressed(PRIMARY_UP)) {
       DungeonSaver.saveCurrentDungeon();
       LevelEditorSystem.showFeedback("Exported level to clipboard!", Color.GREEN);
     }

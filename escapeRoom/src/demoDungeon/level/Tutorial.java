@@ -212,7 +212,7 @@ public class Tutorial extends DungeonLevel {
                               () -> {
                                 showDialogs[2] = false;
                                 DialogUtils.showTextPopup(
-                                    "Sammel die Items aus der Kiste ein und schau, was du damit im Kessel herstellen kannst.",
+                                    "Sammel die Items aus der Kiste mit der rechten Maustaste ein und lege sie mit der rechten Maustaste in den Kessel und schau was du damit herstellen kannst.",
                                     "Crafting",
                                     () -> {},
                                     player.id());
@@ -227,7 +227,7 @@ public class Tutorial extends DungeonLevel {
                               () -> {
                                 showDialogs[3] = false;
                                 DialogUtils.showTextPopup(
-                                    "Sammel die Items aus der Kiste ein und schau, was du damit im Kessel herstellen kannst.",
+                                    "Sammel die Items aus der Kiste mit der rechten Maustaste ein und lege sie mit der rechten Maustaste in den Kessel und schau was du damit herstellen kannst.",
                                     "Crafting",
                                     () -> {},
                                     player.id());
@@ -237,7 +237,7 @@ public class Tutorial extends DungeonLevel {
                         if (!enteredAreas.get(player)[0]
                             && position.equals(getPoint("Trigger31").toCoordinate())) {
                           DialogUtils.showTextPopup(
-                              "Ich bin müde und der Weg ist versperrt. Die Betten sehen wirklich gut aus.",
+                              "Ich bin müde und der Weg ist versperrt. Die Betten sehen wirklich gut aus. Interagiere mit dem Bett mit E.",
                               "Schlafen ..ZZzzz",
                               () -> enteredAreas.get(player)[0] = true,
                               player.id());
@@ -255,6 +255,13 @@ public class Tutorial extends DungeonLevel {
                           Game.tileAt(getPoint("hole2")).get().levelElement(LevelElement.SKIP);
                           Game.tileAt(getPoint("hole3")).get().levelElement(LevelElement.SKIP);
                           Game.tileAt(getPoint("hole4")).get().levelElement(LevelElement.SKIP);
+                          if (!enteredAreas.get(player)[2]) {
+                            DialogUtils.showTextPopup(
+                                "Der Weg zurück ist versperrt und ich glaube da kommen Wachen, was machen wir jetzt?",
+                                "Gefahr!",
+                                () -> enteredAreas.get(player)[2] = true,
+                                player.id());
+                          }
                           if (!guardsInitialized) {
                             initGuards();
                             guardsInitialized = true;

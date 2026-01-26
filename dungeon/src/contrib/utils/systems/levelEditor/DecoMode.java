@@ -45,19 +45,19 @@ public class DecoMode extends LevelEditorMode {
   @Override
   public void execute() {
     // Toggle ignore-blocked-check key
-    if (InputManager.isButtonJustPressed(SIXTH)) {
+    if (InputManager.isKeyJustPressed(SIXTH)) {
       ignoreBlockedCheck = !ignoreBlockedCheck;
     }
 
     // Change category
-    if (InputManager.isButtonJustPressed(SECONDARY_DOWN)) {
+    if (InputManager.isKeyJustPressed(SECONDARY_DOWN)) {
       int idx = currentCategory.ordinal() - 1;
       if (idx < 0) idx = Deco.Category.values().length - 1;
       currentCategory = Deco.Category.values()[idx];
       currentCategoryDecos = Deco.byCategory(currentCategory);
       selectedDecoIndex = 0;
       previewEntityChanged();
-    } else if (InputManager.isButtonJustPressed(SECONDARY_UP)) {
+    } else if (InputManager.isKeyJustPressed(SECONDARY_UP)) {
       int idx = (currentCategory.ordinal() + 1) % Deco.Category.values().length;
       currentCategory = Deco.Category.values()[idx];
       currentCategoryDecos = Deco.byCategory(currentCategory);
@@ -66,12 +66,12 @@ public class DecoMode extends LevelEditorMode {
     }
 
     // Change selected deco within category
-    if (InputManager.isButtonJustPressed(PRIMARY_UP)) {
+    if (InputManager.isKeyJustPressed(PRIMARY_UP)) {
       if (currentCategoryDecos.length > 0) {
         selectedDecoIndex = Math.floorMod(selectedDecoIndex + 1, currentCategoryDecos.length);
         previewEntityChanged();
       }
-    } else if (InputManager.isButtonJustPressed(PRIMARY_DOWN)) {
+    } else if (InputManager.isKeyJustPressed(PRIMARY_DOWN)) {
       if (currentCategoryDecos.length > 0) {
         selectedDecoIndex = Math.floorMod(selectedDecoIndex - 1, currentCategoryDecos.length);
         previewEntityChanged();
@@ -79,7 +79,7 @@ public class DecoMode extends LevelEditorMode {
     }
 
     // Change snap mode
-    if (InputManager.isButtonJustPressed(FIFTH)) {
+    if (InputManager.isKeyJustPressed(FIFTH)) {
       decoSnapMode = decoSnapMode.nextMode();
     }
 
@@ -109,12 +109,12 @@ public class DecoMode extends LevelEditorMode {
         decoHeldEntity = clickedDeco.get();
         removePreviewEntity();
       }
-    } else if (InputManager.isButtonPressed(TERTIARY)) {
+    } else if (InputManager.isKeyPressed(TERTIARY)) {
       rapidFireActive = false;
       // Delete deco on cursor
       getDecoOnPosition(cursorPos).map(DecoEntityData::entity).ifPresent(Game::remove);
       syncPlacedDecos();
-    } else if (InputManager.isButtonJustPressed(QUARTERNARY)) {
+    } else if (InputManager.isKeyJustPressed(QUARTERNARY)) {
       rapidFireActive = false;
       // Pipette tool to pick deco type on cursor
       Optional<DecoEntityData> clickedDeco = getDecoOnPosition(cursorPos);

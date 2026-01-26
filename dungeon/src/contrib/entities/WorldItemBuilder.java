@@ -10,6 +10,7 @@ import core.Entity;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
 import core.utils.Point;
+import core.utils.components.draw.DepthLayer;
 
 /** Class which creates all needed Components for a basic WorldItem. */
 public final class WorldItemBuilder {
@@ -24,7 +25,9 @@ public final class WorldItemBuilder {
   public static Entity buildWorldItemSimpleInteraction(final Item item) {
     Entity droppedItem = new Entity("worldItem_" + item.displayName());
     droppedItem.add(new PositionComponent(PositionComponent.ILLEGAL_POSITION));
-    droppedItem.add(new DrawComponent(item.worldAnimation()));
+    DrawComponent dc = new DrawComponent(item.worldAnimation());
+    dc.depth(DepthLayer.Player.depth() - 1);
+    droppedItem.add(dc);
     droppedItem.add(new ItemComponent(item));
 
     droppedItem.add(
@@ -62,7 +65,9 @@ public final class WorldItemBuilder {
   public static Entity buildWorldItem(final Item item) {
     Entity droppedItem = new Entity("worldItem_" + item.displayName());
     droppedItem.add(new PositionComponent(PositionComponent.ILLEGAL_POSITION));
-    droppedItem.add(new DrawComponent(item.worldAnimation()));
+    DrawComponent dc = new DrawComponent(item.worldAnimation());
+    dc.depth(DepthLayer.Player.depth() - 1);
+    droppedItem.add(dc);
     droppedItem.add(new ItemComponent(item));
 
     droppedItem.add(new InteractionComponent(detailedItemInteraction(item)));
