@@ -15,7 +15,7 @@ public class BlueGemItem extends Item {
   public BlueGemItem() {
     super(
         "BLauer Edelstein",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Strahlt eine kalte Energie aus.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

@@ -15,7 +15,7 @@ public class MetalItem extends Item {
   public MetalItem() {
     super(
         "Silberbarren",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Schmieden? Ich möchte den behalten.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

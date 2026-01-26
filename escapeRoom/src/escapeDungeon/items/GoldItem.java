@@ -15,7 +15,7 @@ public class GoldItem extends Item {
   public GoldItem() {
     super(
         "Goldbarren",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Wie es glänzt! Warum sollte ich das für irgendwas verwenden?",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

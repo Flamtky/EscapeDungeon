@@ -15,7 +15,7 @@ public class StickItem extends Item {
   public StickItem() {
     super(
         "Stock",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Ein Stock.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

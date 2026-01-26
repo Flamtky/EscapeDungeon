@@ -24,7 +24,7 @@ public class HammerItem extends Item {
   public HammerItem() {
     super(
         "Hammer",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Ein Werkzeug. Steine nehmt euch in Acht. Du hast eine neue Fähigkeit.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

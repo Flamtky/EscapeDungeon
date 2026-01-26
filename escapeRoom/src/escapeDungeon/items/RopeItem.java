@@ -15,7 +15,7 @@ public class RopeItem extends Item {
   public RopeItem() {
     super(
         "Seil",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Wo kann ich hier klettern? Es sieht alles so flach aus.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

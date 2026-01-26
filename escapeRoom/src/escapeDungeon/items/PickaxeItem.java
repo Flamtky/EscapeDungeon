@@ -23,7 +23,7 @@ public class PickaxeItem extends Item {
   public PickaxeItem() {
     super(
         "Spitzhacke",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Lasst das Buddeln beginnen. Du hast eine neue Fähigkeit.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

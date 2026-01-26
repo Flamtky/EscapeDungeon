@@ -86,15 +86,15 @@ public class FollowingIndicatorUI extends Group implements Disposable {
   private static final Color CENTER_CIRCLE_COLOR = new Color(0.2f, 0.2f, 0.2f, 1f);
 
   // UI Text constants
-  private static final String TITLE_TEXT = "EVADE THE GUARD";
-  private static final String SUCCESS_TITLE_TEXT = "ESCAPED!";
-  private static final String FAILURE_TITLE_TEXT = "CAUGHT!";
-  private static final String HIT_FEEDBACK_TEXT = "HIT!";
-  private static final String WRONG_KEY_AND_ZONE_TEXT = "WRONG KEY & ZONE!";
-  private static final String WRONG_KEY_TEXT = "WRONG KEY!";
-  private static final String WRONG_ZONE_TEXT = "WRONG ZONE!";
-  private static final String STATUS_HITS_PREFIX = "Hits: ";
-  private static final String STATUS_SEPARATOR = "  |  Misses: ";
+  private static final String TITLE_TEXT = "DRÜCKE DIE RICHTIGE TASTE!";
+  private static final String SUCCESS_TITLE_TEXT = "ERFOLG!";
+  private static final String FAILURE_TITLE_TEXT = "FEHLGESCHLAGEN!";
+  private static final String HIT_FEEDBACK_TEXT = "GETROFFEN!";
+  private static final String WRONG_KEY_AND_ZONE_TEXT = "FALSCHE TASTE & ZONE!";
+  private static final String WRONG_KEY_TEXT = "FALSCHE TASTE!";
+  private static final String WRONG_ZONE_TEXT = "FALSCHE ZONE!";
+  private static final String STATUS_HITS_PREFIX = "Treffer: ";
+  private static final String STATUS_SEPARATOR = "  |  Daneben: ";
 
   private static ShapeRenderer shapeRenderer;
 

@@ -20,7 +20,7 @@ public class AxeItem extends Item {
   public AxeItem() {
     super(
         "Axt",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Den Wald vor lauter Bäumen nicht sehen.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

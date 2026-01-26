@@ -29,7 +29,7 @@ public class TutorialPotionItem extends Item {
         .ifPresent(
             sc -> {
               if ((sc.maxAmount() - sc.currentAmount()) > 50) {
-                sc.restore(50);
+                sc.restore(sc.maxAmount());
                 user.fetch(InventoryComponent.class)
                     .ifPresent(
                         (ic -> {
@@ -40,7 +40,7 @@ public class TutorialPotionItem extends Item {
                                 ic.itemOfClass(EmptyBottleItem.class).ifPresent(ic::remove);
                                 ic.add(this);
                               },
-                              60000);
+                              20000);
                         }));
               }
             });

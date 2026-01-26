@@ -25,7 +25,7 @@ public class WoodenBridgeItem extends Item {
   public WoodenBridgeItem() {
     super(
         "Hölzerne Brücke",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Eine Brücke ins Paradies.",
         new Animation(
             new SimpleIPath(PATH),
             new AnimationConfig(new SpritesheetConfig(384, 480, 1, 1, 16, 16))),

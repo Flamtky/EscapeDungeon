@@ -15,7 +15,7 @@ public class HammerHeadItem extends Item {
   public HammerHeadItem() {
     super(
         "Hammerkopf",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Alleine ziemlich nutzlos",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

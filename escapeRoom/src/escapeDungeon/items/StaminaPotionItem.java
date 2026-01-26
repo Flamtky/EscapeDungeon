@@ -17,7 +17,7 @@ public class StaminaPotionItem extends Item {
   public StaminaPotionItem() {
     super(
         "Ausdauertrank",
-        "Damit können bestimmte Bäume gefällt werden.",
+        "Energie!",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }
