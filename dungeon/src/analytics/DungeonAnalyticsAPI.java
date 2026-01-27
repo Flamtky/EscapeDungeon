@@ -78,11 +78,11 @@ public class DungeonAnalyticsAPI {
    * the Dungeon world instance.
    *
    * @param configJson JSON configuration for this session (e.g., difficulty, adaptivity).
-   * @return The generated {@link UUID} of the session. Null if the operation fails or analytics is
-   *     disabled.
+   * @return The generated {@link UUID} of the session. Random UUID if analytics is disabled. And null
+   *    if session creation failed.
    */
   public static UUID startSession(String configJson) {
-    if (!ENABLED) return null;
+    if (!ENABLED) return UUID.randomUUID();
 
     var sql = "INSERT INTO sessions (session_config) VALUES (?::jsonb) RETURNING session_id";
 
