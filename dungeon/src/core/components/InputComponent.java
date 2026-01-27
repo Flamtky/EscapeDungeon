@@ -66,7 +66,7 @@ public class InputComponent implements Component {
     Consumer<Entity> oldCallback = null;
     if (callbacks.containsKey(key)) {
       oldCallback = callbacks.get(key).callback();
-      //LOGGER.info("Replacing existing callback for key: " + key);
+      LOGGER.info("Replacing existing callback for key: " + key);
     }
     callbacks.put(key, new InputComponent.InputData(true, callback));
     return Optional.ofNullable(oldCallback);

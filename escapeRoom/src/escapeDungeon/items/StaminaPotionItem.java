@@ -24,7 +24,7 @@ public class StaminaPotionItem extends Item {
 
   @Override
   public void use(Entity user) {
-    user.fetch(StaminaComponent.class).ifPresent(sc -> sc.restore(130));
+    user.fetch(StaminaComponent.class).ifPresent(sc -> sc.restore(106));
     user.fetch(InventoryComponent.class)
         .ifPresent(
             (ic -> {

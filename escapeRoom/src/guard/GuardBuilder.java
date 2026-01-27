@@ -172,6 +172,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
       if (ac.alertness() >= threshold && !triggered) {
         triggered = true;
         lastTriggeredTime = System.currentTimeMillis();
+        if (!player.isPresent(AnalyticsComponent.class)) return true;
         DungeonAnalyticsAPI.logXApiStatement(
             player.fetch(AnalyticsComponent.class).orElseThrow(),
             DungeonAnalyticsAPI.Verb.DETECTED,
@@ -183,6 +184,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
 
       if (!stayOnceTriggered && ac.alertness() <= lowerThreshold && triggered) {
         triggered = false;
+        if (!player.isPresent(AnalyticsComponent.class)) return false;
         DungeonAnalyticsAPI.logXApiStatement(
             player.fetch(AnalyticsComponent.class).orElseThrow(),
             DungeonAnalyticsAPI.Verb.LOST_DETECTION,
@@ -243,6 +245,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
 
       var guardPos = EntityUtils.getPosition(guard);
       var posData = Map.of("x", (int) guardPos.x(), "y", (int) guardPos.y());
+      if (!player.isPresent(AnalyticsComponent.class)) return;
       DungeonAnalyticsAPI.logXApiStatement(
           player.fetch(AnalyticsComponent.class).orElseThrow(),
           DungeonAnalyticsAPI.Verb.CAPTURED,
@@ -275,6 +278,7 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
         guard.fetch(AlertnessComponent.class).ifPresent(AlertnessComponent::reset);
         guard.fetch(VelocityComponent.class).ifPresent(vc -> vc.removeModifier("sprint"));
         guard.fetch(AIComponent.class).ifPresent(ai -> ai.active(false));
+        if (!grabbedPlayer.isPresent(AnalyticsComponent.class)) return;
         DungeonAnalyticsAPI.logXApiStatement(
             grabbedPlayer.fetch(AnalyticsComponent.class).orElseThrow(),
             DungeonAnalyticsAPI.Verb.RELEASED,
