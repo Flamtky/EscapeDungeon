@@ -66,6 +66,7 @@ import tools.timer.TimerAPI;
 /** The MADungeonRoom level. */
 public class MADungeonRoom extends DungeonLevel {
 
+  // region Hint Riddles
   // Labyrinth
   // Stamina Potion
   Entity staminaRiddle;
@@ -488,6 +489,8 @@ public class MADungeonRoom extends DungeonLevel {
     TransitionComponent t16 = new TransitionComponent();
     petriNetSystem.addInputArc(t16, bridgeRiddlePlace, 2);
   }
+
+  // endregion
 
   private boolean resetPushStones21 = false;
   private boolean resetPushStones22 = false;
