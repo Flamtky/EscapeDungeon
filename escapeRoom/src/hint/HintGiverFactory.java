@@ -79,7 +79,7 @@ public class HintGiverFactory {
   private static void showHintConfirmation(Entity player, Hint hint) {
     if (showDialog) {
       DialogFactory.showOkDialog(
-          "Willkommen, bei mir seid ihr sicher. Ich kann euch dabei helfen zu entkommen.",
+          "Willkommen, bei mir seid ihr sicher. Ich kann euch dabei helfen zu entkommen. Du kannst dir meine Tipps mit T nocheinmal anschauen.",
           "ZAUBERER",
           () -> {
             DialogFactory.showYesNoDialog(

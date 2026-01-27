@@ -55,7 +55,7 @@ public class HammerItem extends Item {
           "Der Hammer",
           () -> {
             DialogUtils.showTextPopup(
-                "Unten rechts siehst du deine Fähigkeiten und den Cooldown. Du wechselst zwischen deinen Fähigkeiten mit ?. Du kannst deine Fähigkeit mit der linken Maustaste aktivieren.",
+                "Unten rechts siehst du deine Fähigkeiten und den Cooldown. Du wechselst zwischen deinen Fähigkeiten mit Q. Du kannst deine Fähigkeit mit der linken Maustaste aktivieren.",
                 "Hammer Fähigkeit",
                 () -> {},
                 itemHolder.id());
