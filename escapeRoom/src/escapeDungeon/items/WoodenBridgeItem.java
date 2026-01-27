@@ -64,7 +64,8 @@ public class WoodenBridgeItem extends Item {
         .ifPresent(
             (sc) -> {
               if (sc.getSkill(BridgeSkill.class).isEmpty())
-                sc.addSkill(new BridgeSkill("BridgeSkill", 100, Tuple.of(Resource.STAMINA, 10)));
+                sc.addSkill(
+                    new BridgeSkill("Brücke platzieren", 100, Tuple.of(Resource.STAMINA, 10)));
             });
   }
 

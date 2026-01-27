@@ -46,12 +46,12 @@ public class KeyboardConfig {
 
   /** This key is used to use the active skill. */
   public static final ConfigKey<Integer> USE_SKILL =
-      new ConfigKey<>(new String[] {"skill", "fireball"}, new ConfigIntValue(Input.Keys.Q));
+      new ConfigKey<>(new String[] {"skill", "fireball"}, new ConfigIntValue(Input.Keys.PERIOD));
 
   /** Select the next skill as active Skill in the {@link contrib.components.SkillComponent}. */
   public static final ConfigKey<Integer> NEXT_SKILL =
       new ConfigKey<>(
-          new String[] {"skill", "select next skill"}, new ConfigIntValue(Input.Keys.PERIOD));
+          new String[] {"skill", "select next skill"}, new ConfigIntValue(Input.Keys.Q));
 
   /** Select the previous skill as active Skill in the {@link contrib.components.SkillComponent}. */
   public static final ConfigKey<Integer> PREV_SKILL =

@@ -20,7 +20,7 @@ public class LogItem extends Item {
   public LogItem() {
     super(
         "Baumstamm",
-        "Ob der wohl auch auf dem Wasser schwimmt?",
+        "Ein Baum ist noch kein Floss",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
   }

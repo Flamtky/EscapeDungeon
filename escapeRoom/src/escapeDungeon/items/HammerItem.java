@@ -70,7 +70,7 @@ public class HammerItem extends Item {
         .ifPresent(
             (sc) -> {
               if (sc.getSkill(HammerSkill.class).isEmpty())
-                sc.addSkill(new HammerSkill("HammerSkill", 1000, Tuple.of(Resource.STAMINA, 0)));
+                sc.addSkill(new HammerSkill("Hammer", 1000, Tuple.of(Resource.STAMINA, 100)));
             });
   }
 

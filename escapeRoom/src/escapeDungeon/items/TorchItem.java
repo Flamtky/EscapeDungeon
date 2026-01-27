@@ -77,7 +77,7 @@ public class TorchItem extends Item {
         .ifPresent(
             (sc) -> {
               if (sc.getSkill(TorchSkill.class).isEmpty())
-                sc.addSkill(new TorchSkill("TorchSkill", 500, 20, Tuple.of(Resource.MANA, 0)));
+                sc.addSkill(new TorchSkill("Fackel", 500, 20, this, Tuple.of(Resource.MANA, 0)));
             });
   }
 
