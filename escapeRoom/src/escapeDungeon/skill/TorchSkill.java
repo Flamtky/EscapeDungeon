@@ -19,8 +19,8 @@ import mushRoom.modules.qte.FollowingIndicatorDifficulty;
 public class TorchSkill extends CursorSkill {
 
   private final int maxAmount;
+  private final TorchItem torchItem;
   private int placed;
-  private TorchItem torchItem;
 
   /**
    * Creates a new cursor-targeted skill with a custom execution behavior.
