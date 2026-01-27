@@ -40,15 +40,16 @@ public class ClientState {
 
   /**
    * The last processed input sequence number. Used to detect and discard duplicates or stale inputs
-   * (seq <= this value). Initialized to -1 (none processed).
+   * (seq <= this value). Initialized to Short.MIN_VALUE - 1 (none processed), stored as int to
+   * allow sentinel value outside short range.
    */
-  private int lastProcessedSeq = -1;
+  private int lastProcessedSeq = Short.MIN_VALUE - 1;
 
   /**
    * The next expected input sequence number. Tracks gaps (for interpolation/warnings) when inputs
    * arrive out-of-order. Initialized to 0.
    */
-  private int expectedSeq = 0;
+  private short expectedSeq = 0;
 
   /**
    * The estimated round-trip time (RTT) in milliseconds. Updated based on clientTick vs. server
@@ -151,7 +152,7 @@ public class ClientState {
 
     this.sessionId = newSessionId;
     this.sessionToken = newSessionToken.clone();
-    this.lastProcessedSeq = -1;
+    this.lastProcessedSeq = Short.MIN_VALUE - 1; // Sentinel value outside short range
     this.expectedSeq = 0;
     this.lastClientTick = 0;
     if (!preserveHero) {
@@ -169,42 +170,47 @@ public class ClientState {
 
   /**
    * Updates the last processed sequence after successfully applying an input. Ensures monotonic
-   * progress; throws if seq is not the expected next.
+   * progress using 16-bit signed arithmetic for wrap-around; throws if seq is stale.
    *
-   * @param seq The sequence number that was just processed (must be > lastProcessedSeq).
-   * @throws IllegalArgumentException If seq <= lastProcessedSeq (stale or duplicate).
+   * @param seq The sequence number that was just processed (must be forward from lastProcessedSeq).
+   * @throws IllegalArgumentException If seq is stale or duplicate (not forward progression).
    */
   public synchronized void updateProcessedSeq(int seq) {
-    if (seq <= this.lastProcessedSeq) {
+    // Use 16-bit signed diff to detect stale sequences across wrap boundary
+    short diff = (short) (seq - this.lastProcessedSeq);
+    // For fresh state (lastProcessedSeq < Short.MIN_VALUE), any seq is valid
+    if (lastProcessedSeq >= Short.MIN_VALUE && diff <= 0) {
       throw new IllegalArgumentException(
           "Cannot update to stale or duplicate seq: " + seq + " <= " + lastProcessedSeq);
     }
-    this.lastProcessedSeq = seq;
-    this.expectedSeq = seq + 1;
+    this.lastProcessedSeq = (short) seq;
+    this.expectedSeq = (short) (seq + 1);
     this.lastActivityTimeMs = System.currentTimeMillis();
   }
 
   /**
    * Handles a sequence gap by updating expectedSeq and logging the gap for interpolation. Used when
-   * an input arrives with seq > expectedSeq but within maxSeqGap.
+   * an input arrives with seq > expectedSeq but within maxSeqGap. Uses 16-bit signed arithmetic for
+   * proper wrap-around handling.
    *
    * @param newSeq The arriving sequence number (must be > expectedSeq).
    * @return The gap size for interpolation logic (newSeq - expectedSeq).
    * @throws IllegalArgumentException If newSeq <= expectedSeq or gap > maxSeqGap.
    */
-  public synchronized int handleSeqGap(int newSeq) {
-    if (newSeq <= this.expectedSeq) {
+  public synchronized short handleSeqGap(int newSeq) {
+    // Use 16-bit signed diff for wrap-around handling
+    short diff = (short) (newSeq - this.expectedSeq);
+    if (diff <= 0) {
       throw new IllegalArgumentException(
           "Invalid seq for gap handling: " + newSeq + " <= " + expectedSeq);
     }
-    int gap = newSeq - this.expectedSeq;
-    if (gap > NetworkConfig.MAX_SEQUENCE_GAP) {
+    if (diff > NetworkConfig.MAX_SEQUENCE_GAP) {
       throw new IllegalArgumentException(
-          "Seq gap too large: " + gap + " > " + NetworkConfig.MAX_SEQUENCE_GAP);
+          "Seq gap too large: " + diff + " > " + NetworkConfig.MAX_SEQUENCE_GAP);
     }
-    this.expectedSeq = newSeq;
+    this.expectedSeq = (short) newSeq;
     this.lastActivityTimeMs = System.currentTimeMillis();
-    return gap;
+    return diff;
   }
 
   /**
@@ -353,22 +359,23 @@ public class ClientState {
 
   /**
    * Returns true if seq is plausibly recent (within gap tolerance from lastProcessedSeq). Accounts
-   * for Integer overflow by using signed int arithmetic.
+   * for 16-bit sequence wrap-around by using signed short arithmetic.
    *
-   * @param seq The candidate sequence.
+   * @param seq The candidate sequence (as short, may be passed as int due to auto-widening).
    * @return True if plausible (not stale).
    */
   public boolean isSeqPlausible(int seq) {
-    if (lastProcessedSeq == -1) return true; // Fresh state
+    // Fresh state: no sequence processed yet (sentinel value outside short range)
+    if (lastProcessedSeq < Short.MIN_VALUE) return true;
 
-    int diff = seq - lastProcessedSeq;
-    if (diff >= 0 && diff <= NetworkConfig.MAX_SEQUENCE_GAP) return true; // Forward, small gap
-    if (diff < 0) {
-      // Check for wrap-around (e.g., seq just wrapped, lastProcessedSeq near MAX_VALUE)
-      int wrappedDiff = (seq + (Integer.MAX_VALUE - lastProcessedSeq) + 1);
-      return wrappedDiff >= 0 && wrappedDiff <= NetworkConfig.MAX_SEQUENCE_GAP;
-    }
-    return false; // Too old or large gap
+    // Use 16-bit signed arithmetic for natural wrap-around handling.
+    // Cast to short to get proper wrap-around difference:
+    // e.g., seq=−32768 (wrapped from 32767), lastProcessedSeq=32767 → diff=1 (forward)
+    short diff = (short) (seq - lastProcessedSeq);
+
+    // diff > 0 means seq is ahead of lastProcessedSeq (forward progression)
+    // diff <= MAX_SEQUENCE_GAP ensures it's not too far ahead (plausible)
+    return diff > 0 && diff <= NetworkConfig.MAX_SEQUENCE_GAP;
   }
 
   @Override

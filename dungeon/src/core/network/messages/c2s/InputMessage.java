@@ -74,12 +74,14 @@ public record InputMessage(
   }
 
   /**
-   * Increment and return the current sequence number. Wraps around at Short.MAX_VALUE.
+   * Increment and return the current sequence number. Wraps around using full 16-bit range. Uses
+   * signed short (-32768 to 32767) to represent unsigned 0-65535.
    *
    * @return the incremented sequence number
    */
   private static short incrementAndGetSequence() {
-    currentSequence = (short) ((currentSequence + 1) % Short.MAX_VALUE);
+    // Increment and wrap using full 16-bit range (natural overflow from 32767 to -32768)
+    currentSequence++;
     return currentSequence;
   }
 
