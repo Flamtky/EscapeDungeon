@@ -40,7 +40,7 @@ public final class MAClient {
   ///////////////////////////////////
   ///////////////////////////////////
   ///
-  static final int SEED = 1;
+  static final int SEED = 100;
   private static final String NAME = RandomNameGenerator.generateName();
   private static final CharacterClass CLASS = CharacterClass.APPRENTICE;
 
@@ -87,7 +87,12 @@ public final class MAClient {
         });
 
     // Start the game
-    Game.run();
+    try {
+      Game.run();
+    } finally {
+      System.out.println("Exiting Client...");
+      System.out.println("Name: " + NAME);
+    }
   }
 
   /** Registers network message handlers for timer synchronization. */

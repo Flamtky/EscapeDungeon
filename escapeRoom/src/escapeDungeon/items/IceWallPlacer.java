@@ -54,7 +54,7 @@ public class IceWallPlacer extends Item {
         .ifPresent(
             (sc) -> {
               if (sc.getSkill(IceWallSkill.class).isEmpty())
-                sc.addSkill(new IceWallSkill("IceWallSkill", 100, 3, Tuple.of(Resource.MANA, 0)));
+                sc.addSkill(new IceWallSkill("Eiswand", 100, 3, Tuple.of(Resource.MANA, 0)));
             });
   }
 

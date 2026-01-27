@@ -23,9 +23,7 @@ import core.level.loader.DungeonLoader;
 import core.level.utils.Coordinate;
 import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
-import core.systems.DrawSystem;
 import core.utils.*;
-import core.utils.components.draw.shader.ColorGradeShader;
 import escapeDungeon.items.*;
 import guard.GuardBuilder;
 import hint.*;
@@ -98,25 +96,6 @@ public class Tutorial extends DungeonLevel {
 
   @Override
   protected void onFirstTick() {
-
-    Game.allPlayers()
-        .forEach(
-            player -> {
-              DialogUtils.showTextPopup(
-                  "Ihr scheint getrennt worden zu sein. Findet einen Weg wieder zueinander zu finden.",
-                  "Tutorial",
-                  () -> {},
-                  player.id());
-              enteredAreas.put(player, new boolean[4]);
-            });
-
-    DrawSystem ds = (DrawSystem) Game.systems().get(DrawSystem.class);
-    ds.levelShaders()
-        .add(
-            "gray",
-            new ColorGradeShader(0.5f, 0.1f, 0.6f)
-                .region(new Rectangle(Vector2.of(getPoint("Test1")), Vector2.of(getPoint("Test2"))))
-                .transitionSize(1));
     Game.add(MiscFactory.newCraftingCauldron(getPoint("Cauldron1")));
     Game.add(MiscFactory.newCraftingCauldron(getPoint("Cauldron2")));
     Game.add(DecoFactory.createDeco(getPoint("Stone1"), Deco.Stone));
@@ -174,15 +153,28 @@ public class Tutorial extends DungeonLevel {
 
   private boolean guardsInitialized = false;
   private int exitArea = 0;
+  private final Set<Integer> initedPlayers = new HashSet<>();
+
+  private void handleStartLogic(Entity player) {
+    if (initedPlayers.contains(player.id())) {
+      return;
+    }
+    initedPlayers.add(player.id());
+
+    DialogUtils.showTextPopup(
+        "Ihr scheint getrennt worden zu sein. Findet einen Weg wieder zueinander zu finden.",
+        "Tutorial",
+        () -> {},
+        player.id());
+    enteredAreas.put(player, new boolean[4]);
+  }
 
   @Override
   protected void onTick() {
-
-    // DialogUtils.showTextPopup("Haben wir dich", "Gefangen", () -> Game.exit());
-
     Game.allPlayers()
         .forEach(
             player -> {
+              handleStartLogic(player);
               player
                   .fetch(CollideComponent.class)
                   .ifPresent(
@@ -190,56 +182,57 @@ public class Tutorial extends DungeonLevel {
                         Coordinate position = cc.collider().absoluteCenter().toCoordinate();
                         if (showDialogs[0]
                             && position.equals(getPoint("Trigger11").toCoordinate())) {
+                          showDialogs[0] = false;
                           DialogUtils.showTextPopup(
                               "Der Weg vor dir scheint versperrt zu sein. Vielleicht finde ich in diesem Haus etwas um hier freizuräumen.",
                               "Umschauen",
-                              () -> showDialogs[0] = false,
+                              () -> {},
                               player.id());
                         }
                         if (showDialogs[1]
                             && position.equals(getPoint("Trigger12").toCoordinate())) {
+                          showDialogs[1] = false;
                           DialogUtils.showTextPopup(
                               "Der Weg vor dir scheint versperrt zu sein. Vielleicht finde ich in diesem Haus etwas um hier freizuräumen.",
                               "Umschauen",
-                              () -> showDialogs[1] = false,
+                              () -> {},
                               player.id());
                         }
                         if (showDialogs[2]
                             && position.equals(getPoint("Trigger21").toCoordinate())) {
+                          showDialogs[2] = false;
                           DialogUtils.showTextPopup(
                               "Da steht eine Kiste und ein Kessel zum Craften. Du kannst mit diesen interagieren indem du deine Maus auf diese bewegst und E drückst.",
                               "Crafting",
-                              () -> {
-                                showDialogs[2] = false;
-                                DialogUtils.showTextPopup(
-                                    "Sammel die Items aus der Kiste mit der rechten Maustaste ein und lege sie mit der rechten Maustaste in den Kessel und schau was du damit herstellen kannst.",
-                                    "Crafting",
-                                    () -> {},
-                                    player.id());
-                              },
+                              () ->
+                                  DialogUtils.showTextPopup(
+                                      "Sammel die Items aus der Kiste mit der rechten Maustaste ein und lege sie mit der rechten Maustaste in den Kessel und schau was du damit herstellen kannst.",
+                                      "Crafting",
+                                      () -> {},
+                                      player.id()),
                               player.id());
                         }
                         if (showDialogs[3]
                             && position.equals(getPoint("Trigger22").toCoordinate())) {
+                          showDialogs[3] = false;
                           DialogUtils.showTextPopup(
                               "Da steht eine Kiste und ein Kessel zum Craften. Du kannst mit diesen interagieren indem du deine Maus auf diese bewegst und E drückst.",
                               "Crafting",
-                              () -> {
-                                showDialogs[3] = false;
-                                DialogUtils.showTextPopup(
-                                    "Sammel die Items aus der Kiste mit der rechten Maustaste ein und lege sie mit der rechten Maustaste in den Kessel und schau was du damit herstellen kannst.",
-                                    "Crafting",
-                                    () -> {},
-                                    player.id());
-                              },
+                              () ->
+                                  DialogUtils.showTextPopup(
+                                      "Sammel die Items aus der Kiste mit der rechten Maustaste ein und lege sie mit der rechten Maustaste in den Kessel und schau was du damit herstellen kannst.",
+                                      "Crafting",
+                                      () -> {},
+                                      player.id()),
                               player.id());
                         }
                         if (!enteredAreas.get(player)[0]
                             && position.equals(getPoint("Trigger31").toCoordinate())) {
+                          enteredAreas.get(player)[0] = true;
                           DialogUtils.showTextPopup(
                               "Ich bin müde und der Weg ist versperrt. Die Betten sehen wirklich gut aus. Interagiere mit dem Bett mit E.",
                               "Schlafen ..ZZzzz",
-                              () -> enteredAreas.get(player)[0] = true,
+                              () -> {},
                               player.id());
                         }
                         if (!enteredAreas.get(player)[1] && position.x() > 45) {
@@ -256,10 +249,11 @@ public class Tutorial extends DungeonLevel {
                           Game.tileAt(getPoint("hole3")).get().levelElement(LevelElement.SKIP);
                           Game.tileAt(getPoint("hole4")).get().levelElement(LevelElement.SKIP);
                           if (!enteredAreas.get(player)[2]) {
+                            enteredAreas.get(player)[2] = true;
                             DialogUtils.showTextPopup(
                                 "Der Weg zurück ist versperrt und ich glaube da kommen Wachen, was machen wir jetzt?",
                                 "Gefahr!",
-                                () -> enteredAreas.get(player)[2] = true,
+                                () -> {},
                                 player.id());
                           }
                           if (!guardsInitialized) {
@@ -276,10 +270,7 @@ public class Tutorial extends DungeonLevel {
                                     player.remove(AttachmentComponent.class);
                                     player
                                         .fetch(PositionComponent.class)
-                                        .ifPresent(
-                                            pos -> {
-                                              DungeonLoader.loadNextLevel();
-                                            });
+                                        .ifPresent(pos -> DungeonLoader.loadNextLevel());
                                   }
                                 });
                       });

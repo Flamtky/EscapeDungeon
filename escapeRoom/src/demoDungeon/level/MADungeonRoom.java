@@ -13,7 +13,6 @@ import contrib.entities.deco.DecoFactory;
 import contrib.hud.DialogUtils;
 import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogContextKeys;
-import contrib.hud.dialogs.DialogFactory;
 import contrib.hud.dialogs.DialogType;
 import contrib.item.Item;
 import contrib.modules.interaction.Interaction;
@@ -67,6 +66,7 @@ import tools.timer.TimerAPI;
 /** The MADungeonRoom level. */
 public class MADungeonRoom extends DungeonLevel {
 
+  // region Hint Riddles
   // Labyrinth
   // Stamina Potion
   Entity staminaRiddle;
@@ -489,6 +489,8 @@ public class MADungeonRoom extends DungeonLevel {
     TransitionComponent t16 = new TransitionComponent();
     petriNetSystem.addInputArc(t16, bridgeRiddlePlace, 2);
   }
+
+  // endregion
 
   private boolean resetPushStones21 = false;
   private boolean resetPushStones22 = false;
@@ -915,7 +917,7 @@ public class MADungeonRoom extends DungeonLevel {
       player.add(new HintLogComponent(player.id()));
     }
 
-    DialogFactory.showOkDialog(
+    DialogUtils.showTextPopup(
         "Oh nein! Wo sind wir hier. Sieht als wären wir in ein Verlies gebracht worden. "
             + "Es muss hier doch einen Weg raus geben. Wir sollten uns hier mal umschauen.",
         "Gefangen",
@@ -1141,7 +1143,7 @@ public class MADungeonRoom extends DungeonLevel {
     Color tintColor = index < stoneColors.length ? stoneColors[index] : Color.WHITE;
     dc.tintColor(Color.rgba8888(tintColor));
     pushStone.add(dc);
-    pushStone.add(new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f)));
+    pushStone.add(new CollideComponent(Vector2.of(0.125f, 0.125f), Vector2.of(0.75f, 0.75f)));
     pushStone.add(VelocityComponent.builder().baseSpeed(5).mass(1.3f).build());
     Game.add(pushStone);
     return pushStone;

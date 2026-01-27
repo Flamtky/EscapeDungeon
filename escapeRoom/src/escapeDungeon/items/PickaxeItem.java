@@ -80,8 +80,7 @@ public class PickaxeItem extends Item {
             (sc) -> {
               if (sc.getSkill(WallbreakerSkill.class).isEmpty())
                 sc.addSkill(
-                    new WallbreakerSkill(
-                        "WallbreakerSkill", 10000, Tuple.of(Resource.STAMINA, 100)));
+                    new WallbreakerSkill("Spitzhacke", 10000, Tuple.of(Resource.STAMINA, 100)));
             });
   }
 
