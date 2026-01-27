@@ -10,16 +10,11 @@ import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
 import contrib.hud.DialogUtils;
 import contrib.item.concreteItem.*;
-import contrib.modules.interaction.IInteractable;
-import contrib.modules.interaction.Interaction;
-import contrib.modules.interaction.InteractionComponent;
 import contrib.utils.components.ai.idle.PatrolWalk;
 import core.Entity;
 import core.Game;
-import core.components.PositionComponent;
 import core.level.DungeonLevel;
 import core.level.Tile;
-import core.level.loader.DungeonLoader;
 import core.level.utils.Coordinate;
 import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
@@ -103,36 +98,6 @@ public class Tutorial extends DungeonLevel {
     Game.add(DecoFactory.createDeco(getPoint("Stone3"), Deco.Stone));
     Game.add(DecoFactory.createDeco(getPoint("Stone4"), Deco.Stone));
 
-    Entity stone = MiscFactory.newStone(getPoint("Stone1"), 0);
-    stone
-        .fetch(InteractionComponent.class)
-        .ifPresent(
-            oldIC -> {
-              InteractionComponent wrapperIC =
-                  new InteractionComponent(
-                      new IInteractable() {
-                        private final IInteractable base = oldIC.interactions();
-
-                        @Override
-                        public Interaction look() {
-                          return new Interaction(
-                              (entity, who) -> {
-                                DialogUtils.showTextPopup(
-                                    "Vielleicht kann ich ein Werkzeug herstellen, um hier durch zu kommen.",
-                                    LOOK_LABEL);
-                              },
-                              LOOK_LABEL);
-                        }
-
-                        @Override
-                        public Interaction interact() {
-                          return base.interact();
-                        }
-                      });
-              stone.remove(InteractionComponent.class);
-              stone.add(wrapperIC);
-            });
-    Game.add(stone);
     Game.add(
         MiscFactory.newChest(
             Set.of(new HammerHeadItem(), new StickItem(), new TutorialPotionItem()),
@@ -268,9 +233,8 @@ public class Tutorial extends DungeonLevel {
                                 ac -> {
                                   if (position.x() >= 59) {
                                     player.remove(AttachmentComponent.class);
-                                    player
-                                        .fetch(PositionComponent.class)
-                                        .ifPresent(pos -> DungeonLoader.loadNextLevel());
+                                    Game.exit();
+                                    // DungeonLoader.loadNextLevel();
                                   }
                                 });
                       });
