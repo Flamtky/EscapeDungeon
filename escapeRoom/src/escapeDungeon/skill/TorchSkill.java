@@ -80,4 +80,14 @@ public class TorchSkill extends CursorSkill {
             }));
     return success.get();
   }
+
+  /**
+   * Returns the name of the skill.
+   *
+   * @return the skill name
+   */
+  @Override
+  public String name() {
+    return (maxAmount - placed) + " - " + super.name();
+  }
 }
