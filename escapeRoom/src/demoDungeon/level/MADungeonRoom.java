@@ -504,7 +504,7 @@ public class MADungeonRoom extends DungeonLevel {
   private final List<Entity> pushStones2 = new ArrayList<>();
   private final List<Entity> pushStones3 = new ArrayList<>();
   private final Color[] stoneColors = {
-    Color.WHITE,
+    Color.YELLOW,
     Color.RED,
     Color.BLUE,
     Color.RED,
@@ -527,13 +527,13 @@ public class MADungeonRoom extends DungeonLevel {
     Color.YELLOW
   };
   private final Color[] plateColors = {
-    Color.WHITE,
+    Color.YELLOW,
     Color.RED,
     Color.BLUE,
     Color.RED,
     Color.BLUE,
     Color.GREEN,
-    Color.BLUE,
+    Color.RED,
     Color.RED,
     Color.BLUE,
     Color.GREEN,
@@ -1163,7 +1163,7 @@ public class MADungeonRoom extends DungeonLevel {
                 Entity pp =
                     LeverFactory.pressurePlate(
                         platePos,
-                        1f,
+                        1.3f,
                         new ICommand() {
                           public void execute() {
                             Sounds.DOOR_OPEN_SOUND.play();
@@ -1197,7 +1197,19 @@ public class MADungeonRoom extends DungeonLevel {
                                 if (colorMatches) {
                                   other
                                       .fetch(VelocityComponent.class)
-                                      .ifPresent(vc -> pressurePlateComponent.increase(vc.mass()));
+                                      .ifPresent(
+                                          vc -> {
+                                            if (plateColors[index] == Color.WHITE) {
+                                              other
+                                                  .fetch(PlayerComponent.class)
+                                                  .ifPresent(
+                                                      pc -> {
+                                                        pressurePlateComponent.increase(vc.mass());
+                                                      });
+                                            } else {
+                                              pressurePlateComponent.increase(vc.mass());
+                                            }
+                                          });
                                 }
                               });
                     };
@@ -1215,7 +1227,19 @@ public class MADungeonRoom extends DungeonLevel {
                                 if (colorMatches) {
                                   other
                                       .fetch(VelocityComponent.class)
-                                      .ifPresent(vc -> pressurePlateComponent.decrease(vc.mass()));
+                                      .ifPresent(
+                                          vc -> {
+                                            if (plateColors[index] == Color.WHITE) {
+                                              other
+                                                  .fetch(PlayerComponent.class)
+                                                  .ifPresent(
+                                                      pc -> {
+                                                        pressurePlateComponent.decrease(vc.mass());
+                                                      });
+                                            } else {
+                                              pressurePlateComponent.decrease(vc.mass());
+                                            }
+                                          });
                                 }
                               });
                     };

@@ -18,7 +18,6 @@ import core.network.config.NetworkConfig;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoom;
-import demoDungeon.level.Tutorial;
 import escapeDungeon.items.*;
 import guard.GuardDetectionSystem;
 import hint.HintLogComponent;
@@ -61,7 +60,7 @@ public class MASinglePlayer {
     Game.userOnSetup(
         () -> {
           setupMusic();
-          DungeonLoader.addLevel(Tuple.of("tutorial", Tutorial.class));
+          // DungeonLoader.addLevel(Tuple.of("tutorial", Tutorial.class));
           DungeonLoader.addLevel(Tuple.of("maroom", MADungeonRoom.class));
           createSystems();
           createHero();
