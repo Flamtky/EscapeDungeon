@@ -52,7 +52,7 @@ public class SkillComponent implements Component {
    * @param skill the skill to add (ignored if {@code null})
    */
   public void addSkill(Skill skill) {
-    if (skill != null) {
+    if (skill != null && !skills.contains(skill)) {
       skills.add(skill);
       if (activeSkill == -1) {
         activeSkill = 0;

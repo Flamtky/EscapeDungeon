@@ -79,7 +79,7 @@ public class TorchItem extends Item {
         .fetch(SkillComponent.class)
         .ifPresent(
             (sc) -> {
-              if (sc.getSkill(TorchSkill.class).isEmpty()) sc.addSkill(torchSkill);
+              sc.addSkill(torchSkill);
             });
   }
 

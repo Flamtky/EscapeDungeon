@@ -1,6 +1,7 @@
 package core.network;
 
 import contrib.components.*;
+import contrib.item.Item;
 import contrib.item.ItemSnapshot;
 import contrib.systems.PositionSync;
 import core.Entity;
@@ -615,7 +616,10 @@ public class DefaultSnapshotTranslator implements SnapshotTranslator {
                           });
               for (int i = 0; i < snapshots.length; i++) {
                 ItemSnapshot itemSnapshot = snapshots[i];
-                ic.set(i, itemSnapshot != null ? itemSnapshot.toItem() : null);
+                Item item = itemSnapshot != null ? itemSnapshot.toItem() : null;
+                if (!Objects.equals(item, ic.get(i).orElse(null))) {
+                  ic.set(i, item);
+                }
               }
             });
 
