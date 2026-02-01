@@ -96,6 +96,6 @@ public class IceWallSkill extends CursorSkill {
    */
   @Override
   public String name() {
-    return (maxWallAmount - placed) + " " + super.name();
+    return super.name() + "\n(" + (maxWallAmount - placed) + " / " + maxWallAmount + ")";
   }
 }

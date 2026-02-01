@@ -20,8 +20,7 @@ public class TorchItem extends Item {
 
   private Entity itemHolder;
 
-  private final TorchSkill torchSkill =
-      new TorchSkill("Fackeln", 500, 20, Tuple.of(Resource.MANA, 0));
+  private TorchSkill torchSkill = new TorchSkill("Fackeln", 500, 20, Tuple.of(Resource.MANA, 0));
 
   private static PlaceComponent place;
 

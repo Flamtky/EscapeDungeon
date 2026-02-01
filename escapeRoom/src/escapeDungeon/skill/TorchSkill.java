@@ -49,11 +49,13 @@ public class TorchSkill extends CursorSkill {
                   && tile.designLabel() == DesignLabel.GREYCASTLE) {
                 if (Game.entityAtPoint(point)
                     .anyMatch(e -> e.name().contains("TorchGrayAnimatedPlaced"))) {
-                  Game.entityAtPoint(point)
-                      .filter(e -> e.name().contains("TorchGrayAnimatedPlaced"))
-                      .findFirst()
-                      .ifPresent(Game::remove);
-                  placed--;
+                  if (placed > 0) {
+                    Game.entityAtPoint(point)
+                        .filter(e -> e.name().contains("TorchGrayAnimatedPlaced"))
+                        .findFirst()
+                        .ifPresent(Game::remove);
+                    placed--;
+                  }
                 } else if (placed < maxAmount) {
                   FollowingIndicatorDialog.openFollowingIndicator(
                       caster,
@@ -79,6 +81,6 @@ public class TorchSkill extends CursorSkill {
    */
   @Override
   public String name() {
-    return (maxAmount - placed) + " " + super.name();
+    return super.name() + "\n(" + (maxAmount - placed) + " / " + maxAmount + ")";
   }
 }
