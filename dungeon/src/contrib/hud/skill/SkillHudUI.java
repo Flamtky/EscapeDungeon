@@ -297,7 +297,9 @@ public class SkillHudUI extends Group {
     // Draw skill name at top
     String skillName = skillData.name() != null ? skillData.name() : "Unknown";
     if (skillName.length() > 12) {
-      skillName = skillName.substring(0, 10) + "..";
+      if (!skillName.contains("\n")) {
+        skillName = skillName.substring(0, 10) + "..";
+      }
     }
     glyphLayout.setText(skillNameFont, skillName);
     float nameX = boxX + (BOX_WIDTH - glyphLayout.width) / 2;

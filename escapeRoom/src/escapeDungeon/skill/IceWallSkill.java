@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class IceWallSkill extends CursorSkill {
 
   private final int maxWallAmount;
+  private int placed;
 
   /**
    * Creates a new cursor-targeted skill with a custom execution behavior.
@@ -56,6 +57,7 @@ public class IceWallSkill extends CursorSkill {
                                   .map(decoComp -> decoComp.type() == Deco.IceWall)
                                   .orElse(false))
                       .forEach(Game::remove);
+                  placed--;
                 } else if (tile.levelElement() == LevelElement.FLOOR) {
                   if (Game.allTiles(
                               t ->
@@ -78,11 +80,22 @@ public class IceWallSkill extends CursorSkill {
                     tile.refreshTexture();
                     var iceWallEntity = DecoFactory.createDeco(tile.position(), Deco.IceWall);
                     Game.add(iceWallEntity);
+                    placed++;
                   }
                 }
               }
               success.set(true);
             }));
     return success.get();
+  }
+
+  /**
+   * Returns the name of the skill.
+   *
+   * @return the skill name
+   */
+  @Override
+  public String name() {
+    return super.name() + "\n(" + (maxWallAmount - placed) + " / " + maxWallAmount + ")";
   }
 }

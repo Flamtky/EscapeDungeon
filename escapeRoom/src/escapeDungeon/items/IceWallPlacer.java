@@ -20,6 +20,9 @@ public class IceWallPlacer extends Item {
 
   private Entity itemHolder;
 
+  private final IceWallSkill iceWallSkill =
+      new IceWallSkill("Eiswände", 100, 3, Tuple.of(Resource.MANA, 0));
+
   /** Constructs a new IceWallPlacer item. */
   public IceWallPlacer() {
     super(
@@ -53,8 +56,7 @@ public class IceWallPlacer extends Item {
         .fetch(SkillComponent.class)
         .ifPresent(
             (sc) -> {
-              if (sc.getSkill(IceWallSkill.class).isEmpty())
-                sc.addSkill(new IceWallSkill("Eiswand", 100, 3, Tuple.of(Resource.MANA, 0)));
+              if (sc.getSkill(IceWallSkill.class).isEmpty()) sc.addSkill(iceWallSkill);
             });
   }
 
@@ -64,7 +66,7 @@ public class IceWallPlacer extends Item {
       itemHolder
           .fetch(IceMovementComponent.class)
           .ifPresent((ic) -> itemHolder.remove(IceMovementComponent.class));
-      itemHolder.fetch(SkillComponent.class).ifPresent((sc) -> sc.removeSkill(IceWallSkill.class));
+      itemHolder.fetch(SkillComponent.class).ifPresent((sc) -> sc.removeSkill(iceWallSkill));
       itemHolder = null;
     }
     return super.drop(position);

@@ -6,7 +6,8 @@ import contrib.components.AttachmentComponent;
 import contrib.components.CollideComponent;
 import contrib.components.UIComponent;
 import contrib.hud.DialogUtils;
-import contrib.hud.UIUtils;
+import contrib.hud.dialogs.DialogCallbackResolver;
+import contrib.hud.dialogs.DialogContextKeys;
 import contrib.systems.EventScheduler;
 import contrib.utils.EntityUtils;
 import contrib.utils.components.ai.AIUtils;
@@ -241,7 +242,13 @@ public class GuardBuilder extends EscapeRoomMonsterBuilder.Builder {
               guard.fetch(PositionComponent.class).orElseThrow());
       player.add(ac);
       player.fetch(CollideComponent.class).ifPresent(cc -> cc.isSolid(false));
-      player.fetch(UIComponent.class).ifPresent(UIUtils::closeDialog);
+      player
+          .fetch(UIComponent.class)
+          .ifPresent(
+              (ui) ->
+                  DialogCallbackResolver.createButtonCallback(
+                          ui.dialogContext().dialogId(), DialogContextKeys.ON_CLOSE)
+                      .accept(null));
 
       var guardPos = EntityUtils.getPosition(guard);
       var posData = Map.of("x", (int) guardPos.x(), "y", (int) guardPos.y());

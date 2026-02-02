@@ -455,7 +455,15 @@ public class CraftingGUI extends CombinableGUI implements IInventoryHolder {
         .filter(result -> result.resultType() == CraftingType.ITEM && result instanceof Item)
         .forEach(
             result -> {
-              Item item = (Item) result;
+              Item item;
+              try {
+                item = (Item) result.getClass().getDeclaredConstructor().newInstance();
+                item.maxStackSize((byte) result.getAmount());
+                item.stackSize((byte) result.getAmount());
+              } catch (Exception e) {
+                LOGGER.error("Failed to instantiate crafting result item: {}", e.getMessage());
+                return;
+              }
               this.targetInventory.add(item);
             });
     this.inventory.clear();

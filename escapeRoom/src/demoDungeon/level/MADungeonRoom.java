@@ -504,7 +504,7 @@ public class MADungeonRoom extends DungeonLevel {
   private final List<Entity> pushStones2 = new ArrayList<>();
   private final List<Entity> pushStones3 = new ArrayList<>();
   private final Color[] stoneColors = {
-    Color.WHITE,
+    Color.YELLOW,
     Color.RED,
     Color.BLUE,
     Color.RED,
@@ -527,13 +527,13 @@ public class MADungeonRoom extends DungeonLevel {
     Color.YELLOW
   };
   private final Color[] plateColors = {
-    Color.WHITE,
+    Color.YELLOW,
     Color.RED,
     Color.BLUE,
     Color.RED,
     Color.BLUE,
     Color.GREEN,
-    Color.BLUE,
+    Color.RED,
     Color.RED,
     Color.BLUE,
     Color.GREEN,
@@ -547,7 +547,15 @@ public class MADungeonRoom extends DungeonLevel {
     Color.RED,
     Color.BLUE,
     Color.RED,
-    Color.YELLOW
+    Color.YELLOW,
+    Color.WHITE,
+    Color.WHITE,
+    Color.WHITE,
+    Color.WHITE,
+    Color.WHITE,
+    Color.WHITE,
+    Color.WHITE,
+    Color.WHITE
   };
   private final Color[] waterColors = {
     Color.GREEN,
@@ -918,7 +926,7 @@ public class MADungeonRoom extends DungeonLevel {
     }
 
     DialogUtils.showTextPopup(
-        "Oh nein! Wo sind wir hier. Sieht als wären wir in ein Verlies gebracht worden. "
+        "Oh nein! Wo sind wir hier? Sieht aus als wären wir in ein Verlies gebracht worden. "
             + "Es muss hier doch einen Weg raus geben. Wir sollten uns hier mal umschauen.",
         "Gefangen",
         () -> {},
@@ -1155,79 +1163,13 @@ public class MADungeonRoom extends DungeonLevel {
             tuple -> {
               Point platePos = tuple.a();
               int index = tuple.b();
-              if (index < 21) {
-                Point doorPos = getPoint("push_door" + index);
-                DoorTile doorTile = (DoorTile) tileAt(doorPos).orElseThrow();
-                doorTile.close();
 
-                Entity pp =
-                    LeverFactory.pressurePlate(
-                        platePos,
-                        1f,
-                        new ICommand() {
-                          public void execute() {
-                            Sounds.DOOR_OPEN_SOUND.play();
-                            doorTile.open();
-                          }
-
-                          public void undo() {
-                            Sounds.DOOR_CLOSE_SOUND.play();
-                            doorTile.close();
-                          }
-                        });
-                pp.fetch(DrawComponent.class)
-                    .ifPresent(
-                        dc -> {
-                          Color tColor =
-                              index < plateColors.length ? plateColors[index] : Color.WHITE;
-                          dc.tintColor(Color.rgba8888(tColor));
-                        });
-                PressurePlateComponent pressurePlateComponent =
-                    pp.fetch(PressurePlateComponent.class).orElseThrow();
-                TriConsumer<Entity, Entity, Direction> onCollideEnter =
-                    (self, other, dir) -> {
-                      self.fetch(DrawComponent.class)
-                          .ifPresent(
-                              dc -> {
-                                boolean colorMatches =
-                                    other
-                                        .fetch(DrawComponent.class)
-                                        .map(odc -> odc.tintColor() == dc.tintColor())
-                                        .orElse(false);
-                                if (colorMatches) {
-                                  other
-                                      .fetch(VelocityComponent.class)
-                                      .ifPresent(vc -> pressurePlateComponent.increase(vc.mass()));
-                                }
-                              });
-                    };
-                TriConsumer<Entity, Entity, Direction> onCollideLeave =
-                    (self, other, dir) -> {
-                      if (other.isPresent(ProjectileComponent.class)) return;
-                      self.fetch(DrawComponent.class)
-                          .ifPresent(
-                              dc -> {
-                                boolean colorMatches =
-                                    other
-                                        .fetch(DrawComponent.class)
-                                        .map(odc -> odc.tintColor() == dc.tintColor())
-                                        .orElse(false);
-                                if (colorMatches) {
-                                  other
-                                      .fetch(VelocityComponent.class)
-                                      .ifPresent(vc -> pressurePlateComponent.decrease(vc.mass()));
-                                }
-                              });
-                    };
-                pp.add(new CollideComponent(onCollideEnter, onCollideLeave).isSolid(false));
-
-                Game.add(pp);
-              }
+              Entity pp = new Entity("");
               if (index == 21) {
-                Game.add(
+                pp =
                     LeverFactory.pressurePlate(
                         platePos,
-                        1.4f,
+                        1.2f,
                         new ICommand() {
                           public void execute() {
                             resetPushStones21 = true;
@@ -1239,13 +1181,12 @@ public class MADungeonRoom extends DungeonLevel {
                           public void undo() {
                             resetPushStones21 = false;
                           }
-                        }));
-              }
-              if (index == 22) {
-                Game.add(
+                        });
+              } else if (index == 22) {
+                pp =
                     LeverFactory.pressurePlate(
                         platePos,
-                        1.4f,
+                        1.2f,
                         new ICommand() {
                           public void execute() {
                             resetPushStones22 = true;
@@ -1257,13 +1198,12 @@ public class MADungeonRoom extends DungeonLevel {
                           public void undo() {
                             resetPushStones22 = false;
                           }
-                        }));
-              }
-              if (index == 23) {
-                Game.add(
+                        });
+              } else if (index == 23) {
+                pp =
                     LeverFactory.pressurePlate(
                         platePos,
-                        1.4f,
+                        1.2f,
                         new ICommand() {
                           public void execute() {
                             resetPushStones23 = true;
@@ -1275,13 +1215,12 @@ public class MADungeonRoom extends DungeonLevel {
                           public void undo() {
                             resetPushStones23 = false;
                           }
-                        }));
-              }
-              if (index == 24) {
-                Game.add(
+                        });
+              } else if (index == 24) {
+                pp =
                     LeverFactory.pressurePlate(
                         platePos,
-                        1.4f,
+                        1.2f,
                         new ICommand() {
                           public void execute() {
                             resetPushStones24 = true;
@@ -1293,13 +1232,12 @@ public class MADungeonRoom extends DungeonLevel {
                           public void undo() {
                             resetPushStones24 = false;
                           }
-                        }));
-              }
-              if (index == 25) {
-                Game.add(
+                        });
+              } else if (index == 25) {
+                pp =
                     LeverFactory.pressurePlate(
                         platePos,
-                        1.4f,
+                        1.2f,
                         new ICommand() {
                           public void execute() {
                             resetPushStones25 = true;
@@ -1311,13 +1249,12 @@ public class MADungeonRoom extends DungeonLevel {
                           public void undo() {
                             resetPushStones25 = false;
                           }
-                        }));
-              }
-              if (index == 26) {
-                Game.add(
+                        });
+              } else if (index == 26) {
+                pp =
                     LeverFactory.pressurePlate(
                         platePos,
-                        1.4f,
+                        1.2f,
                         new ICommand() {
                           public void execute() {
                             resetPushStones26 = true;
@@ -1329,8 +1266,125 @@ public class MADungeonRoom extends DungeonLevel {
                           public void undo() {
                             resetPushStones26 = false;
                           }
-                        }));
+                        });
+              } else {
+                Point doorPos = getPoint("push_door0");
+                if (index < 24) {
+                  doorPos = getPoint("push_door" + index);
+                }
+                if (index == 27) {
+                  doorPos = getPoint("push_door23");
+                }
+                if (index == 28) {
+                  doorPos = getPoint("push_door24");
+                }
+                DoorTile doorTile = (DoorTile) tileAt(doorPos).orElseThrow();
+                doorTile.close();
+                DoorTile doorTile2;
+                if (index == 5) {
+                  Point doorPos2 = getPoint("push_door21");
+                  doorTile2 = (DoorTile) tileAt(doorPos2).orElseThrow();
+                  doorTile2.close();
+                } else if (index == 6) {
+                  Point doorPos2 = getPoint("push_door22");
+                  doorTile2 = (DoorTile) tileAt(doorPos2).orElseThrow();
+                  doorTile2.close();
+                } else {
+                  doorTile2 = null;
+                }
+                pp =
+                    LeverFactory.pressurePlate(
+                        platePos,
+                        1.2f,
+                        new ICommand() {
+                          public void execute() {
+                            Sounds.DOOR_OPEN_SOUND.play();
+                            doorTile.open();
+                            if (index == 6 || index == 5) {
+                              doorTile2.open();
+                            }
+                          }
+
+                          public void undo() {
+                            Sounds.DOOR_CLOSE_SOUND.play();
+                            doorTile.close();
+                            if (index == 6 || index == 5) {
+                              doorTile2.close();
+                            }
+                          }
+                        });
               }
+              pp.fetch(DrawComponent.class)
+                  .ifPresent(
+                      dc -> {
+                        Color tColor =
+                            index < plateColors.length ? plateColors[index] : Color.WHITE;
+                        dc.tintColor(Color.rgba8888(tColor));
+                      });
+              PressurePlateComponent pressurePlateComponent =
+                  pp.fetch(PressurePlateComponent.class).orElseThrow();
+              TriConsumer<Entity, Entity, Direction> onCollideEnter =
+                  (self, other, dir) -> {
+                    self.fetch(DrawComponent.class)
+                        .ifPresent(
+                            dc -> {
+                              boolean colorMatches =
+                                  other
+                                      .fetch(DrawComponent.class)
+                                      .map(odc -> odc.tintColor() == dc.tintColor())
+                                      .orElse(false);
+                              if (colorMatches) {
+                                other
+                                    .fetch(VelocityComponent.class)
+                                    .ifPresent(
+                                        vc -> {
+                                          if (plateColors[index] == Color.WHITE) {
+                                            other
+                                                .fetch(PlayerComponent.class)
+                                                .ifPresent(
+                                                    pc -> {
+                                                      pressurePlateComponent.increase(vc.mass());
+                                                    });
+                                          } else {
+                                            pressurePlateComponent.increase(vc.mass());
+                                          }
+                                        });
+                              }
+                            });
+                  };
+              TriConsumer<Entity, Entity, Direction> onCollideLeave =
+                  (self, other, dir) -> {
+                    if (other.isPresent(ProjectileComponent.class)) return;
+                    self.fetch(DrawComponent.class)
+                        .ifPresent(
+                            dc -> {
+                              boolean colorMatches =
+                                  other
+                                      .fetch(DrawComponent.class)
+                                      .map(odc -> odc.tintColor() == dc.tintColor())
+                                      .orElse(false);
+                              if (colorMatches) {
+                                other
+                                    .fetch(VelocityComponent.class)
+                                    .ifPresent(
+                                        vc -> {
+                                          if (plateColors[index] == Color.WHITE) {
+                                            other
+                                                .fetch(PlayerComponent.class)
+                                                .ifPresent(
+                                                    pc -> {
+                                                      pressurePlateComponent.decrease(vc.mass());
+                                                    });
+                                          } else {
+                                            pressurePlateComponent.decrease(vc.mass());
+                                          }
+                                        });
+                              }
+                            });
+                  };
+              pp.add(new CollideComponent(onCollideEnter, onCollideLeave).isSolid(false));
+
+              Game.add(pp);
             });
 
     listPointsIndexed("push_water")

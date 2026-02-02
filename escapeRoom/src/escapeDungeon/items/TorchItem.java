@@ -20,6 +20,8 @@ public class TorchItem extends Item {
 
   private Entity itemHolder;
 
+  private TorchSkill torchSkill = new TorchSkill("Fackeln", 500, 20, Tuple.of(Resource.MANA, 0));
+
   private static PlaceComponent place;
 
   private static boolean produceOnce = true;
@@ -27,7 +29,7 @@ public class TorchItem extends Item {
   /** Constructs a new AxeItem. */
   public TorchItem() {
     super(
-        "20 Fackeln",
+        "Fackeln",
         "Bringt Licht ins Dunkel. Du hast eine neue Fähigkeit. Spare Rohstoffe, sammel deine Fackeln auch wieder auf.",
         new Animation(new SimpleIPath(PATH)),
         new Animation(new SimpleIPath(PATH)));
@@ -76,15 +78,14 @@ public class TorchItem extends Item {
         .fetch(SkillComponent.class)
         .ifPresent(
             (sc) -> {
-              if (sc.getSkill(TorchSkill.class).isEmpty())
-                sc.addSkill(new TorchSkill("Fackel", 500, 20, this, Tuple.of(Resource.MANA, 0)));
+              sc.addSkill(torchSkill);
             });
   }
 
   @Override
   public Optional<Entity> drop(final Point position) {
     if (itemHolder != null) {
-      itemHolder.fetch(SkillComponent.class).ifPresent((sc) -> sc.removeSkill(TorchSkill.class));
+      itemHolder.fetch(SkillComponent.class).ifPresent((sc) -> sc.removeSkill(torchSkill));
       itemHolder = null;
     }
     return super.drop(position);

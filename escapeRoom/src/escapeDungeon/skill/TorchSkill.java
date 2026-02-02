@@ -10,7 +10,6 @@ import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
 import core.utils.Point;
 import core.utils.Tuple;
-import escapeDungeon.items.TorchItem;
 import java.util.concurrent.atomic.AtomicBoolean;
 import mushRoom.modules.qte.FollowingIndicatorDialog;
 import mushRoom.modules.qte.FollowingIndicatorDifficulty;
@@ -19,7 +18,6 @@ import mushRoom.modules.qte.FollowingIndicatorDifficulty;
 public class TorchSkill extends CursorSkill {
 
   private final int maxAmount;
-  private final TorchItem torchItem;
   private int placed;
 
   /**
@@ -31,14 +29,9 @@ public class TorchSkill extends CursorSkill {
    * @param resourceCost Optional resource costs (e.g., mana, energy) required to use this skill.
    */
   public TorchSkill(
-      String name,
-      long cooldown,
-      int maxAmount,
-      TorchItem item,
-      Tuple<Resource, Integer>... resourceCost) {
+      String name, long cooldown, int maxAmount, Tuple<Resource, Integer>... resourceCost) {
     super(name, cooldown, resourceCost);
     this.maxAmount = maxAmount;
-    this.torchItem = item;
   }
 
   /**
@@ -56,12 +49,13 @@ public class TorchSkill extends CursorSkill {
                   && tile.designLabel() == DesignLabel.GREYCASTLE) {
                 if (Game.entityAtPoint(point)
                     .anyMatch(e -> e.name().contains("TorchGrayAnimatedPlaced"))) {
-                  Game.entityAtPoint(point)
-                      .filter(e -> e.name().contains("TorchGrayAnimatedPlaced"))
-                      .findFirst()
-                      .ifPresent(Game::remove);
-                  placed--;
-                  torchItem.displayName((maxAmount - placed) + " Fackeln");
+                  if (placed > 0) {
+                    Game.entityAtPoint(point)
+                        .filter(e -> e.name().contains("TorchGrayAnimatedPlaced"))
+                        .findFirst()
+                        .ifPresent(Game::remove);
+                    placed--;
+                  }
                 } else if (placed < maxAmount) {
                   FollowingIndicatorDialog.openFollowingIndicator(
                       caster,
@@ -71,7 +65,6 @@ public class TorchSkill extends CursorSkill {
                             DecoFactory.createDeco(tile.position(), Deco.TorchGrayAnimatedPlaced);
                         Game.add(torch);
                         placed++;
-                        torchItem.displayName((maxAmount - placed) + " Fackeln");
                       },
                       () -> {});
                 }
@@ -88,6 +81,6 @@ public class TorchSkill extends CursorSkill {
    */
   @Override
   public String name() {
-    return (maxAmount - placed) + " - " + super.name();
+    return super.name() + "\n(" + (maxAmount - placed) + " / " + maxAmount + ")";
   }
 }
