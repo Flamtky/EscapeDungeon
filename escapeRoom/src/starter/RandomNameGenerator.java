@@ -5,7 +5,7 @@ import java.util.Random;
 /** Generates unique random names combining German words with 6-digit random numbers. */
 public final class RandomNameGenerator {
 
-  private static final Random RANDOM = new Random(MAClient.SEED);
+  private static final Random RANDOM = new Random();
 
   // spotless:off
   private static final String[] WORDS = {

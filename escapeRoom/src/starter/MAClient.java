@@ -10,6 +10,7 @@ import core.configuration.KeyboardConfig;
 import core.game.PreRunConfiguration;
 import core.level.loader.DungeonLoader;
 import core.network.config.NetworkConfig;
+import core.utils.ClientNamePersistence;
 import core.utils.Tuple;
 import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoomClient;
@@ -20,7 +21,10 @@ import mushRoom.modules.journal.CraftingBookItem;
 import mushRoom.modules.lockpick.LockPickDialog;
 import mushRoom.modules.qte.FollowingIndicatorDialog;
 import network.EscapeRoomSnapshotTranslator;
-import tools.timer.*;
+import tools.timer.TimerCommandMessage;
+import tools.timer.TimerDialog;
+import tools.timer.TimerSyncMessage;
+import tools.timer.TimerUI;
 
 /** The main class for the Multiplayer Client for development and testing purposes. */
 public final class MAClient {
@@ -40,8 +44,7 @@ public final class MAClient {
   ///////////////////////////////////
   ///////////////////////////////////
   ///
-  static final int SEED = 100;
-  private static final String NAME = RandomNameGenerator.generateName();
+  private static final String NAME = initName();
   private static final CharacterClass CLASS = CharacterClass.APPRENTICE;
 
   ///
@@ -92,6 +95,21 @@ public final class MAClient {
     } finally {
       System.out.println("Exiting Client...");
       System.out.println("Name: " + NAME);
+    }
+  }
+
+  private static String initName() {
+    try {
+      String persisted = ClientNamePersistence.loadName();
+      if (persisted != null) {
+        return persisted;
+      }
+      String generated = RandomNameGenerator.generateName();
+      ClientNamePersistence.saveName(generated);
+      return generated;
+    } catch (Exception e) {
+      System.err.println("Failed to load or persist client name: " + e.getMessage());
+      throw (RuntimeException) e;
     }
   }
 
