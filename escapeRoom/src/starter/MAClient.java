@@ -16,6 +16,10 @@ import core.utils.components.path.SimpleIPath;
 import demoDungeon.level.MADungeonRoomClient;
 import hint.HintLogDialog;
 import java.io.IOException;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.Collectors;
 import mushRoom.modules.EscapeRoomDialogTypes;
 import mushRoom.modules.journal.CraftingBookItem;
 import mushRoom.modules.lockpick.LockPickDialog;
@@ -29,6 +33,14 @@ import tools.timer.TimerUI;
 /** The main class for the Multiplayer Client for development and testing purposes. */
 public final class MAClient {
 
+  /** Available character classes for selection. */
+  private static final List<CharacterClass> AVAILABLE_CLASSES =
+      List.of(CharacterClass.APPRENTICE, CharacterClass.ROGUE);
+
+  /** Allowed class names (uppercase) for validation. */
+  private static final Set<String> ALLOWED_CLASS_NAMES =
+      AVAILABLE_CLASSES.stream().map(Enum::name).collect(Collectors.toUnmodifiableSet());
+
   static {
     DialogFactory.register(
         EscapeRoomDialogTypes.FOLLOWING_INDICATOR, FollowingIndicatorDialog::build);
@@ -41,15 +53,9 @@ public final class MAClient {
 
   private static boolean firstTick = true;
 
-  ///////////////////////////////////
-  ///////////////////////////////////
-  ///
-  private static final String NAME = initName();
-  private static final CharacterClass CLASS = CharacterClass.APPRENTICE;
-
-  ///
-  ///////////////////////////////////
-  ///////////////////////////////////
+  private static final Tuple<String, CharacterClass> IDENTITY = initIdentity();
+  private static final String NAME = IDENTITY.a();
+  private static final CharacterClass CLASS = IDENTITY.b();
 
   /**
    * Main method to start the dev client.
@@ -98,18 +104,49 @@ public final class MAClient {
     }
   }
 
-  private static String initName() {
+  private static Tuple<String, CharacterClass> initIdentity() {
     try {
-      String persisted = ClientNamePersistence.loadName();
+      Tuple<String, String> persisted = ClientNamePersistence.load(ALLOWED_CLASS_NAMES);
       if (persisted != null) {
-        return persisted;
+        return Tuple.of(persisted.a(), CharacterClass.valueOf(persisted.b()));
       }
-      String generated = RandomNameGenerator.generateName();
-      ClientNamePersistence.saveName(generated);
-      return generated;
+      // No file exists, prompt user for class selection
+      CharacterClass selectedClass = promptForClass();
+      String generatedName = RandomNameGenerator.generateName();
+      ClientNamePersistence.save(generatedName, selectedClass.name(), ALLOWED_CLASS_NAMES);
+      return Tuple.of(generatedName, selectedClass);
     } catch (Exception e) {
-      System.err.println("Failed to load or persist client name: " + e.getMessage());
-      throw (RuntimeException) e;
+      System.err.println("Failed to load or persist client identity: " + e.getMessage());
+      throw e instanceof RuntimeException ? (RuntimeException) e : new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * Prompts the user via console to select a character class.
+   *
+   * @return the selected CharacterClass
+   */
+  private static CharacterClass promptForClass() {
+    Scanner scanner = new Scanner(System.in);
+    while (true) {
+      System.out.println("Select your character class:");
+      for (int i = 0; i < AVAILABLE_CLASSES.size(); i++) {
+        System.out.println("  " + i + ": " + AVAILABLE_CLASSES.get(i).name());
+      }
+      System.out.print("Enter index: ");
+      String input = scanner.nextLine().trim();
+      try {
+        int index = Integer.parseInt(input);
+        if (index >= 0 && index < AVAILABLE_CLASSES.size()) {
+          return AVAILABLE_CLASSES.get(index);
+        }
+      } catch (NumberFormatException ignored) {
+        // invalid input, re-prompt
+      }
+      System.out.println(
+          "Invalid selection. Please enter a number between 0 and "
+              + (AVAILABLE_CLASSES.size() - 1)
+              + ".");
     }
   }
 
