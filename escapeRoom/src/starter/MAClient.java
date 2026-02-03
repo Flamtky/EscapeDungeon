@@ -64,11 +64,12 @@ public final class MAClient {
    * @throws IOException if an I/O error occurs
    */
   public static void main(String[] args) throws IOException {
+    ClientEnvConfig envConfig = ClientEnvConfig.load();
     // PreRun configuration for multiplayer client
     PreRunConfiguration.multiplayerEnabled(true);
     PreRunConfiguration.isNetworkServer(false);
-    PreRunConfiguration.networkServerAddress("127.0.0.1");
-    PreRunConfiguration.networkPort(7777);
+    PreRunConfiguration.networkServerAddress(envConfig.serverAddress());
+    PreRunConfiguration.networkPort(envConfig.port());
 
     NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
     MASinglePlayer.registerItems();
