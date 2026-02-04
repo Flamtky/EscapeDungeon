@@ -70,3 +70,5 @@ replay_pid*
 *.bin
 
 .env
+
+client_name.dat

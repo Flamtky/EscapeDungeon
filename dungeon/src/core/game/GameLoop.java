@@ -458,6 +458,7 @@ public final class GameLoop extends ScreenAdapter {
         (ctx, event) -> {
           LOGGER.info("Received GameOverEvent event (reason: {})", event.reason());
           ClientNetwork.invalidateLastSessionFile();
+          ClientNamePersistence.invalidate();
           Game.exit(event.reason());
         });
     dispatcher.registerHandler(
