@@ -1164,7 +1164,7 @@ public class MADungeonRoom extends DungeonLevel {
               Point platePos = tuple.a();
               int index = tuple.b();
 
-              Entity pp = new Entity("");
+              Entity pp;
               if (index == 21) {
                 pp =
                     LeverFactory.pressurePlate(
@@ -1281,11 +1281,11 @@ public class MADungeonRoom extends DungeonLevel {
                 DoorTile doorTile = (DoorTile) tileAt(doorPos).orElseThrow();
                 doorTile.close();
                 DoorTile doorTile2;
-                if (index == 5) {
+                if (index == 3) {
                   Point doorPos2 = getPoint("push_door21");
                   doorTile2 = (DoorTile) tileAt(doorPos2).orElseThrow();
                   doorTile2.close();
-                } else if (index == 6) {
+                } else if (index == 4) {
                   Point doorPos2 = getPoint("push_door22");
                   doorTile2 = (DoorTile) tileAt(doorPos2).orElseThrow();
                   doorTile2.close();
@@ -1300,7 +1300,7 @@ public class MADungeonRoom extends DungeonLevel {
                           public void execute() {
                             Sounds.DOOR_OPEN_SOUND.play();
                             doorTile.open();
-                            if (index == 6 || index == 5) {
+                            if (index == 3 || index == 4) {
                               doorTile2.open();
                             }
                           }
@@ -1308,7 +1308,7 @@ public class MADungeonRoom extends DungeonLevel {
                           public void undo() {
                             Sounds.DOOR_CLOSE_SOUND.play();
                             doorTile.close();
-                            if (index == 6 || index == 5) {
+                            if (index == 3 || index == 4) {
                               doorTile2.close();
                             }
                           }
