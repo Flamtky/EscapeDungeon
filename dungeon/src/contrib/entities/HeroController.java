@@ -767,8 +767,16 @@ public class HeroController {
           LOGGER.warn("Failed to apply input for client {}: {}", clientState, e.getMessage(), e);
         }
       }
-      clientState.updateProcessedSeq(msg.sequence());
-      clientState.updateLastActivity();
+      try {
+        clientState.updateProcessedSeq(msg.sequence());
+        clientState.updateLastActivity();
+      } catch (Exception e) {
+        LOGGER.warn(
+          "Failed to update client state for client {} after processing input: {}",
+          clientState,
+          e.getMessage(),
+          e);
+      }
     }
   }
 
