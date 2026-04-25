@@ -72,3 +72,5 @@ replay_pid*
 .env
 
 client_name.dat
+
+!analytic_scripts/*.zip
