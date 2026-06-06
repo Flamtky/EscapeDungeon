@@ -70,7 +70,7 @@ public class SentryFactory {
     sentry.add(new PositionComponent(a));
     sentry.add(ai);
     sentry.add(new DrawComponent(chooseTextureFromSpriteSheet(shootDirection)));
-    sentry.add(new VelocityComponent(speed));
+    sentry.add(VelocityComponent.defaultMoving(speed));
     sentry.add(new CollideComponent());
     if (canEnterWalls) {
       sentry
@@ -107,7 +107,7 @@ public class SentryFactory {
     sentry.add(new PositionComponent(spawnPoint));
     sentry.add(ai);
     sentry.add(new DrawComponent(chooseTextureFromSpriteSheet(shootDirection)));
-    sentry.add(new VelocityComponent(speed));
+    sentry.add(VelocityComponent.defaultMoving(speed));
     sentry.add(new CollideComponent());
     if (canEnterWalls) {
       sentry

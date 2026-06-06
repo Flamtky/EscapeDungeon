@@ -2,6 +2,7 @@ package contrib.systems;
 
 import contrib.components.AIComponent;
 import core.Entity;
+import core.Game;
 import core.System;
 import core.utils.components.MissingComponentException;
 
@@ -28,7 +29,16 @@ public final class AISystem extends System {
             .fetch(AIComponent.class)
             .orElseThrow(() -> MissingComponentException.build(entity, AIComponent.class));
 
-    if (ai.shouldFight().apply(entity)) ai.fightBehavior().accept(entity);
-    else ai.idleBehavior().accept(entity);
+    Game.allPlayers()
+        .anyMatch(
+            player -> {
+              if (ai.shouldFight().apply(entity, player)) {
+                ai.fightBehavior().accept(entity, player);
+                return true;
+              } else {
+                ai.idleBehavior().accept(entity);
+                return false;
+              }
+            });
   }
 }

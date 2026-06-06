@@ -1,6 +1,8 @@
 package core.utils;
 
 import core.level.utils.Coordinate;
+import java.io.Serial;
+import java.io.Serializable;
 
 /**
  * Represents a 2D vector with mathematical operations. Provides immutable vector operations
@@ -29,7 +31,8 @@ import core.level.utils.Coordinate;
  *
  * @see Direction
  */
-public interface Vector2 {
+public interface Vector2 extends Serializable {
+  @Serial long serialVersionUID = 1L;
 
   /** Zero vector representing no displacement or position at origin. */
   Vector2 ZERO = Vector2.of(0, 0);
@@ -207,6 +210,20 @@ public interface Vector2 {
    */
   default double distance(Vector2 other) {
     return subtract(other).length();
+  }
+
+  /**
+   * Calculates the squared distance between this vector and another vector.
+   *
+   * <p>This is more efficient than {@link #distance(Vector2)} for range comparisons since it avoids
+   * the expensive sqrt calculation.
+   *
+   * @param other The other vector
+   * @return The squared distance between the two vectors
+   */
+  default double distanceSquared(Vector2 other) {
+    Vector2 diff = subtract(other);
+    return diff.lengthSquared();
   }
 
   /**

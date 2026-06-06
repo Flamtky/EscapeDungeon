@@ -3,23 +3,15 @@ package contrib.modules.keypad;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import contrib.hud.UIUtils;
-import contrib.hud.dialogs.DialogCallbackResolver;
 import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogContextKeys;
-import contrib.hud.dialogs.HeadlessDialogGroup;
 import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
-import core.network.messages.c2s.DialogResponseMessage;
 import core.sound.SoundSpec;
 import core.utils.logging.DungeonLogger;
 import java.util.ArrayList;
@@ -35,7 +27,6 @@ public class KeypadUI extends Group {
   private static final float BACKGROUND_OFFSET_Y = 60;
 
   private final Entity keypad;
-  private final String dialogId;
 
   private Image background;
   private final List<Cell<TextButton>> buttonCells = new ArrayList<>();
@@ -45,11 +36,9 @@ public class KeypadUI extends Group {
    * Creates a new KeypadUI for the given keypad entity.
    *
    * @param keypad The keypad entity this UI is associated with.
-   * @param dialogId The dialog ID for callback resolution.
    */
-  public KeypadUI(Entity keypad, String dialogId) {
+  public KeypadUI(Entity keypad) {
     this.keypad = keypad;
-    this.dialogId = dialogId;
     createActors();
   }
 
@@ -90,8 +79,7 @@ public class KeypadUI extends Group {
           new ClickListener() {
             @Override
             public void clicked(InputEvent e, float x, float y) {
-              DialogCallbackResolver.createButtonCallback(dialogId, DialogContextKeys.ON_CONFIRM)
-                  .accept(new DialogResponseMessage.StringValue(action));
+              onButtonPress(action);
             }
           });
       Cell<TextButton> c = tableButtons.add(btn).height(100).width(100).pad(10);
@@ -109,8 +97,7 @@ public class KeypadUI extends Group {
    * @return A new KeypadUI instance.
    */
   public static Group build(DialogContext context) {
-    if (Game.isHeadless()) return new HeadlessDialogGroup();
-    return new KeypadUI(context.requireEntity(DialogContextKeys.ENTITY), context.dialogId());
+    return new KeypadUI(context.requireEntity(DialogContextKeys.ENTITY));
   }
 
   @Override
@@ -128,34 +115,33 @@ public class KeypadUI extends Group {
     super.draw(batch, parentAlpha);
   }
 
-  static void onButtonPress(Entity keypadEntity, Entity caller, String action) {
+  private void onButtonPress(String action) {
     LOGGER.info("Clicked button: " + action);
-
-    var drawComp = keypadEntity.fetch(DrawComponent.class).orElseThrow();
-    var keypadComp = keypadEntity.fetch(KeypadComponent.class).orElseThrow();
+    KeypadComponent kc = keypad.fetch(KeypadComponent.class).orElseThrow();
 
     int number = -1;
     try {
       number = Integer.parseInt(action);
-      keypadComp.addDigit(number);
+      kc.addDigit(number);
     } catch (NumberFormatException ex) {
       switch (action) {
-        case "Back" -> keypadComp.backspace();
-        case "Submit" -> onSubmit(keypadComp, drawComp);
+        case "Back" -> kc.backspace();
+        case "Submit" -> onSubmit();
       }
     }
 
     if (!action.equals("Submit")) {
       float pitch = 1 + (number - 5) * 0.05f;
-      Game.audio().playGlobal(SoundSpec.builder("retro_beep_01").pitch(pitch).targets(caller.id()));
+      Game.audio().playGlobal(SoundSpec.builder("retro_beep_01").pitch(pitch));
     }
   }
 
-  private static void onSubmit(KeypadComponent keypadComp, DrawComponent drawComp) {
-    if (keypadComp.isUnlocked()) return;
-    keypadComp.checkUnlock();
-    if (keypadComp.isUnlocked()) {
-      drawComp.sendSignal("open");
+  private void onSubmit() {
+    KeypadComponent kc = keypad.fetch(KeypadComponent.class).orElseThrow();
+    if (kc.isUnlocked()) return;
+    kc.checkUnlock();
+    if (kc.isUnlocked()) {
+      keypad.fetch(DrawComponent.class).orElseThrow().sendSignal("open");
       Game.audio().playGlobal(SoundSpec.builder("retro_event_correct"));
     } else {
       Game.audio().playGlobal(SoundSpec.builder("retro_event_wrong"));

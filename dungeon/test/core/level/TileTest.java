@@ -1,8 +1,6 @@
 package core.level;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import core.level.elements.tile.ExitTile;
 import core.level.elements.tile.FloorTile;

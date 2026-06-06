@@ -28,7 +28,7 @@ public class ProtectOnApproachTest {
 
     // Add AI Component
     AIComponent protectedAI =
-        new AIComponent(new AIChaseBehaviour(0.2f), new RadiusWalk(0, 50), new RangeTransition(2));
+        new AIComponent(new AIChaseBehaviour(), new RadiusWalk(0, 50), new RangeTransition(2));
     entity.add(protectedAI);
 
     // Add Position Component
@@ -40,7 +40,7 @@ public class ProtectOnApproachTest {
     // Add AI Component
     entityAI =
         new AIComponent(
-            new AIChaseBehaviour(0.2f),
+            new AIChaseBehaviour(),
             new RadiusWalk(0, 50),
             new ProtectOnApproach(2f, protectedEntity));
     entity.add(entityAI);

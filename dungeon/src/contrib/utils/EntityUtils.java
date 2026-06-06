@@ -3,6 +3,7 @@ package contrib.utils;
 import contrib.components.CollideComponent;
 import contrib.entities.LeverFactory;
 import contrib.entities.SignFactory;
+import contrib.utils.components.collide.Collider;
 import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
@@ -11,8 +12,12 @@ import core.level.utils.Coordinate;
 import core.utils.Direction;
 import core.utils.Point;
 import core.utils.components.MissingComponentException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.stream.Stream;
 
 /**
  * EntityUtils is a utility class that provides methods for spawning entities in the game. It
@@ -20,6 +25,9 @@ import java.util.function.BiConsumer;
  * teleporting entities to specific positions and retrieving the position of the player in the game.
  */
 public class EntityUtils {
+
+  private static final float MAX_INTERPOLATED_DISTANCE_SQUARED = 1f;
+  private static final Map<Integer, Point> PREVIOUS_RENDER_BASE_POSITIONS = new HashMap<>();
 
   /**
    * This method is used to spawn a sign entity in the game at a given position. It uses the
@@ -120,18 +128,13 @@ public class EntityUtils {
    * <p>This method retrieves the player entity from the game. If the player entity is not present
    * (which can happen if the player has fallen into a pit), the method returns null.
    *
-   * @return The current position of the player, or a null value if the player is not present.
+   * @return The current position of the player.
+   * @throws IllegalStateException if no player entity is found.
    */
   public static Point getPlayerPosition() {
-    // TODO: SMELL!
-    // we really shouldn't return `null` if no player was found, but `Optional.empty()` instead!
-    return Game.player()
-        .map(
-            e ->
-                e.fetch(PositionComponent.class)
-                    .orElseThrow(() -> MissingComponentException.build(e, PositionComponent.class))
-                    .position())
-        .orElse(null);
+    Entity player =
+        Game.player().orElseThrow(() -> new IllegalStateException("No player entity found"));
+    return getPosition(player);
   }
 
   /**
@@ -185,16 +188,87 @@ public class EntityUtils {
    */
   public static Point getPosition(Entity entity) {
     PositionComponent pc = entity.fetch(PositionComponent.class).orElseThrow();
+    Point basePosition = pc.position();
+    return positionFromBase(entity, pc, basePosition);
+  }
+
+  /**
+   * Captures the current base position as the previous fixed-tick render position.
+   *
+   * @param entity the entity whose base position should be captured
+   */
+  public static void captureRenderBasePosition(Entity entity) {
+    entity
+        .fetch(PositionComponent.class)
+        .ifPresent(pc -> PREVIOUS_RENDER_BASE_POSITIONS.put(entity.id(), pc.position()));
+  }
+
+  /**
+   * Removes cached render interpolation state for the given entity.
+   *
+   * @param entity the entity whose cached render position should be removed
+   */
+  public static void forgetRenderBasePosition(Entity entity) {
+    PREVIOUS_RENDER_BASE_POSITIONS.remove(entity.id());
+  }
+
+  /**
+   * Gets an interpolated base position of an entity for rendering.
+   *
+   * <p>This is intended for visual use only. Gameplay, collisions, analytics, and tile lookups
+   * should keep using {@link #getPosition(Entity)} so fixed-tick state remains authoritative.
+   *
+   * @param entity the entity to get the render position of
+   * @param alpha interpolation factor between previous and current fixed-tick position
+   * @return the interpolated base position of the entity
+   */
+  public static Point getRenderBasePosition(Entity entity, float alpha) {
+    PositionComponent pc = entity.fetch(PositionComponent.class).orElseThrow();
+    Point currentPosition = pc.position();
+    Point previousPosition =
+        PREVIOUS_RENDER_BASE_POSITIONS.getOrDefault(entity.id(), currentPosition);
+
+    if (previousPosition.distanceSquared(currentPosition) > MAX_INTERPOLATED_DISTANCE_SQUARED) {
+      return currentPosition;
+    }
+
+    float clampedAlpha = Math.clamp(alpha, 0f, 1f);
+    return new Point(
+        previousPosition.x() + (currentPosition.x() - previousPosition.x()) * clampedAlpha,
+        previousPosition.y() + (currentPosition.y() - previousPosition.y()) * clampedAlpha);
+  }
+
+  /**
+   * Gets an interpolated center/raw position of an entity for rendering.
+   *
+   * <p>This is intended for visual camera/draw use only. Gameplay, collisions, analytics, and tile
+   * lookups should keep using {@link #getPosition(Entity)} so fixed-tick state remains
+   * authoritative.
+   *
+   * @param entity the entity to get the render position of
+   * @param alpha interpolation factor between previous and current fixed-tick position
+   * @return the interpolated center/raw position of the entity
+   */
+  public static Point getRenderPosition(Entity entity, float alpha) {
+    PositionComponent pc = entity.fetch(PositionComponent.class).orElseThrow();
+    Point basePosition = getRenderBasePosition(entity, alpha);
+    return positionFromBase(entity, pc, basePosition);
+  }
+
+  private static Point positionFromBase(Entity entity, PositionComponent pc, Point basePosition) {
     Optional<CollideComponent> cco = entity.fetch(CollideComponent.class);
     Optional<DrawComponent> dco = entity.fetch(DrawComponent.class);
 
     if (cco.isPresent()) {
-      return cco.get().collider().absoluteCenter();
+      Point currentCenter = cco.get().collider().absoluteCenter();
+      Point currentBase = pc.position();
+      return basePosition.translate(
+          currentCenter.x() - currentBase.x(), currentCenter.y() - currentBase.y());
     } else if (dco.isPresent()) {
       DrawComponent dc = dco.get();
-      return pc.position().translate(dc.getWidth() / 2, dc.getHeight() / 2);
+      return basePosition.translate(dc.getWidth() / 2, dc.getHeight() / 2);
     } else {
-      return pc.position();
+      return basePosition;
     }
   }
 
@@ -210,5 +284,77 @@ public class EntityUtils {
    */
   public static double getDistance(Entity entity, Entity who) {
     return EntityUtils.getPosition(entity).distance(EntityUtils.getPosition(who));
+  }
+
+  /**
+   * Fallback radius (in world units) used by {@link #isPointOverEntity(Entity, Point)} for entities
+   * that have neither a {@link CollideComponent} nor a {@link DrawComponent}.
+   */
+  private static final float FALLBACK_HOVER_RADIUS = 0.5f;
+
+  private static final float FALLBACK_HOVER_RADIUS_SQ =
+      FALLBACK_HOVER_RADIUS * FALLBACK_HOVER_RADIUS;
+
+  /**
+   * Tests whether a world-space point is "over" the given entity, using the best available shape:
+   *
+   * <ol>
+   *   <li>If the entity has a {@link CollideComponent}, the collider's {@code collide(Point)} is
+   *       used (exact shape test — hitbox or hitcircle).
+   *   <li>Otherwise, if the entity has a {@link DrawComponent}, the sprite's bounding rectangle
+   *       ({@link PositionComponent#position()} + width/height) is tested.
+   *   <li>As a last resort, a small radius ({@value #FALLBACK_HOVER_RADIUS} world units) around the
+   *       entity's position is used.
+   * </ol>
+   *
+   * <p>This method is the single source of truth for determining whether a cursor (or any point) is
+   * targeting an entity. It is used on both the server (interaction resolution) and the client
+   * (highlight feedback) to guarantee consistent results.
+   *
+   * @param entity the entity to test
+   * @param point the world-space point (typically the cursor position)
+   * @return {@code true} if the point is considered to be over the entity
+   */
+  public static boolean isPointOverEntity(Entity entity, Point point) {
+    // 1. Collider-based check
+    Optional<CollideComponent> cc = entity.fetch(CollideComponent.class);
+    if (cc.isPresent()) {
+      Collider collider = cc.get().collider();
+      return collider.collide(point);
+    }
+
+    // 2. Sprite-bounds check
+    Optional<DrawComponent> dc = entity.fetch(DrawComponent.class);
+    Optional<PositionComponent> pc = entity.fetch(PositionComponent.class);
+    if (dc.isPresent() && pc.isPresent()) {
+      Point pos = pc.get().position();
+      float w = dc.get().getWidth();
+      float h = dc.get().getHeight();
+      return point.x() >= pos.x()
+          && point.x() <= pos.x() + w
+          && point.y() >= pos.y()
+          && point.y() <= pos.y() + h;
+    }
+
+    // 3. Fallback: small radius around position
+    Point ePos = getPosition(entity);
+    return ePos.distanceSquared(point) <= FALLBACK_HOVER_RADIUS_SQ;
+  }
+
+  /**
+   * Finds the entity from the given stream whose bounds contain the specified point. If multiple
+   * entities overlap at the point, the one whose center (as returned by {@link
+   * #getPosition(Entity)}) is closest to the point is returned.
+   *
+   * <p>Uses {@link #isPointOverEntity(Entity, Point)} for the containment check.
+   *
+   * @param point the world-space point to test
+   * @param entities the stream of candidate entities
+   * @return the entity under the point, or {@link Optional#empty()} if none qualifies
+   */
+  public static Optional<Entity> findEntityAtPoint(Point point, Stream<Entity> entities) {
+    return entities
+        .filter(e -> isPointOverEntity(e, point))
+        .min(Comparator.comparingDouble(e -> getPosition(e).distanceSquared(point)));
   }
 }

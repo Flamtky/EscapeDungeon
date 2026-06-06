@@ -1,13 +1,7 @@
 package core.systems;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import contrib.components.CollideComponent;
 import contrib.systems.CollisionSystem;
@@ -31,8 +25,6 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for the {@link MoveSystem}. */
 public class MoveSystemTest {
-
-  private static final float EPSILON = 0.00001f;
 
   private static final Point START_POSITION = new Point(5, 5);
   private static final float MAX_SPEED = 10f;
@@ -91,7 +83,7 @@ public class MoveSystemTest {
    * dependencies.
    */
   @Test
-  void movesEntityAccordingToVelocityAndFrameRate() {
+  void movesEntityAccordingToVelocityAndTickRate() {
     vc.currentVelocity(Vector2.of(6, 0));
     Point startPos = pc.position();
 
@@ -105,8 +97,8 @@ public class MoveSystemTest {
     // Execute system logic
     system.execute();
 
-    // Expected position is moved based on velocity scaled by the frame rate
-    Point expectedPos = startPos.translate(Vector2.of(6, 0).scale(1f / Game.frameRate()));
+    // Expected position is moved based on velocity scaled by the tick rate
+    Point expectedPos = startPos.translate(Vector2.of(6, 0).scale(1f / Game.tickRate()));
     assertEquals(expectedPos, pc.position());
   }
 
@@ -135,7 +127,7 @@ public class MoveSystemTest {
 
     // Calculate expected new position based on capped velocity
     Vector2 expectedVelocity = Vector2.of(30, 40).normalize().scale(maxSpeed);
-    Point expectedPos = startPos.translate(expectedVelocity.scale(1f / Game.frameRate()));
+    Point expectedPos = startPos.translate(expectedVelocity.scale(1f / Game.tickRate()));
 
     assertEquals(expectedPos, pc.position());
   }
@@ -177,8 +169,7 @@ public class MoveSystemTest {
 
     system.execute();
 
-    assertTrue(Math.abs(resultingPos.x() - pc.position().x()) < EPSILON);
-    assertTrue(Math.abs(resultingPos.y() - pc.position().y()) < EPSILON);
+    assertEquals(resultingPos, pc.position());
     verify(onWallHit).accept(entity);
   }
 
@@ -227,7 +218,7 @@ public class MoveSystemTest {
     vc.canEnterOpenPits(true);
 
     Point oldPos = pc.position();
-    Point newPos = oldPos.translate(vc.currentVelocity().scale(1f / Game.frameRate()));
+    Point newPos = oldPos.translate(vc.currentVelocity().scale(1f / Game.tickRate()));
 
     // Mock PIT tile
     Tile pitTile = mock(Tile.class);
@@ -255,7 +246,7 @@ public class MoveSystemTest {
     vc.canEnterOpenPits(false);
 
     Point oldPos = pc.position();
-    Point newPos = oldPos.translate(vc.currentVelocity().scale(1f / Game.frameRate()));
+    Point newPos = oldPos.translate(vc.currentVelocity().scale(1f / Game.tickRate()));
 
     // Mock PIT tile that is not accessible
     Tile pitTile = mock(Tile.class);
@@ -321,7 +312,7 @@ public class MoveSystemTest {
 
     // Expected capped velocity with length = maxSpeed
     Vector2 cappedVelocity = diagonalVelocity.normalize().scale(vc.maxSpeed());
-    Point expectedPos = startPos.translate(cappedVelocity.scale(1f / Game.frameRate()));
+    Point expectedPos = startPos.translate(cappedVelocity.scale(1f / Game.tickRate()));
 
     assertEquals(expectedPos, pc.position());
   }
@@ -350,7 +341,7 @@ public class MoveSystemTest {
     when(accessibleTile.isAccessible()).thenReturn(true);
     Point expectedPos =
         pc.position()
-            .translate(Vector2.of(10, 10).normalize().scale(5f).scale(1f / Game.frameRate()));
+            .translate(Vector2.of(10, 10).normalize().scale(5f).scale(1f / Game.tickRate()));
     when(level.tileAt(any(Point.class))).thenReturn(Optional.of(accessibleTile));
     Game.currentLevel(level);
 
@@ -372,8 +363,8 @@ public class MoveSystemTest {
   void updatePosition_movesOnXAxisWhenDiagonalBlockedButXAxisAccessible() {
     vc.currentVelocity(Vector2.of(1, 1));
     Point oldPos = pc.position();
-    float frameRate = Game.frameRate();
-    Vector2 scaledVelocity = vc.currentVelocity().scale(1f / frameRate);
+    float tickRate = Game.tickRate();
+    Vector2 scaledVelocity = vc.currentVelocity().scale(1f / tickRate);
     Point newPos = oldPos.translate(scaledVelocity);
     Point xMove = new Point(newPos.x(), oldPos.y());
     Point yMove = new Point(oldPos.x(), newPos.y());

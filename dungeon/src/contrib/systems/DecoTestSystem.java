@@ -11,7 +11,7 @@ import core.Entity;
 import core.Game;
 import core.System;
 import core.components.PositionComponent;
-import core.systems.input.InputManager;
+import core.systems.InputManager;
 import core.utils.FontHelper;
 import core.utils.Point;
 import core.utils.Vector2;

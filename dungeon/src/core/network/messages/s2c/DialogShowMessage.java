@@ -2,6 +2,7 @@ package core.network.messages.s2c;
 
 import contrib.hud.dialogs.DialogContext;
 import core.network.messages.NetworkMessage;
+import java.io.Serial;
 
 /**
  * Server-to-client message instructing the client to display a dialog.
@@ -17,4 +18,6 @@ import core.network.messages.NetworkMessage;
  * @see contrib.hud.dialogs.DialogCallbackResolver
  */
 public record DialogShowMessage(DialogContext context, boolean canBeClosed)
-    implements NetworkMessage {}
+    implements NetworkMessage {
+  @Serial private static final long serialVersionUID = 1L;
+}

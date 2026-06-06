@@ -1,10 +1,11 @@
 package contrib.hud.dialogs;
 
 import core.Game;
-import core.network.NetworkUtils;
+import core.game.PreRunConfiguration;
 import core.network.messages.c2s.DialogResponseMessage;
 import core.network.server.DialogTracker;
 import core.utils.logging.DungeonLogger;
+import java.io.Serializable;
 import java.util.function.Consumer;
 
 /**
@@ -33,11 +34,17 @@ public final class DialogCallbackResolver {
    * @param callbackKey the key identifying the specific callback for the button
    * @return a Consumer that accepts dialog payload data and executes the appropriate callback
    */
-  public static Consumer<DialogResponseMessage.Payload> createButtonCallback(
-      String dialogId, String callbackKey) {
-    if (NetworkUtils.isNetworkClient()) {
+  public static Consumer<Serializable> createButtonCallback(String dialogId, String callbackKey) {
+    if (PreRunConfiguration.multiplayerEnabled() && !PreRunConfiguration.isNetworkServer()) {
       return (payload) -> {
-        DialogResponseMessage msg = new DialogResponseMessage(dialogId, callbackKey, payload);
+        DialogResponseMessage.Payload responsePayload =
+            switch (payload) {
+              case null -> null;
+              case DialogResponseMessage.Payload p -> p;
+              default -> new DialogResponseMessage.CustomPayload(payload);
+            };
+        DialogResponseMessage msg =
+            new DialogResponseMessage(dialogId, callbackKey, responsePayload);
         Game.network().send((short) 0, msg, true);
       };
     } else {

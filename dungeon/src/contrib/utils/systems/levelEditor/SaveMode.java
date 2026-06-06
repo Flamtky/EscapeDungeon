@@ -3,29 +3,22 @@ package contrib.utils.systems.levelEditor;
 import com.badlogic.gdx.graphics.Color;
 import contrib.systems.LevelEditorSystem;
 import core.level.loader.DungeonSaver;
-import core.systems.input.InputManager;
+import core.systems.InputManager;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /** The SaveMode allows the user to save the current dungeon layout to the clipboard. */
 public class SaveMode extends LevelEditorMode {
 
-  private String pathToLevels;
-
-  /**
-   * Constructs a new SaveMode.
-   *
-   * @param pathToLevels the path to the folder where the level file is stored
-   */
-  public SaveMode(String pathToLevels) {
+  /** Constructs a new SaveMode. */
+  public SaveMode() {
     super("Save Mode");
-    this.pathToLevels = pathToLevels;
   }
 
   @Override
   public void execute() {
     if (InputManager.isKeyJustPressed(PRIMARY_UP)) {
-      DungeonSaver.saveCurrentDungeon(this.pathToLevels);
+      DungeonSaver.saveCurrentDungeon();
       LevelEditorSystem.showFeedback("Exported level to clipboard!", Color.GREEN);
     }
   }

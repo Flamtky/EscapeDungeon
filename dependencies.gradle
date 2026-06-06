@@ -15,6 +15,11 @@ ext {
     gdxControllersVersion = '2.2.4'
 
 
+    // -- ANALYTICS / DATABASE
+    postgresqlVersion = '42.7.8'
+    hikariVersion = '7.0.2'
+    dotenvVersion = '3.2.0'
+
     // -- NETWORK / SERVER
     nettyVersion = '4.2.12.Final'
 
@@ -42,5 +47,11 @@ ext {
 
 
         // Netty for multiplayer logic
-        netty_all     : "io.netty:netty-all:$nettyVersion",]
+        netty_all                 : "io.netty:netty-all:$nettyVersion",
+
+        // Database and Analytics
+        postgresql                : "org.postgresql:postgresql:$postgresqlVersion",
+        hikari                    : "com.zaxxer:HikariCP:$hikariVersion",
+        dotenv                    : "io.github.cdimascio:dotenv-java:$dotenvVersion",
+    ]
 }

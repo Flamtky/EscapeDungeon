@@ -1,10 +1,6 @@
 package core.network.handler;
 
-import contrib.entities.CharacterClass;
-import core.network.ConnectionListener;
-import core.network.MessageDispatcher;
-import core.network.NetworkException;
-import core.network.SnapshotTranslator;
+import core.network.*;
 import core.network.client.ClientNetwork;
 import core.network.messages.NetworkMessage;
 import core.network.messages.c2s.InputMessage;
@@ -50,17 +46,12 @@ public class NettyNetworkHandler implements INetworkHandler {
   private SnapshotTranslator translator;
 
   @Override
-  public void initialize(
-      boolean isServer,
-      String serverAddress,
-      int port,
-      String username,
-      Optional<CharacterClass> characterClass)
+  public void initialize(boolean isServer, String serverAddress, int port, String username)
       throws NetworkException {
     this.serverMode = isServer;
     this.port = port;
     if (!serverMode) {
-      client.initialize(serverAddress, port, username, characterClass);
+      client.initialize(serverAddress, port, username);
     }
   }
 
@@ -68,9 +59,7 @@ public class NettyNetworkHandler implements INetworkHandler {
   public CompletableFuture<Boolean> send(short clientId, NetworkMessage message, boolean reliable) {
     if (serverMode) {
       return server.sendMessage(clientId, message, reliable);
-    } else {
-      return client.send(message, reliable);
-    }
+    } else return client.sendReliable(message);
   }
 
   @Override
@@ -103,7 +92,7 @@ public class NettyNetworkHandler implements INetworkHandler {
 
   @Override
   public boolean isConnected() {
-    return serverMode || client.isConnected();
+    return (serverMode && server.isRunning()) || client.isConnected();
   }
 
   @Override

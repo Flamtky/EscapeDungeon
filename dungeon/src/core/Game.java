@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.ai.pfa.GraphPath;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import contrib.utils.EntityUtils;
 import core.components.PlayerComponent;
 import core.components.PositionComponent;
 import core.game.ECSManagement;
@@ -75,6 +74,19 @@ public final class Game {
 
   private static final boolean SLOW_NETWORK = false;
 
+  // Shutdown callback for cleanup operations
+  private static Runnable shutdownCallback;
+
+  /**
+   * Registers a callback to be executed when the game exits. Useful for server-specific cleanup
+   * like console shutdown.
+   *
+   * @param callback The callback to execute on shutdown
+   */
+  public static void registerShutdownCallback(Runnable callback) {
+    shutdownCallback = callback;
+  }
+
   /**
    * Starts the dungeon.
    *
@@ -108,8 +120,7 @@ public final class Game {
           PreRunConfiguration.isNetworkServer(),
           PreRunConfiguration.networkServerAddress(),
           PreRunConfiguration.networkPort(),
-          PreRunConfiguration.username(),
-          PreRunConfiguration.multiplayerCharacterClass());
+          PreRunConfiguration.username());
       LOGGER.info("Network handler initialized.");
     } catch (NetworkException e) {
       LOGGER.error("Failed to initialize network handler.", e);
@@ -162,21 +173,43 @@ public final class Game {
   }
 
   /**
-   * Retrieves the frame rate from the pre-run configuration.
+   * Retrieves the fixed game tick rate from the pre-run configuration.
    *
-   * @return The frame rate.
+   * @return The number of game ticks per second.
    */
-  public static int frameRate() {
-    return PreRunConfiguration.frameRate();
+  public static int tickRate() {
+    return PreRunConfiguration.tickRate();
   }
 
   /**
-   * Sets the frame rate in the pre-run configuration.
+   * Sets the fixed game tick rate in the pre-run configuration.
    *
-   * @param frameRate The new frame rate.
+   * @param tickRate The number of game ticks per second.
    */
-  public static void frameRate(int frameRate) {
-    PreRunConfiguration.frameRate(frameRate);
+  public static void tickRate(int tickRate) {
+    PreRunConfiguration.tickRate(tickRate);
+  }
+
+  /**
+   * Retrieves the maximum render FPS from the pre-run configuration.
+   *
+   * <p>A value of {@code 0} means rendering is uncapped.
+   *
+   * @return The maximum render frames per second.
+   */
+  public static int maxFPS() {
+    return PreRunConfiguration.maxFPS();
+  }
+
+  /**
+   * Sets the maximum render FPS in the pre-run configuration.
+   *
+   * <p>A value of {@code 0} means rendering is uncapped.
+   *
+   * @param maxFPS The maximum render frames per second.
+   */
+  public static void maxFPS(int maxFPS) {
+    PreRunConfiguration.maxFPS(maxFPS);
   }
 
   /**
@@ -648,17 +681,10 @@ public final class Game {
    * @return Stream of all entities on the given tile
    */
   public static Stream<Entity> entityAtTile(final Tile check) {
-    return Game.tileAt(check.position())
-        .map(
-            target ->
-                ECSManagement.levelEntities()
-                    .filter(e -> e.isPresent(PositionComponent.class))
-                    .filter(
-                        e ->
-                            Game.tileAt(EntityUtils.getPosition(e))
-                                .map(target::equals)
-                                .orElse(false)))
-        .orElseGet(Stream::empty);
+    if (check == null) {
+      return Stream.empty();
+    }
+    return ECSManagement.getEntitiesAtTile(check.coordinate());
   }
 
   /**
@@ -827,14 +853,31 @@ public final class Game {
   /**
    * Exits the GDX application and shuts down the network handler.
    *
-   * <p>If the network handler is not initialized, it will simply exit the application.
+   * <p>If the network handler is not initialized, it will simply exit the application. /** Exits
+   * the game.
    *
-   * <p>If no GDX application is present, it will call {@link java.lang.System#exit(int)}.
+   * <p>Executes the following cleanup operations in order:
+   *
+   * <ul>
+   *   <li>Calls any registered shutdown callback (e.g., server console cleanup)
+   *   <li>Shuts down the network handler
+   *   <li>Exits the GDX application (or JVM directly in server mode)
+   * </ul>
    *
    * @param reason The reason for exiting the game.
    */
   public static void exit(String reason) {
+    java.lang.System.out.println("Exiting game: " + reason);
     LOGGER.info("Exiting game: " + reason);
+
+    if (shutdownCallback != null) {
+      try {
+        shutdownCallback.run();
+      } catch (Exception e) {
+        LOGGER.warn("Error executing shutdown callback", e);
+      }
+    }
+
     if (networkHandler != null) {
       try {
         networkHandler.shutdown(reason);
@@ -842,8 +885,12 @@ public final class Game {
         LOGGER.warn("Error shutting down network handler", e);
       }
     }
+
     if (Gdx.app != null) {
       Gdx.app.exit();
+    } else if (PreRunConfiguration.isNetworkServer()) {
+      // Headless server mode: exit the JVM
+      java.lang.System.exit(0);
     }
   }
 
@@ -880,7 +927,7 @@ public final class Game {
   /**
    * Get the current game tick.
    *
-   * <p>The game tick is incremented every frame in the game loop.
+   * <p>The game tick is incremented by the fixed-rate game loop, independently from render frames.
    *
    * @return The current game tick.
    */
@@ -902,8 +949,8 @@ public final class Game {
   /**
    * Returns the centralized sound API for managing entity-backed audio.
    *
-   * <p>Use this API to play audio on entities or globally. All audio are entity-backed and sent via
-   * messages in multiplayer.
+   * <p>Use this API to play audio on entities or globally. All audio are entity-backed and synced
+   * via snapshots in multiplayer.
    *
    * <p>Example:
    *

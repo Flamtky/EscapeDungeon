@@ -123,12 +123,12 @@ public class TileTextureFactory {
   private static IPath resolvePrimaryPath(LevelPart levelPart) {
     String prefixPath = "dungeon/" + levelPart.design().name().toLowerCase() + "/";
 
-    if (levelPart.element == LevelElement.GITTER) {
+    /*if (levelPart.element == LevelElement.GITTER) {
       IPath path = findGitterElement(levelPart);
       if (path != null) {
         return new SimpleIPath(prefixPath + path.pathString() + ".png");
       }
-    }
+    }*/
 
     if (levelPart.element == LevelElement.GLASSWALL) {
       IPath path = findGlasswallElement(levelPart);
@@ -137,12 +137,12 @@ public class TileTextureFactory {
       }
     }
 
-    if (levelPart.element == LevelElement.PORTAL) {
+    /*if (levelPart.element == LevelElement.PORTAL) {
       IPath path = findPortalElement(levelPart);
       if (path != null) {
         return new SimpleIPath(prefixPath + path.pathString() + ".png");
       }
-    }
+    }*/
 
     IPath path = findTexturePathFloor(levelPart);
     if (path != null) {
@@ -324,15 +324,11 @@ public class TileTextureFactory {
    * @param element Tile to check for
    * @param layout The level
    * @param elementType The type ot the tile if different than the attribute
+   * @param elementLayout The layout of the level elements
    * @return Path to texture
    */
-  public static IPath findTexturePath(Tile element, Tile[][] layout, LevelElement elementType) {
-    LevelElement[][] elementLayout = new LevelElement[layout.length][layout[0].length];
-    for (int x = 0; x < layout[0].length; x++) {
-      for (int y = 0; y < layout.length; y++) {
-        elementLayout[y][x] = layout[y][x].levelElement();
-      }
-    }
+  public static IPath findTexturePath(
+      Tile element, Tile[][] layout, LevelElement elementType, LevelElement[][] elementLayout) {
     elementLayout[element.coordinate().y()][element.coordinate().x()] = elementType;
 
     IPath pitPath = findTexturePathPit(element, layout);
@@ -342,6 +338,24 @@ public class TileTextureFactory {
 
     return findTexturePath(
         new LevelPart(elementType, element.designLabel(), elementLayout, element.coordinate()));
+  }
+
+  /**
+   * Checks which texture must be used for the passed tile based on the surrounding tiles.
+   *
+   * @param element Tile to check for
+   * @param layout The level
+   * @param elementType The type ot the tile if different than the attribute
+   * @return Path to texture
+   */
+  public static IPath findTexturePath(Tile element, Tile[][] layout, LevelElement elementType) {
+    LevelElement[][] elementLayout = new LevelElement[layout.length][layout[0].length];
+    for (int x = 0; x < layout[0].length; x++) {
+      for (int y = 0; y < layout.length; y++) {
+        elementLayout[y][x] = layout[y][x].levelElement();
+      }
+    }
+    return findTexturePath(element, layout, elementType, elementLayout);
   }
 
   /**
@@ -450,7 +464,7 @@ public class TileTextureFactory {
       return new SimpleIPath(holeAbove ? "floor/floor_hole1" : "floor/floor_hole");
     }
     return switch (e) {
-      case FLOOR -> new SimpleIPath("floor/floor_1");
+      case FLOOR, GITTER -> new SimpleIPath("floor/floor_1");
       case EXIT -> new SimpleIPath("floor/floor_ladder");
       case PIT -> new SimpleIPath("floor/floor_damaged");
       default -> null;

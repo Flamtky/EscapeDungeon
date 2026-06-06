@@ -42,7 +42,6 @@ public class DecoFactory {
       CollideComponent cc = new CollideComponent(solidCollider);
       entity.add(cc);
     }
-    // entity.add(new InteractionComponent());
     return entity;
   }
 

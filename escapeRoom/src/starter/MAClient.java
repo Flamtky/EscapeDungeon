@@ -1,0 +1,210 @@
+package starter;
+
+import contrib.entities.CharacterClass;
+import contrib.hud.dialogs.DialogContext;
+import contrib.hud.dialogs.DialogFactory;
+import contrib.hud.dialogs.DialogType;
+import contrib.utils.components.Debugger;
+import core.Game;
+import core.configuration.KeyboardConfig;
+import core.game.PreRunConfiguration;
+import core.level.loader.DungeonLoader;
+import core.network.config.NetworkConfig;
+import core.utils.ClientNamePersistence;
+import core.utils.Tuple;
+import core.utils.components.path.SimpleIPath;
+import demoDungeon.level.MADungeonRoomClient;
+import hint.HintLogDialog;
+import java.io.IOException;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.stream.Collectors;
+import mushRoom.modules.EscapeRoomDialogTypes;
+import mushRoom.modules.journal.CraftingBookItem;
+import mushRoom.modules.lockpick.LockPickDialog;
+import mushRoom.modules.qte.FollowingIndicatorDialog;
+import mushRoom.modules.slides.SlideDeckDialog;
+import network.EscapeRoomSnapshotTranslator;
+import tools.timer.TimerCommandMessage;
+import tools.timer.TimerDialog;
+import tools.timer.TimerSyncMessage;
+import tools.timer.TimerUI;
+
+/** The main class for the Multiplayer Client for development and testing purposes. */
+public final class MAClient {
+
+  /** Available character classes for selection. */
+  private static final List<CharacterClass> AVAILABLE_CLASSES =
+      List.of(CharacterClass.APPRENTICE, CharacterClass.ROGUE);
+
+  /** Allowed class names (uppercase) for validation. */
+  private static final Set<String> ALLOWED_CLASS_NAMES =
+      AVAILABLE_CLASSES.stream().map(Enum::name).collect(Collectors.toUnmodifiableSet());
+
+  static {
+    DialogFactory.register(
+        EscapeRoomDialogTypes.FOLLOWING_INDICATOR, FollowingIndicatorDialog::build);
+    DialogFactory.register(EscapeRoomDialogTypes.LOCKPICK, LockPickDialog::build);
+    DialogFactory.register(
+        EscapeRoomDialogTypes.CRAFTING_BOOK, CraftingBookItem::buildCraftingBookDialog);
+    SlideDeckDialog.register();
+    DialogFactory.register(EscapeRoomDialogTypes.TIMER, TimerDialog::build);
+    DialogFactory.register(DialogType.DefaultTypes.SIMPLE_HINT, HintLogDialog::createHintDialog);
+  }
+
+  private static boolean firstTick = true;
+
+  private static final Tuple<String, CharacterClass> IDENTITY = initIdentity();
+  private static final String NAME = IDENTITY.a();
+  private static final CharacterClass CLASS = IDENTITY.b();
+
+  /**
+   * Main method to start the dev client.
+   *
+   * @param args command line arguments
+   * @throws IOException if an I/O error occurs
+   */
+  public static void main(String[] args) throws IOException {
+    ClientEnvConfig envConfig = ClientEnvConfig.load();
+    // PreRun configuration for multiplayer client
+    PreRunConfiguration.multiplayerEnabled(true);
+    PreRunConfiguration.isNetworkServer(false);
+    PreRunConfiguration.networkServerAddress(envConfig.serverAddress());
+    PreRunConfiguration.networkPort(envConfig.port());
+
+    NetworkConfig.SNAPSHOT_TRANSLATOR = new EscapeRoomSnapshotTranslator();
+    MASinglePlayer.registerItems();
+
+    PreRunConfiguration.username(NAME + "#" + CLASS.name());
+
+    // Game Settings
+    Game.loadConfig(new SimpleIPath("dungeon_config.json"), KeyboardConfig.class);
+    Game.disableAudio(false);
+    Game.tickRate(90);
+    Game.windowTitle("Prison Escape - " + NAME);
+    Game.userOnSetup(
+        () -> {
+          Game.add(new Debugger());
+          Game.add(new IllegalSystem());
+          registerTimerHandlers();
+        });
+
+    Game.userOnFrame(
+        () -> {
+          if (firstTick) {
+            DungeonLoader.addLevel(Tuple.of("maroom", MADungeonRoomClient.class));
+            firstTick = false;
+          }
+        });
+
+    // Start the game
+    try {
+      Game.run();
+    } finally {
+      System.out.println("Exiting Client...");
+      System.out.println("Name: " + NAME);
+    }
+  }
+
+  private static Tuple<String, CharacterClass> initIdentity() {
+    try {
+      Tuple<String, String> persisted = ClientNamePersistence.load(ALLOWED_CLASS_NAMES);
+      if (persisted != null) {
+        return Tuple.of(persisted.a(), CharacterClass.valueOf(persisted.b()));
+      }
+      // No file exists, prompt user for class selection
+      CharacterClass selectedClass = promptForClass();
+      String generatedName = RandomNameGenerator.generateName();
+      ClientNamePersistence.save(generatedName, selectedClass.name(), ALLOWED_CLASS_NAMES);
+      return Tuple.of(generatedName, selectedClass);
+    } catch (Exception e) {
+      System.err.println("Failed to load or persist client identity: " + e.getMessage());
+      throw e instanceof RuntimeException ? (RuntimeException) e : new IllegalStateException(e);
+    }
+  }
+
+  /**
+   * Prompts the user via console to select a character class.
+   *
+   * @return the selected CharacterClass
+   */
+  private static CharacterClass promptForClass() {
+    Scanner scanner = new Scanner(System.in);
+    while (true) {
+      System.out.println("Select your character class:");
+      for (int i = 0; i < AVAILABLE_CLASSES.size(); i++) {
+        System.out.println("  " + i + ": " + AVAILABLE_CLASSES.get(i).name());
+      }
+      System.out.print("Enter index: ");
+      String input = scanner.nextLine().trim();
+      try {
+        int index = Integer.parseInt(input);
+        if (index >= 0 && index < AVAILABLE_CLASSES.size()) {
+          return AVAILABLE_CLASSES.get(index);
+        }
+      } catch (NumberFormatException ignored) {
+        // invalid input, re-prompt
+      }
+      System.out.println(
+          "Invalid selection. Please enter a number between 0 and "
+              + (AVAILABLE_CLASSES.size() - 1)
+              + ".");
+    }
+  }
+
+  /** Registers network message handlers for timer synchronization. */
+  private static void registerTimerHandlers() {
+    var dispatcher = Game.network().messageDispatcher();
+
+    // Handle timer command messages (START, STOP, RESUME)
+    dispatcher.registerHandler(
+        TimerCommandMessage.class,
+        (session, msg) -> {
+          switch (msg.command()) {
+            case START:
+              // Create timer dialog if it doesn't exist
+              DialogContext ctx =
+                  DialogContext.builder()
+                      .type(EscapeRoomDialogTypes.TIMER)
+                      .put("startTimeSeconds", msg.startTimeSeconds())
+                      .build();
+              DialogFactory.show(ctx, false, false);
+
+              TimerUI ui = TimerDialog.currentUI();
+              if (ui != null) {
+                ui.start(msg.startTimeSeconds());
+              }
+              break;
+            case STOP:
+              TimerUI stopUi = TimerDialog.currentUI();
+              if (stopUi != null) {
+                stopUi.stop();
+              }
+              break;
+            case RESUME:
+              TimerUI resumeUi = TimerDialog.currentUI();
+              if (resumeUi != null) {
+                resumeUi.resume();
+              }
+              break;
+          }
+        });
+
+    // Handle periodic sync messages
+    dispatcher.registerHandler(
+        TimerSyncMessage.class,
+        (session, msg) -> {
+          TimerUI ui = TimerDialog.currentUI();
+          if (ui != null) {
+            ui.syncFromServer(msg.elapsedSeconds(), msg.running());
+          } else {
+            var command =
+                msg.running()
+                    ? TimerCommandMessage.TimerCommand.START
+                    : TimerCommandMessage.TimerCommand.STOP;
+            dispatcher.dispatch(session, new TimerCommandMessage(command, msg.elapsedSeconds()));
+          }
+        });
+  }
+}

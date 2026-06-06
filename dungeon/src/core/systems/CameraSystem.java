@@ -11,6 +11,7 @@ import core.System;
 import core.components.CameraComponent;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
+import core.game.GameLoop;
 import core.game.PreRunConfiguration;
 import core.level.Tile;
 import core.utils.Point;
@@ -30,10 +31,11 @@ import core.utils.Vector2;
  * @see CameraComponent
  */
 public final class CameraSystem extends System {
-  /** WTF? . */
-  public static final float DEFAULT_ZOOM_FACTOR = 0.35f;
+  /** Default zoom factor of the camera. */
+  public static final float DEFAULT_ZOOM_FACTOR = 0.30f;
 
   private static final float CAMERA_FOCUS_LERP = 0.2f;
+  private static final float MIN_SNAP_DISTANCE = 0.01f;
 
   private static final float FIELD_WIDTH_AND_HEIGHT_IN_PIXEL = 16f;
   private static final OrthographicCamera CAMERA =
@@ -136,36 +138,73 @@ public final class CameraSystem extends System {
 
   @Override
   public void execute() {
-    filteredEntityStream(CameraComponent.class, PositionComponent.class)
-        .findAny()
-        .ifPresentOrElse(this::focus, this::focus);
+    updateFocusPoint(true);
+  }
 
-    approachFocusPoint();
+  /**
+   * Prepares the camera matrix for drawing the next world frame.
+   *
+   * <p>This updates the viewport, refreshes the focus point from the latest entity positions, and
+   * advances the camera with a time-based version of the fixed-tick focus smoothing.
+   *
+   * @param delta the time since the last rendered frame
+   */
+  public void prepareRender(float delta) {
+    updateViewport();
+    updateFocusPoint(false);
+    approachFocusPoint(delta);
     CAMERA.update();
+  }
+
+  private void updateFocusPoint(boolean capturePreviousPosition) {
+    var focusedEntity =
+        filteredEntityStream(CameraComponent.class, PositionComponent.class).findAny();
+    focusedEntity.ifPresent(entity -> captureRenderBasePosition(entity, capturePreviousPosition));
+    focusedEntity.ifPresentOrElse(this::focus, this::focus);
+  }
+
+  private void captureRenderBasePosition(Entity entity, boolean capturePreviousPosition) {
+    if (capturePreviousPosition) {
+      EntityUtils.captureRenderBasePosition(entity);
+    }
   }
 
   @Override
   public void render(final float delta) {
+    // Camera preparation runs before world rendering in GameLoop.
+  }
+
+  private void updateViewport() {
+    if (Game.windowHeight() <= 0) {
+      return;
+    }
     float aspectRatio = Game.windowWidth() / (float) Game.windowHeight();
     CAMERA.viewportWidth = viewportWidth();
     CAMERA.viewportHeight = viewportWidth() / aspectRatio;
   }
 
-  private void approachFocusPoint() {
+  private void approachFocusPoint(float delta) {
     if (actualPosition == null) {
       actualPosition = focusPoint;
     }
-    float newX =
-        actualPosition.x() * (1 - CAMERA_FOCUS_LERP) + (focusPoint.x() * CAMERA_FOCUS_LERP);
-    float newY =
-        actualPosition.y() * (1 - CAMERA_FOCUS_LERP) + (focusPoint.y() * CAMERA_FOCUS_LERP);
+    float lerp = focusLerp(delta);
+    float newX = actualPosition.x() * (1 - lerp) + (focusPoint.x() * lerp);
+    float newY = actualPosition.y() * (1 - lerp) + (focusPoint.y() * lerp);
     actualPosition = new Point(newX, newY);
 
-    if (actualPosition.distance(focusPoint) <= 0.01f) {
+    if (actualPosition.distance(focusPoint) <= MIN_SNAP_DISTANCE) {
       actualPosition = focusPoint;
     }
 
     CAMERA.position.set(actualPosition.x(), actualPosition.y(), 0);
+  }
+
+  private float focusLerp(float delta) {
+    if (delta <= 0f) {
+      return CAMERA_FOCUS_LERP;
+    }
+    double ticksElapsed = delta * PreRunConfiguration.tickRate();
+    return (float) (1d - Math.pow(1d - CAMERA_FOCUS_LERP, ticksElapsed));
   }
 
   private void focus() {
@@ -177,16 +216,23 @@ public final class CameraSystem extends System {
   }
 
   private void focus(Entity entity) {
-    focus(EntityUtils.getPosition(entity));
+    focus(EntityUtils.getRenderPosition(entity, GameLoop.renderInterpolationAlpha()));
   }
 
   private void focus(Point point) {
     focusPoint = point;
   }
 
-  @Override
-  public void stop() {
-    // Cant be stopped
+  /**
+   * Instantly focuses the camera on the given point, without any smooth transition.
+   *
+   * @param point The point to focus on.
+   */
+  public void instantFocus(Point point) {
+    focusPoint = point;
+    actualPosition = point;
+    CAMERA.position.set(actualPosition.x(), actualPosition.y(), 0);
+    CAMERA.update();
   }
 
   /**
@@ -202,5 +248,11 @@ public final class CameraSystem extends System {
     float posX = camX - (worldWidth / 2f);
     float posY = camY - (worldHeight / 2f);
     return new Rectangle(worldWidth, worldHeight, posX, posY);
+  }
+
+  /** CameraSystem can't be paused. */
+  @Override
+  public void stop() {
+    run = true;
   }
 }

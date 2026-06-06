@@ -13,15 +13,11 @@ import core.Game;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
 import core.level.DungeonLevel;
-import core.systems.input.InputManager;
+import core.systems.InputManager;
 import core.utils.Point;
 import core.utils.Rectangle;
 import core.utils.Vector2;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /** Deco Mode for the Level Editor. Allows placing, removing, and moving decorative entities. */
 public class DecoMode extends LevelEditorMode {
@@ -29,11 +25,15 @@ public class DecoMode extends LevelEditorMode {
   private static final float HOVER_DISTANCE = 0.75f;
   private static final float PREVIEW_ALPHA = 0.5f;
 
+  private static Deco.Category currentCategory = Deco.Category.values()[0];
+  private static Deco[] currentCategoryDecos = Deco.byCategory(currentCategory);
   private static int selectedDecoIndex = 0;
   private static SnapMode decoSnapMode = SnapMode.OnGrid;
   private static DecoEntityData decoPreviewEntity = null;
   private static DecoEntityData decoHeldEntity = null;
   private static DecoEntityData decoHoveredEntity = null;
+  // When true, ignore snap mode's blocked check and allow placement anywhere
+  private static boolean ignoreBlockedCheck = false;
 
   private boolean rapidFireActive = false;
 
@@ -44,17 +44,42 @@ public class DecoMode extends LevelEditorMode {
 
   @Override
   public void execute() {
-    // Change selected deco
-    if (InputManager.isKeyJustPressed(PRIMARY_UP)) {
-      selectedDecoIndex = Math.floorMod(selectedDecoIndex + 1, Deco.values().length);
+    // Toggle ignore-blocked-check key
+    if (InputManager.isKeyJustPressed(SIXTH)) {
+      ignoreBlockedCheck = !ignoreBlockedCheck;
+    }
+
+    // Change category
+    if (InputManager.isKeyJustPressed(SECONDARY_DOWN)) {
+      int idx = currentCategory.ordinal() - 1;
+      if (idx < 0) idx = Deco.Category.values().length - 1;
+      currentCategory = Deco.Category.values()[idx];
+      currentCategoryDecos = Deco.byCategory(currentCategory);
+      selectedDecoIndex = 0;
       previewEntityChanged();
-    } else if (InputManager.isKeyJustPressed(PRIMARY_DOWN)) {
-      selectedDecoIndex = Math.floorMod(selectedDecoIndex - 1, Deco.values().length);
+    } else if (InputManager.isKeyJustPressed(SECONDARY_UP)) {
+      int idx = (currentCategory.ordinal() + 1) % Deco.Category.values().length;
+      currentCategory = Deco.Category.values()[idx];
+      currentCategoryDecos = Deco.byCategory(currentCategory);
+      selectedDecoIndex = 0;
       previewEntityChanged();
     }
 
+    // Change selected deco within category
+    if (InputManager.isKeyJustPressed(PRIMARY_UP)) {
+      if (currentCategoryDecos.length > 0) {
+        selectedDecoIndex = Math.floorMod(selectedDecoIndex + 1, currentCategoryDecos.length);
+        previewEntityChanged();
+      }
+    } else if (InputManager.isKeyJustPressed(PRIMARY_DOWN)) {
+      if (currentCategoryDecos.length > 0) {
+        selectedDecoIndex = Math.floorMod(selectedDecoIndex - 1, currentCategoryDecos.length);
+        previewEntityChanged();
+      }
+    }
+
     // Change snap mode
-    if (InputManager.isKeyJustPressed(SECONDARY_UP)) {
+    if (InputManager.isKeyJustPressed(FIFTH)) {
       decoSnapMode = decoSnapMode.nextMode();
     }
 
@@ -95,8 +120,13 @@ public class DecoMode extends LevelEditorMode {
       Optional<DecoEntityData> clickedDeco = getDecoOnPosition(cursorPos);
       if (clickedDeco.isPresent()) {
         DecoComponent dc = clickedDeco.get().dc;
-        for (int i = 0; i < Deco.values().length; i++) {
-          if (Deco.values()[i] == dc.type()) {
+        Deco pickedDeco = dc.type();
+        // Switch to the category of the picked deco
+        currentCategory = pickedDeco.category();
+        currentCategoryDecos = Deco.byCategory(currentCategory);
+        // Find the index within the category
+        for (int i = 0; i < currentCategoryDecos.length; i++) {
+          if (currentCategoryDecos[i] == pickedDeco) {
             selectedDecoIndex = i;
             previewEntityChanged();
             break;
@@ -106,7 +136,7 @@ public class DecoMode extends LevelEditorMode {
     }
 
     if (InputManager.isButtonPressed(Input.Buttons.LEFT) && rapidFireActive) {
-      boolean checkBlocked = decoSnapMode.checkBlocked();
+      boolean checkBlocked = decoSnapMode.checkBlocked() && !ignoreBlockedCheck;
       placeDeco(snapPos, checkBlocked);
       if (!checkBlocked) {
         rapidFireActive = false;
@@ -122,8 +152,10 @@ public class DecoMode extends LevelEditorMode {
       return;
     }
 
-    // No held entity, show preview entity
-    setPosition(decoPreviewEntity.entity, snapPos);
+    // No held entity, show preview entity (if available)
+    if (decoPreviewEntity != null) {
+      setPosition(decoPreviewEntity.entity, snapPos);
+    }
   }
 
   /**
@@ -134,11 +166,14 @@ public class DecoMode extends LevelEditorMode {
    * @param checkBlocked whether to check for existing decos at the position
    */
   private void placeDeco(Point snapPos, boolean checkBlocked) {
+    if (decoPreviewEntity == null) return;
     if (checkBlocked && decoOverlapsAny(decoPreviewEntity).isPresent()) {
       return;
     }
 
-    Deco decoType = Deco.values()[selectedDecoIndex];
+    Deco decoType = getSelectedDeco();
+    if (decoType == null) return;
+
     Vector2 offset = getEntityOffset(decoPreviewEntity.entity);
     Point actualPos = snapPos.translate(offset.scale(-1));
 
@@ -162,30 +197,42 @@ public class DecoMode extends LevelEditorMode {
     StringBuilder status = new StringBuilder();
     int entityCount = (int) Game.levelEntities(Set.of(DecoComponent.class)).count();
     status.append("Entities: ").append(entityCount);
-    int decoCount = Deco.values().length;
-    Deco currentDeco = Deco.values()[selectedDecoIndex];
     status
-        .append("\nCurrent Deco: ")
-        .append(selectedDecoIndex + 1)
-        .append("/")
-        .append(decoCount)
+        .append("\nKategorie [A/D]: ")
+        .append(currentCategory.displayName())
         .append(" (")
-        .append(currentDeco.name())
+        .append(currentCategory.ordinal() + 1)
+        .append("/")
+        .append(Deco.Category.values().length)
+        .append(")");
+    Deco currentDeco = getSelectedDeco();
+    String decoName = currentDeco != null ? currentDeco.name() : "---";
+    status
+        .append("\nDeco [Q/E]: ")
+        .append(decoName)
+        .append(" (")
+        .append(currentCategoryDecos.length > 0 ? selectedDecoIndex + 1 : 0)
+        .append("/")
+        .append(currentCategoryDecos.length)
         .append(")");
     status.append("\nSnap Mode: ").append(decoSnapMode.name());
+    status.append(" (Ignore-blocked: ").append(ignoreBlockedCheck ? "ON" : "OFF").append(")");
     return status.toString();
   }
 
   @Override
   public Map<Integer, String> getControls() {
     Map<Integer, String> controls = new LinkedHashMap<>();
-    controls.put(PRIMARY_UP, "Next Deco");
-    controls.put(PRIMARY_DOWN, "Prev Deco");
-    controls.put(SECONDARY_UP, "Change Grid Snap");
-    controls.put(TERTIARY, "Delete on Cursor");
-    controls.put(QUARTERNARY, "Pick from Cursor");
-    controls.put(Input.Buttons.LEFT, "Place Deco");
-    controls.put(Input.Buttons.RIGHT, "Pickup Deco");
+    controls.put(SECONDARY_DOWN, "Vorherige Kategorie");
+    controls.put(SECONDARY_UP, "Nächste Kategorie");
+    controls.put(PRIMARY_UP, "Nächstes Deco");
+    controls.put(PRIMARY_DOWN, "Vorheriges Deco");
+    controls.put(TERTIARY, "Löschen auf Cursor");
+    controls.put(QUARTERNARY, "Pipette (vom Cursor)");
+    controls.put(FIFTH, "Grid Snap ändern");
+    controls.put(SIXTH, "Toggle Block-Check Override");
+    controls.put(Input.Buttons.LEFT, "Deco platzieren");
+    controls.put(Input.Buttons.RIGHT, "Deco aufnehmen");
     return controls;
   }
 
@@ -219,8 +266,21 @@ public class DecoMode extends LevelEditorMode {
             });
   }
 
+  /**
+   * Returns the currently selected Deco from the current category.
+   *
+   * @return the selected Deco, or null if the category is empty
+   */
+  private Deco getSelectedDeco() {
+    if (currentCategoryDecos.length == 0) return null;
+    return currentCategoryDecos[selectedDecoIndex];
+  }
+
   private void setupPreviewEntity(Point pos) {
-    Entity deco = DecoFactory.createDeco(pos, Deco.values()[selectedDecoIndex]);
+    Deco selectedDeco = getSelectedDeco();
+    if (selectedDeco == null) return;
+
+    Entity deco = DecoFactory.createDeco(pos, selectedDeco);
     deco.fetch(DrawComponent.class)
         .ifPresent(
             dc -> {
@@ -242,8 +302,8 @@ public class DecoMode extends LevelEditorMode {
   }
 
   private void previewEntityChanged() {
-    if (decoPreviewEntity == null) return;
-    Point currentPos = decoPreviewEntity.pc.position();
+    Point currentPos =
+        decoPreviewEntity != null ? decoPreviewEntity.pc.position() : getCursorPosition();
     removePreviewEntity();
     setupPreviewEntity(currentPos);
   }

@@ -7,15 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import contrib.entities.CharacterClass;
 import contrib.entities.EntityFactory;
 import contrib.modules.levelHide.LevelHideSystem;
-import contrib.systems.CollisionSystem;
-import contrib.systems.HealthSystem;
-import contrib.systems.HudSystem;
-import contrib.systems.IdleSoundSystem;
-import contrib.systems.LevelEditorSystem;
-import contrib.systems.LevelTickSystem;
-import contrib.systems.LeverSystem;
-import contrib.systems.PressurePlateSystem;
-import contrib.systems.ProjectileSystem;
+import contrib.systems.*;
 import contrib.utils.components.Debugger;
 import core.Entity;
 import core.Game;
@@ -108,7 +100,7 @@ public class MushRoom {
         contrib.configuration.KeyboardConfig.class,
         core.configuration.KeyboardConfig.class);
     Game.disableAudio(false);
-    Game.frameRate(60);
+    Game.tickRate(60);
   }
 
   private static void createSystems() {
@@ -118,8 +110,6 @@ public class MushRoom {
     Game.add(new CollisionSystem());
     Game.add(new ProjectileSystem());
     Game.add(new HealthSystem());
-    Game.add(new HudSystem());
-    Game.add(new LevelTickSystem());
     Game.add(new LeverSystem());
     Game.add(new PressurePlateSystem());
     Game.add(new IdleSoundSystem());

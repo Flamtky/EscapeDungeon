@@ -2,6 +2,8 @@ package contrib.components;
 
 import contrib.entities.deco.Deco;
 import core.Component;
+import java.io.Serial;
+import java.io.Serializable;
 
 /**
  * This component marks an entity as a decorative object. Used by the LevelEditor to detect deco
@@ -9,7 +11,8 @@ import core.Component;
  *
  * @param type The type of the deco.
  */
-public record DecoComponent(Deco type) implements Component {
+public record DecoComponent(Deco type) implements Component, Serializable {
+  @Serial private static final long serialVersionUID = 1L;
 
   /**
    * Constructs a DecoComponent with the specified deco type.

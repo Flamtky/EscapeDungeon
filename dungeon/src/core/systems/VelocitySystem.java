@@ -100,7 +100,7 @@ public final class VelocitySystem extends System {
     float y = vsd.vc.currentVelocity().y();
 
     if (Math.abs(x) > EPSILON || Math.abs(y) > EPSILON) {
-      Direction newDirection = Direction.NONE;
+      Direction newDirection;
       // Use the velocity axis with the greatest magnitude for animation direction
       if (Math.abs(x) >= Math.abs(y)) {
         if (x > 0) {

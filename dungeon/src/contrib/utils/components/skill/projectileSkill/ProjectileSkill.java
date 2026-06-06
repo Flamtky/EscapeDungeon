@@ -143,10 +143,12 @@ public abstract class ProjectileSkill extends Skill {
    * and sets up collision and lifetime handlers.
    *
    * @param caster The entity that casts this skill.
+   * @return true if the skill was executed successfully.
    */
   @Override
-  protected void executeSkill(Entity caster) {
+  protected boolean executeSkill(Entity caster) {
     shootProjectile(caster, start(caster), endPoint());
+    return true;
   }
 
   /**
@@ -192,7 +194,12 @@ public abstract class ProjectileSkill extends Skill {
     Vector2 forceToApply = SkillTools.calculateDirection(start, targetPoint).scale(speed);
 
     // Add components
-    VelocityComponent vc = new VelocityComponent(speed, handleProjectileWallHit(caster), true);
+    VelocityComponent vc =
+        VelocityComponent.builder()
+            .baseSpeed(speed)
+            .onWallHit(handleProjectileWallHit(caster))
+            .canEnterOpenPits(true)
+            .build();
     projectile.add(vc);
     projectile.add(new ProjectileComponent(start, targetPoint, forceToApply, onEndReached(caster)));
 

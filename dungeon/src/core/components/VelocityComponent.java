@@ -32,10 +32,12 @@ import java.util.stream.Stream;
  * <h3>Usage Examples</h3>
  *
  * <pre>{@code
- * // Create a VelocityComponent with max speed 5.0f and a custom wall-hit callback
- * VelocityComponent vc = new VelocityComponent(5.0f, entity -> {
- *     System.out.println("Entity hit a wall: " + entity.id());
- * }, false);
+ * // Create a VelocityComponent with a custom wall-hit callback using the builder
+ * VelocityComponent vc = VelocityComponent.builder()
+ *     .onWallHit(entity -> System.out.println("Entity hit a wall: " + entity.id()))
+ *     .mass(2.0f)
+ *     .canEnterOpenPits(true)
+ *     .build();
  *
  * // Apply forces like gravity or wind which affect the velocity in the next update
  * vc.applyForce("gravity", new Vector2(0f, -9.8f));
@@ -46,10 +48,6 @@ import java.util.stream.Stream;
  *
  * // Directly set current velocity if needed (overrides forces)
  * vc.currentVelocity(new Vector2(1.0f, 0f)); // move right at speed 1
- *
- * // Check if entity can enter pits
- * boolean canEnterPits = vc.canEnterOpenPits();
- * vc.canEnterOpenPits(true);
  * }</pre>
  */
 public final class VelocityComponent implements Component {
@@ -63,64 +61,256 @@ public final class VelocityComponent implements Component {
 
   private final Map<String, Vector2> appliedForces = new HashMap<>();
 
-  private Vector2 currentVelocity = Vector2.ZERO;
+  private Vector2 currentVelocity;
 
   private float mass;
-  private float maxSpeed;
+
+  private final Map<String, Vector2> modifiers = new HashMap<>();
 
   private boolean canEnterOpenPits;
   private boolean canEnterWalls;
   private boolean canEnterGitter;
   private boolean canEnterGlasswalls;
 
+  private VelocityComponent(Builder builder) {
+    this.onWallHit = builder.onWallHit;
+    this.currentVelocity = builder.currentVelocity;
+    this.mass = builder.mass;
+    this.canEnterOpenPits = builder.canEnterOpenPits;
+    this.canEnterWalls = builder.canEnterWalls;
+    this.canEnterGitter = builder.canEnterGitter;
+    this.canEnterGlasswalls = builder.canEnterGlasswalls;
+    this.modifiers.putAll(builder.modifiers);
+    this.appliedForces.putAll(builder.appliedForces);
+  }
+
+  public VelocityComponent(float baseSpeed) {
+    this(builder().baseSpeed(baseSpeed));
+  }
+
+  public VelocityComponent(float baseSpeed, Consumer<Entity> onWallHit, boolean canEnterOpenPits) {
+    this(builder().baseSpeed(baseSpeed).onWallHit(onWallHit).canEnterOpenPits(canEnterOpenPits));
+  }
+
+  public VelocityComponent(
+      float baseSpeed, float mass, Consumer<Entity> onWallHit, boolean canEnterOpenPits) {
+    this(
+        builder()
+            .baseSpeed(baseSpeed)
+            .mass(mass)
+            .onWallHit(onWallHit)
+            .canEnterOpenPits(canEnterOpenPits));
+  }
+
   /**
-   * Create a new VelocityComponent with the given configuration.
+   * Creates a new builder for constructing a VelocityComponent.
+   *
+   * @return A new Builder instance.
+   */
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  /**
+   * Create a new VelocityComponent with the given max speed and mass. By default, the entity will
+   * not be able to enter open pit tiles and uses a no-op wall-hit callback.
    *
    * @param maxSpeed The speed with which the entity can maximally move.
    * @param mass The mass of the entity used to calculate acceleration.
-   * @param onWallHit Callback that will be executed if the entity runs against a wall.
-   * @param canEnterOpenPits Whether the entity can enter open pit tiles.
    */
-  public VelocityComponent(
-      float maxSpeed, float mass, Consumer<Entity> onWallHit, boolean canEnterOpenPits) {
-    this.mass(mass);
-    this.onWallHit = onWallHit;
-    this.canEnterOpenPits = canEnterOpenPits;
-    this.canEnterWalls = false;
-    this.canEnterGitter = false;
-    this.canEnterGlasswalls = false;
-    this.maxSpeed = maxSpeed;
+  public VelocityComponent(float maxSpeed, float mass) {
+    this(maxSpeed, mass, DEFAULT_ON_WALL_HIT, false);
   }
 
   /**
-   * Create a new VelocityComponent with the given configuration and a default mass.
+   * Creates a default VelocityComponent with no initial velocity and default settings.
    *
-   * @param maxSpeed The speed with which the entity can maximally move.
-   * @param onWallHit Callback that will be executed if the entity runs against a wall.
-   * @param canEnterOpenPits Whether the entity can enter open pit tiles.
+   * @return A default VelocityComponent instance.
    */
-  public VelocityComponent(float maxSpeed, Consumer<Entity> onWallHit, boolean canEnterOpenPits) {
-    this(maxSpeed, DEFAULT_MASS, onWallHit, canEnterOpenPits);
+  public static VelocityComponent defaultMoving() {
+    return VelocityComponent.builder().build();
   }
 
   /**
-   * Create a new VelocityComponent with the given configuration. By default, the entity will not be
-   * able to enter open pit tiles and has a mass of 1.
+   * Creates a VelocityComponent with a specified base speed.
    *
-   * @param maxSpeed The speed with which the entity can maximally move.
+   * @param baseSpeed The base speed value to set.
+   * @return A VelocityComponent instance with the specified base speed.
    */
-  public VelocityComponent(float maxSpeed) {
-    this(maxSpeed, DEFAULT_ON_WALL_HIT, false);
+  public static VelocityComponent defaultMoving(float baseSpeed) {
+    return VelocityComponent.builder().baseSpeed(baseSpeed).build();
   }
 
   /**
-   * Create a new VelocityComponent with the default configuration.
+   * Gets the base speed from the modifiers.
    *
-   * <p>In the default configuration, the movement speed is set to 0, so the entity will not move.
-   * And the entity will not be able to enter open pit tiles. The entity has a mass of 1.
+   * <p>The base speed is calculated as the average of the x and y components of the "baseSpeed"
+   *
+   * @return The base speed value.
    */
-  public VelocityComponent() {
-    this(0f);
+  public double baseSpeed() {
+    Vector2 baseSpeed = modifiers("baseSpeed");
+    return (baseSpeed.x() + baseSpeed.y()) / 2.0;
+  }
+
+  public float maxSpeed() {
+    return (float) baseSpeed();
+  }
+
+  /** Builder class for constructing VelocityComponent instances with fluent API. */
+  public static class Builder {
+    private Consumer<Entity> onWallHit = DEFAULT_ON_WALL_HIT;
+    private Vector2 currentVelocity = Vector2.ZERO;
+    private float mass = DEFAULT_MASS;
+    private boolean canEnterOpenPits = false;
+    private boolean canEnterWalls = false;
+    private boolean canEnterGitter = false;
+    private boolean canEnterGlasswalls = false;
+    private final Map<String, Vector2> modifiers = new HashMap<>();
+    private final Map<String, Vector2> appliedForces = new HashMap<>();
+
+    /**
+     * Sets the wall hit callback.
+     *
+     * @param onWallHit The callback to execute on wall collision.
+     * @return This builder instance for chaining.
+     */
+    public Builder onWallHit(Consumer<Entity> onWallHit) {
+      this.onWallHit = onWallHit;
+      return this;
+    }
+
+    /**
+     * Sets the current velocity.
+     *
+     * @param currentVelocity The initial velocity vector.
+     * @return This builder instance for chaining.
+     */
+    public Builder currentVelocity(Vector2 currentVelocity) {
+      this.currentVelocity = currentVelocity;
+      return this;
+    }
+
+    /**
+     * Sets the mass of the entity.
+     *
+     * @param mass The mass value.
+     * @return This builder instance for chaining.
+     * @throws IllegalArgumentException if mass is less than or equal to 0
+     */
+    public Builder mass(float mass) {
+      if (mass <= 0) throw new IllegalArgumentException("Mass cannot be 0 or less");
+      this.mass = mass;
+      return this;
+    }
+
+    /**
+     * Sets whether the entity can enter open pits.
+     *
+     * @param canEnterOpenPits true if allowed, false otherwise.
+     * @return This builder instance for chaining.
+     */
+    public Builder canEnterOpenPits(boolean canEnterOpenPits) {
+      this.canEnterOpenPits = canEnterOpenPits;
+      return this;
+    }
+
+    /**
+     * Sets whether the entity can enter walls.
+     *
+     * @param canEnterWalls true if allowed, false otherwise.
+     * @return This builder instance for chaining.
+     */
+    public Builder canEnterWalls(boolean canEnterWalls) {
+      this.canEnterWalls = canEnterWalls;
+      return this;
+    }
+
+    /**
+     * Sets whether the entity can enter gitters.
+     *
+     * @param canEnterGitter true if allowed, false otherwise.
+     * @return This builder instance for chaining.
+     */
+    public Builder canEnterGitter(boolean canEnterGitter) {
+      this.canEnterGitter = canEnterGitter;
+      return this;
+    }
+
+    /**
+     * Sets whether the entity can enter glasswalls.
+     *
+     * @param canEnterGlasswalls true if allowed, false otherwise.
+     * @return This builder instance for chaining.
+     */
+    public Builder canEnterGlasswalls(boolean canEnterGlasswalls) {
+      this.canEnterGlasswalls = canEnterGlasswalls;
+      return this;
+    }
+
+    /**
+     * Adds a modifier to the component.
+     *
+     * @param key The modifier key.
+     * @param value The modifier value.
+     * @return This builder instance for chaining.
+     */
+    public Builder modifier(String key, Vector2 value) {
+      this.modifiers.put(key, value);
+      return this;
+    }
+
+    /**
+     * Adds multiple modifiers to the component.
+     *
+     * @param newModifiers A map of modifiers.
+     * @return This builder instance for chaining.
+     */
+    public Builder modifiers(Map<String, Vector2> newModifiers) {
+      this.modifiers.putAll(newModifiers);
+      return this;
+    }
+
+    /**
+     * Applies an initial force to the component.
+     *
+     * @param id Unique identifier of the force.
+     * @param force The force vector.
+     * @return This builder instance for chaining.
+     */
+    public Builder applyForce(String id, Vector2 force) {
+      this.appliedForces.put(id, force);
+      return this;
+    }
+
+    /**
+     * Constructs the VelocityComponent instance.
+     *
+     * @return A new VelocityComponent configured with builder settings.
+     */
+    public VelocityComponent build() {
+      return new VelocityComponent(this);
+    }
+
+    /**
+     * Sets a base speed modifier for the component.
+     *
+     * @param baseSpeed The base speed value.
+     * @return This builder instance for chaining.
+     */
+    public Builder baseSpeed(float baseSpeed) {
+      return baseSpeed(Vector2.of(baseSpeed, baseSpeed));
+    }
+
+    /**
+     * Sets a base speed modifier for the component.
+     *
+     * @param baseSpeed The base speed value.
+     * @return This builder instance for chaining.
+     */
+    public Builder baseSpeed(Vector2 baseSpeed) {
+      return modifier("baseSpeed", baseSpeed);
+    }
   }
 
   /**
@@ -316,20 +506,82 @@ public final class VelocityComponent implements Component {
   }
 
   /**
-   * Get the maximum movement speed.
+   * Get the modifier for a given key.
    *
-   * @return Maximum speed value.
+   * @param key The modifier key.
+   * @return The modifier value, or 1.0f if not set.
    */
-  public float maxSpeed() {
-    return maxSpeed;
+  public Vector2 modifiers(String key) {
+    return modifiers.getOrDefault(key, Vector2.ONE);
   }
 
   /**
-   * Set the maximum movement speed.
+   * Gets the sum of all modifiers.
    *
-   * @param maxSpeed Maximum speed to set.
+   * <p>If no modifiers are set, returns Vector2.ONE.
+   *
+   * <p>Modifiers are summed by multiplying their values together.
+   *
+   * @return The total modifier value.
    */
-  public void maxSpeed(float maxSpeed) {
-    this.maxSpeed = maxSpeed;
+  public Vector2 totalModifiers() {
+    Vector2 total = Vector2.ONE;
+    for (Vector2 modifier : modifiers.values()) {
+      total = total.scale(modifier); // Multiply modifiers together
+    }
+    return total;
+  }
+
+  /**
+   * Sets a modifier for a given key.
+   *
+   * <p>If the key already exists, it will be overwritten.
+   *
+   * @param key The modifier key.
+   * @param value The modifier value.
+   * @return The VelocityComponent instance for chaining.
+   */
+  public VelocityComponent modifier(String key, float value) {
+    return modifier(key, Vector2.of(value, value));
+  }
+
+  /**
+   * Sets a modifier for a given key.
+   *
+   * <p>If the key already exists, it will be overwritten.
+   *
+   * @param key The modifier key.
+   * @param value The modifier value.
+   * @return The VelocityComponent instance for chaining.
+   */
+  public VelocityComponent modifier(String key, Vector2 value) {
+    modifiers.put(key, value);
+    return this;
+  }
+
+  /**
+   * Sets multiple modifiers at once.
+   *
+   * @param newModifiers A map of modifier keys to their values.
+   * @return The VelocityComponent instance for chaining.
+   */
+  public VelocityComponent modifiers(Map<String, Vector2> newModifiers) {
+    modifiers.putAll(newModifiers);
+    return this;
+  }
+
+  /**
+   * Remove a modifier for a given key.
+   *
+   * @param key The modifier key.
+   * @return true if the modifier was removed, false if it did not exist.
+   */
+  public boolean removeModifier(String key) {
+    return modifiers.remove(key) != null;
+  }
+
+  /** Remove all modifiers. */
+  public void removeAllModifiers() {
+    modifiers.clear();
   }
 }

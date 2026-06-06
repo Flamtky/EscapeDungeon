@@ -6,6 +6,7 @@ import contrib.utils.components.skill.Skill;
 import contrib.utils.components.skill.SkillTools;
 import core.Entity;
 import core.utils.Tuple;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A skill that allows the caster to restore its own health.
@@ -45,16 +46,20 @@ public class SelfHealSkill extends Skill {
    * HealthComponent}. TODO: add visual feedback (e.g., blink) when self-healing.
    *
    * @param caster The entity using the skill.
+   * @return whether the skill was successfully executed.
    */
   @Override
-  protected void executeSkill(Entity caster) {
+  protected boolean executeSkill(Entity caster) {
+    AtomicBoolean success = new AtomicBoolean(false);
     caster
         .fetch(HealthComponent.class)
         .ifPresent(
             hc -> {
               hc.restoreHealthpoints(healAmount());
               SkillTools.blink(caster, 0x00FF00FF, 120, 4);
+              success.set(true);
             });
+    return success.get();
   }
 
   /**

@@ -20,18 +20,14 @@ import core.level.utils.Coordinate;
 import core.sound.SoundSpec;
 import core.utils.Direction;
 import core.utils.Point;
+import core.utils.components.draw.DepthLayer;
 import core.utils.components.draw.animation.Animation;
 import core.utils.components.draw.state.CharacterStateFactory;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
 import core.utils.logging.DungeonLogger;
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.*;
+import java.util.function.*;
 
 /**
  * Shared monster builder to reduce duplication between different monster enums across projects.
@@ -70,9 +66,10 @@ public class MonsterBuilder<T extends MonsterBuilder<T>> {
   private MonsterIdleSound idleSound = null;
 
   // AI
-  private Supplier<Consumer<Entity>> fightAISupplier = () -> (e) -> {};
+  private Supplier<BiConsumer<Entity, Entity>> fightAISupplier = () -> (e, p) -> {};
   private Supplier<Consumer<Entity>> idleAISupplier = () -> (e) -> {};
-  private Supplier<Function<Entity, Boolean>> transitionAISupplier = () -> (e) -> false;
+  private Supplier<BiFunction<Entity, Entity, Boolean>> transitionAISupplier =
+      () -> (e, p) -> false;
 
   // Movement
   private float speed = 1.0f;
@@ -82,7 +79,7 @@ public class MonsterBuilder<T extends MonsterBuilder<T>> {
 
   // Combat
   private int collideDamage = 0;
-  private int collideCooldown = Game.frameRate();
+  private int collideCooldown = Game.tickRate();
   private DamageType damageType = DamageType.PHYSICAL;
 
   // Drops
@@ -202,7 +199,7 @@ public class MonsterBuilder<T extends MonsterBuilder<T>> {
    * @param fight supplier providing fight AI consumer
    * @return this builder
    */
-  public T fightAI(Supplier<Consumer<Entity>> fight) {
+  public T fightAI(Supplier<BiConsumer<Entity, Entity>> fight) {
     this.fightAISupplier = fight;
     return self();
   }
@@ -224,7 +221,7 @@ public class MonsterBuilder<T extends MonsterBuilder<T>> {
    * @param transition supplier providing transition AI function
    * @return this builder
    */
-  public T transitionAI(Supplier<Function<Entity, Boolean>> transition) {
+  public T transitionAI(Supplier<BiFunction<Entity, Entity, Boolean>> transition) {
     this.transitionAISupplier = transition;
     return self();
   }
@@ -467,7 +464,7 @@ public class MonsterBuilder<T extends MonsterBuilder<T>> {
    *
    * @return fight AI supplier
    */
-  public Supplier<Consumer<Entity>> fightAISupplier() {
+  public Supplier<BiConsumer<Entity, Entity>> fightAISupplier() {
     return fightAISupplier;
   }
 
@@ -485,7 +482,7 @@ public class MonsterBuilder<T extends MonsterBuilder<T>> {
    *
    * @return transition AI supplier
    */
-  public Supplier<Function<Entity, Boolean>> transitionAISupplier() {
+  public Supplier<BiFunction<Entity, Entity, Boolean>> transitionAISupplier() {
     return transitionAISupplier;
   }
 
@@ -589,16 +586,23 @@ public class MonsterBuilder<T extends MonsterBuilder<T>> {
     Entity monster = name().isEmpty() ? new Entity() : new Entity(name());
 
     monster.add(new PositionComponent(spawnPoint));
-    monster.add(new DrawComponent(CharacterStateFactory.createStateMachine(texture())));
-    monster.add(new VelocityComponent(speed(), mass(), onWallHit(), canEnterOpenPits()));
+    monster.add(
+        new DrawComponent(CharacterStateFactory.createStateMachine(texture()), DepthLayer.Player));
+    monster.add(
+        VelocityComponent.builder()
+            .mass(mass())
+            .onWallHit(onWallHit())
+            .canEnterOpenPits(canEnterOpenPits())
+            .baseSpeed(speed())
+            .build());
     monster.add(new CollideComponent());
     if (collideDamage() > 0)
       monster.add(new SpikyComponent(collideDamage(), damageType(), collideCooldown()));
     monster.add(
         new AIComponent(
             fightAISupplier().get(), idleAISupplier().get(), transitionAISupplier().get()));
-    monster.add(buildInventoryComponent());
-    monster.add(buildHealthComponent());
+    if (!drops().isEmpty() || !guaranteedDrops().isEmpty()) monster.add(buildInventoryComponent());
+    if (health() > -1) monster.add(buildHealthComponent());
 
     buildIdleSoundComponent().ifPresent(monster::add);
 

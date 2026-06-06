@@ -5,6 +5,8 @@ import core.utils.components.draw.animation.Animation;
 import core.utils.components.draw.animation.AnimationConfig;
 import core.utils.components.draw.animation.SpritesheetConfig;
 import core.utils.components.path.IPath;
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -18,7 +20,8 @@ import java.util.function.Consumer;
  * <p>This class serves as a base for directional or multi-animation states, such as {@link
  * DirectionalState}.
  */
-public class State {
+public class State implements Serializable {
+  @Serial private static final long serialVersionUID = 1L;
 
   /** The name of this state. */
   public final String name;
@@ -44,7 +47,8 @@ public class State {
    */
   public State(String name, Animation animation) {
     if (name == null) throw new IllegalArgumentException("name can't be empty");
-    if (animation == null) throw new IllegalArgumentException("animation can't be null");
+    if (animation == null)
+      throw new IllegalArgumentException("animation can't be null for state " + name);
     this.name = name;
     this.animation = animation;
   }
@@ -161,18 +165,6 @@ public class State {
    * @return the animation associated with this state.
    */
   public Animation getAnimation() {
-    return animation;
-  }
-
-  /**
-   * Returns this state's base animation without applying data-driven overrides.
-   *
-   * <p>Use this when serializing a state definition where invoking {@link #getAnimation()} could
-   * depend on runtime state data.
-   *
-   * @return the base animation backing this state
-   */
-  public Animation baseAnimation() {
     return animation;
   }
 

@@ -40,4 +40,13 @@ public interface BarDisplayable extends Component {
    * @return the priority (0 = closest to entity)
    */
   int barPriority();
+
+  /**
+   * Returns whether this bar should currently be visible.
+   *
+   * @return true if the attribute bar may be shown
+   */
+  default boolean barVisible() {
+    return true;
+  }
 }

@@ -68,3 +68,7 @@ replay_pid*
 # Executable binaries
 *.exe
 *.bin
+
+.env
+
+client_name.dat

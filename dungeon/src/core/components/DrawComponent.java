@@ -3,7 +3,7 @@ package core.components;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import core.Component;
 import core.utils.Vector2;
-import core.utils.components.draw.DepthLayer;
+import core.utils.components.draw.*;
 import core.utils.components.draw.animation.Animation;
 import core.utils.components.draw.animation.AnimationConfig;
 import core.utils.components.draw.animation.SpritesheetConfig;
@@ -13,7 +13,9 @@ import core.utils.components.draw.state.State;
 import core.utils.components.draw.state.StateMachine;
 import core.utils.components.draw.state.Transition;
 import core.utils.components.path.IPath;
-import java.util.List;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Store all {@link Animation}s for an entity.
@@ -45,7 +47,8 @@ import java.util.List;
  * @see Animation
  * @see IPath
  */
-public final class DrawComponent implements Component {
+public final class DrawComponent implements Component, Serializable {
+  @Serial private static final long serialVersionUID = 1L;
 
   private final StateMachine stateMachine;
   private int depth = DepthLayer.Normal.depth();

@@ -51,10 +51,10 @@ public class FireballConeSkill extends FireballSkill {
   }
 
   @Override
-  protected void executeSkill(Entity caster) {
+  protected boolean executeSkill(Entity caster) {
     Point targetPos = endPoint();
     if (targetPos == null) {
-      return;
+      return false;
     }
     Point casterPos = start(caster);
     Vector2 direction = casterPos.vectorTo(targetPos).normalize();
@@ -83,5 +83,6 @@ public class FireballConeSkill extends FireballSkill {
           launchFireBallWithDegree.accept(0);
         },
         delayMillis);
+    return false;
   }
 }

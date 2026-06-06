@@ -8,7 +8,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import contrib.hud.UIUtils;
 import core.Game;
-import core.network.messages.c2s.DialogResponseMessage;
 import core.utils.BaseContainerUI;
 import core.utils.Scene2dElementFactory;
 
@@ -86,7 +85,7 @@ final class FreeInputDialog {
               String userInput = input.getText();
               DialogCallbackResolver.createButtonCallback(
                       context.dialogId(), DialogContextKeys.ON_CONFIRM)
-                  .accept(new DialogResponseMessage.StringValue(userInput));
+                  .accept(userInput);
             } else {
               DialogCallbackResolver.createButtonCallback(
                       context.dialogId(), DialogContextKeys.ON_CANCEL)

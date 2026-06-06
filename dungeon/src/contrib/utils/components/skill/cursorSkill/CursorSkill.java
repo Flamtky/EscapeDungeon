@@ -56,8 +56,8 @@ public abstract class CursorSkill extends Skill {
    * @param caster The entity that uses the skill.
    */
   @Override
-  protected void executeSkill(Entity caster) {
-    executeOnCursor(caster, cursorPositionSupplier.get());
+  protected boolean executeSkill(Entity caster) {
+    return executeOnCursor(caster, cursorPositionSupplier.get());
   }
 
   /**
@@ -81,6 +81,7 @@ public abstract class CursorSkill extends Skill {
    *
    * @param caster The entity using the skill.
    * @param point The current cursor position in the game world.
+   * @param return {@code true} if the skill executed successfully, {@code false} otherwise
    */
-  protected abstract void executeOnCursor(Entity caster, Point point);
+  protected abstract boolean executeOnCursor(Entity caster, Point point);
 }

@@ -33,7 +33,7 @@ public class FireShockWaveSkill extends Skill {
   private static final DamageType DAMAGE_TYPE = DamageType.FIRE;
   private static final int REMOVE_AFTER = 2000;
   private static final long DELAY_BETWEEN_WAVES = 250L;
-  private static final int HIT_COOLDOWN = Game.frameRate() / 4;
+  private static final int HIT_COOLDOWN = Game.tickRate() / 4;
 
   private final int radius;
   private final int damage;
@@ -55,11 +55,11 @@ public class FireShockWaveSkill extends Skill {
   }
 
   @Override
-  protected void executeSkill(Entity caster) {
+  protected boolean executeSkill(Entity caster) {
     Point casterPos = caster.fetch(PositionComponent.class).orElseThrow().position();
     Tile casterTile = Game.tileAt(casterPos).orElse(null);
     if (casterTile == null) {
-      return;
+      return false;
     }
     List<Coordinate> placedPositions = new ArrayList<>();
     LevelUtils.explosionAt(
@@ -90,5 +90,6 @@ public class FireShockWaveSkill extends Skill {
 
           EventScheduler.scheduleAction(() -> Game.remove(entity), REMOVE_AFTER);
         }));
+    return true;
   }
 }

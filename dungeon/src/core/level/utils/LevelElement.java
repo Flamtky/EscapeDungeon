@@ -17,11 +17,11 @@ public enum LevelElement {
   /** This field is a door-field. */
   DOOR(true, true),
   /** This field is a portal-field. */
-  PORTAL(false, false),
+  PORTAL(true, true),
   /** This field is a glasswall-field. */
   GLASSWALL(false, true),
   /** This field is a gitter-field. */
-  GITTER(false, true);
+  GITTER(false, false);
 
   private final boolean accessible;
   private final boolean canSeeThrough;

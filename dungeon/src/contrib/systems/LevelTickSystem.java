@@ -32,9 +32,4 @@ public class LevelTickSystem extends System {
       this.currentLevel = Game.currentLevel().orElse(null);
     }
   }
-
-  @Override
-  public void stop() {
-    // Cant be stopped
-  }
 }

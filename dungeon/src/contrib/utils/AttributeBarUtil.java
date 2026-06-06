@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
+import contrib.components.BarDisplayable;
 import contrib.components.UIComponent;
 import contrib.hud.UIUtils;
 import contrib.hud.dialogs.DialogContext;
@@ -16,7 +17,7 @@ import contrib.hud.dialogs.HeadlessDialogGroup;
 import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
-import core.components.PositionComponent;
+import core.game.GameLoop;
 import core.systems.CameraSystem;
 import core.utils.Point;
 import core.utils.logging.DungeonLogger;
@@ -41,7 +42,7 @@ public final class AttributeBarUtil {
   private static final int DEFAULT_BAR_HEIGHT = 10;
 
   /** Gap between stacked bars. */
-  public static final float BAR_GAP = 15f;
+  public static final float BAR_GAP = DEFAULT_BAR_HEIGHT;
 
   private AttributeBarUtil() {} // Utility class, no instances
 
@@ -58,8 +59,8 @@ public final class AttributeBarUtil {
    */
   public static void addBarToEntity(
       Entity entity,
-      contrib.components.BarDisplayable barDisplayable,
-      Map<Class<? extends contrib.components.BarDisplayable>, ProgressBar> barMapping,
+      BarDisplayable barDisplayable,
+      Map<Class<? extends BarDisplayable>, ProgressBar> barMapping,
       float verticalOffset) {
     Entity barEntity = Entity.createLocalEntity(barDisplayable.barStyleName() + "_" + entity.id());
 
@@ -69,13 +70,10 @@ public final class AttributeBarUtil {
             .center(false) // we will position it ourselves
             .put(
                 DialogContextKeys.PROGRESS_BAR,
-                new ProgressBarContext(
-                    entity.fetch(PositionComponent.class).orElseThrow(),
-                    barDisplayable.barStyleName(),
-                    verticalOffset))
+                new ProgressBarContext(entity.id(), barDisplayable.barStyleName(), verticalOffset))
             .put(DialogContextKeys.OWNER_ENTITY, barEntity.id())
             .build();
-    UIComponent uiComp = new UIComponent(context, false, false, new int[] {});
+    UIComponent uiComp = new UIComponent(context, false, false);
     barEntity.add(uiComp);
     Game.add(barEntity);
 
@@ -110,34 +108,50 @@ public final class AttributeBarUtil {
   }
 
   private static ProgressBar createBar(ProgressBarContext barContext) {
-    PositionComponent pc = barContext.pc();
+    Entity entity =
+        Game.findEntityById(barContext.entityId())
+            .orElseThrow(() -> new RuntimeException("Entity not found: " + barContext.entityId()));
     String styleName = barContext.styleName();
     float verticalOffset = barContext.verticalOffset();
     ProgressBar bar = new ProgressBar(MIN, MAX, STEP_SIZE, false, defaultSkin(), styleName);
     bar.setAnimateDuration(UPDATE_DURATION);
     bar.setSize(DEFAULT_BAR_WIDTH, DEFAULT_BAR_HEIGHT);
-    updatePosition(bar, pc, verticalOffset);
+    updatePosition(bar, getBarOriginForEntity(entity, verticalOffset));
     bar.setVisible(true);
     return bar;
+  }
+
+  /**
+   * Gets the screen-space origin for an entity's attribute bar.
+   *
+   * @param entity the entity the bar follows
+   * @param verticalOffset vertical offset for stacked bars
+   * @return the bar origin in stage coordinates
+   */
+  public static Point getBarOriginForEntity(Entity entity, float verticalOffset) {
+    float alpha = GameLoop.renderInterpolationAlpha();
+    Point renderCenter = EntityUtils.getRenderPosition(entity, alpha);
+    Point renderBase = EntityUtils.getRenderBasePosition(entity, alpha);
+    Vector3 worldCoords = new Vector3(renderCenter.x(), renderBase.y(), 0);
+    Vector3 screenCoords = CameraSystem.camera().project(worldCoords);
+
+    Stage stage = Game.stage().orElseThrow(() -> new RuntimeException("No stage available"));
+    screenCoords.x = screenCoords.x / stage.getViewport().getScreenWidth() * stage.getWidth();
+    screenCoords.x -= DEFAULT_BAR_WIDTH / 2f; // center the bar horizontally
+    screenCoords.y = screenCoords.y / stage.getViewport().getScreenHeight() * stage.getHeight();
+    // screenCoords.y -= DEFAULT_BAR_HEIGHT; // adjust for bar height
+
+    return new Point(screenCoords.x, screenCoords.y - verticalOffset);
   }
 
   /**
    * Updates the position of the progress bar to follow the entity.
    *
    * @param bar the progress bar
-   * @param pc position component of the entity
-   * @param verticalOffset offset above the entity
+   * @param pos the position of the entity
    */
-  public static void updatePosition(ProgressBar bar, PositionComponent pc, float verticalOffset) {
-    Point pos = pc.position();
-    Vector3 worldCoords = new Vector3(pos.x(), pos.y(), 0);
-    Vector3 screenCoords = CameraSystem.camera().project(worldCoords);
-
-    Stage stage = Game.stage().orElseThrow(() -> new RuntimeException("No stage available"));
-    screenCoords.x = screenCoords.x / stage.getViewport().getScreenWidth() * stage.getWidth();
-    screenCoords.y = screenCoords.y / stage.getViewport().getScreenHeight() * stage.getHeight();
-
-    bar.setPosition(screenCoords.x, screenCoords.y - verticalOffset);
+  public static void updatePosition(ProgressBar bar, Point pos) {
+    bar.setPosition(pos.x(), pos.y());
   }
 
   /**
@@ -159,11 +173,11 @@ public final class AttributeBarUtil {
     bar.setVisible(
         entity.fetch(DrawComponent.class).map(DrawComponent::isVisible).orElse(false)
             && barDisplayable.current() != barDisplayable.max());
-    updatePosition(bar, entity.fetch(PositionComponent.class).orElseThrow(), verticalOffset);
+    updatePosition(bar, getBarOriginForEntity(entity, verticalOffset));
     bar.setValue(barDisplayable.current() / barDisplayable.max());
   }
 
-  private record ProgressBarContext(PositionComponent pc, String styleName, float verticalOffset)
+  private record ProgressBarContext(int entityId, String styleName, float verticalOffset)
       implements Serializable {
     @Serial private static final long serialVersionUID = 1L;
   }

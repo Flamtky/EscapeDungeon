@@ -2,26 +2,16 @@ package core.level.utils;
 
 import com.badlogic.gdx.ai.pfa.DefaultGraphPath;
 import com.badlogic.gdx.ai.pfa.GraphPath;
+import contrib.utils.EntityUtils;
 import core.Entity;
 import core.Game;
+import core.components.DrawComponent;
 import core.components.PositionComponent;
 import core.level.Tile;
 import core.level.elements.tile.DoorTile;
-import core.utils.Direction;
-import core.utils.Point;
-import core.utils.Tuple;
+import core.utils.*;
 import core.utils.Vector2;
-import core.utils.components.MissingComponentException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /** Offers some utility functions to work on and with {@link core.level.elements.ILevel}. */
 public final class LevelUtils {
@@ -152,12 +142,7 @@ public final class LevelUtils {
    */
   public static GraphPath<Tile> calculatePathToRandomTileInRange(
       final Entity entity, float radius) {
-    Point point =
-        entity
-            .fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(entity, PositionComponent.class))
-            .position();
-    return calculatePathToRandomTileInRange(point, radius);
+    return calculatePathToRandomTileInRange(EntityUtils.getPosition(entity), radius);
   }
 
   /**
@@ -170,31 +155,7 @@ public final class LevelUtils {
    * @return Path from one entity to the other entity.
    */
   public static GraphPath<Tile> calculatePath(final Entity from, final Entity to) {
-    PositionComponent fromPositionComponent =
-        from.fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(from, PositionComponent.class));
-    PositionComponent positionComponent =
-        to.fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(to, PositionComponent.class));
-    return calculatePath(fromPositionComponent.position(), positionComponent.position());
-  }
-
-  /**
-   * Finds the path from the position of one entity to the position of the player.
-   *
-   * <p>If no player exists in the game, the path will be calculated from the given entity to the
-   * given entity.
-   *
-   * <p>Throws an IllegalArgumentException if one of the entities position is non-accessible.
-   *
-   * @param entity Entity from which the path to the player is calculated.
-   * @return Path from the entity to the player, if there is no player, the path from the entity to
-   *     itself.
-   */
-  public static GraphPath<Tile> calculatePathToPlayer(final Entity entity) {
-    Optional<Entity> player = Game.player();
-    if (player.isPresent()) return calculatePath(entity, player.get());
-    else return calculatePath(entity, entity);
+    return calculatePath(EntityUtils.getPosition(from), EntityUtils.getPosition(to));
   }
 
   /**
@@ -348,29 +309,7 @@ public final class LevelUtils {
    * @return True if the position of the two entities is within the given range, else false.
    */
   public static boolean entityInRange(final Entity entity1, final Entity entity2, float range) {
-    Point entity1Position =
-        entity1
-            .fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(entity1, PositionComponent.class))
-            .position();
-    Point entity2Position =
-        entity2
-            .fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(entity2, PositionComponent.class))
-            .position();
-    return Point.inRange(entity1Position, entity2Position, range);
-  }
-
-  /**
-   * Check if the player is in the given range of an entity.
-   *
-   * @param entity Entity whose position specifies the center point.
-   * @param range The range within which the player should be located.
-   * @return True if the position of the player is within the given radius of the position of the
-   *     given entity. If there is no player, return false.
-   */
-  public static boolean playerInRange(final Entity entity, float range) {
-    return Game.player().filter(value -> entityInRange(entity, value, range)).isPresent();
+    return Point.inRange(EntityUtils.getPosition(entity1), EntityUtils.getPosition(entity2), range);
   }
 
   /**
@@ -495,11 +434,8 @@ public final class LevelUtils {
     if (player == null) {
       return false;
     }
-    PositionComponent pc =
-        player
-            .fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(player, PositionComponent.class));
-    return Game.tileAt(pc.position())
+
+    return Game.tileAt(EntityUtils.getPosition(player))
         .map(tile -> LevelUtils.isTileWithinArea(tile, topLeft, bottomRight))
         .orElse(false);
   }
@@ -544,5 +480,45 @@ public final class LevelUtils {
         Game.tileAt(new Coordinate(x, y)).ifPresent(t -> t.tintColor(color));
       }
     }
+  }
+
+  /**
+   * Returns a set of tiles occupied by the given entity.
+   *
+   * @param entity The entity whose occupied tiles are to be retrieved.
+   * @return A set of tiles occupied by the entity.
+   */
+  public static Set<Tile> occupiedTiles(final Entity entity) {
+    Set<Tile> occupiedTiles = new HashSet<>();
+    Game.currentLevel()
+        .ifPresent(
+            level -> {
+              Tile[][] layout = level.layout();
+              Tuple<Integer, Integer> levelSize = level.size();
+
+              entity
+                  .fetch(DrawComponent.class)
+                  .ifPresent(
+                      drawBox -> {
+                        var bottomLeft =
+                            entity.fetch(PositionComponent.class).orElseThrow().position();
+                        var topRight =
+                            bottomLeft.translate(
+                                Vector2.of(
+                                    drawBox.getWidth() - 0.01f, drawBox.getHeight() - 0.01f));
+                        int startX = Math.max(0, (int) Math.floor(bottomLeft.x()));
+                        int endX = Math.min(levelSize.a() - 1, (int) Math.floor(topRight.x()));
+                        int startY = Math.max(0, (int) Math.floor(bottomLeft.y()));
+                        int endY = Math.min(levelSize.b() - 1, (int) Math.floor(topRight.y()));
+                        for (int x = startX; x <= endX; x++) {
+                          for (int y = startY; y <= endY; y++) {
+                            if (layout[y][x] != null) {
+                              occupiedTiles.add(layout[y][x]);
+                            }
+                          }
+                        }
+                      });
+            });
+    return occupiedTiles;
   }
 }

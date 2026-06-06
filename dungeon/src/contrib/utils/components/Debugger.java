@@ -9,6 +9,7 @@ import contrib.hud.UIUtils;
 import contrib.hud.dialogs.PauseDialog;
 import contrib.systems.DebugDrawSystem;
 import contrib.systems.LevelEditorSystem;
+import contrib.utils.EntityUtils;
 import contrib.utils.components.ai.fight.AIChaseBehaviour;
 import contrib.utils.components.ai.idle.RadiusWalk;
 import contrib.utils.components.ai.transition.SelfDefendTransition;
@@ -26,13 +27,15 @@ import core.level.utils.Coordinate;
 import core.level.utils.LevelElement;
 import core.network.NetworkUtils;
 import core.systems.CameraSystem;
-import core.systems.input.InputManager;
+import core.systems.InputManager;
 import core.utils.Direction;
 import core.utils.IVoidFunction;
 import core.utils.Point;
 import core.utils.components.MissingComponentException;
 import core.utils.components.path.SimpleIPath;
 import core.utils.logging.DungeonLogger;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Auxiliary class to accelerate the creation and testing of specific game scenarios.
@@ -50,6 +53,7 @@ public class Debugger extends System {
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(Debugger.class);
   private static Entity pauseMenu;
   private static int advanceTimer = 0;
+  private static final List<Runnable> actions = new ArrayList<>();
 
   /** Use this value to quickly test different states or values in any other part of the game. */
   public static int multiPurposeDebugValue = 0;
@@ -73,7 +77,31 @@ public class Debugger extends System {
   /** Teleports the Player to the current position of the cursor. */
   public static void TELEPORT_TO_CURSOR() {
     LOGGER.info("TELEPORT TO CURSOR");
-    TELEPORT(SkillTools.cursorPositionAsPoint());
+    Point cursorPos = SkillTools.cursorPositionAsPoint();
+    Game.player()
+        .ifPresent(
+            player -> {
+              Point offset = getCenterOffset(player);
+              Point targetPos = cursorPos.translate(-offset.x(), -offset.y());
+              TELEPORT(targetPos);
+            });
+  }
+
+  /**
+   * Calculates the offset between the entity's center position (from EntityUtils.getPosition) and
+   * the raw position from PositionComponent.
+   *
+   * @param entity The entity to calculate the offset for.
+   * @return The offset as a Point (centerPosition - rawPosition).
+   */
+  private static Point getCenterOffset(Entity entity) {
+    PositionComponent pc =
+        entity
+            .fetch(PositionComponent.class)
+            .orElseThrow(() -> MissingComponentException.build(entity, PositionComponent.class));
+    Point rawPos = pc.position();
+    Point centerPos = EntityUtils.getPosition(entity);
+    return new Point(centerPos.x() - rawPos.x(), centerPos.y() - rawPos.y());
   }
 
   /** Teleports the Player to the end of the level, on a neighboring accessible tile if possible. */
@@ -141,7 +169,12 @@ public class Debugger extends System {
                 return;
               }
 
-              pc.position(targetLocation);
+              Point adjustedPosition =
+                  player
+                      .fetch(CollideComponent.class)
+                      .map(cc -> targetLocation.translate(cc.collider().offset().scale(-1)))
+                      .orElse(targetLocation);
+              pc.position(adjustedPosition);
               LOGGER.info("Teleport successful");
             });
   }
@@ -173,12 +206,12 @@ public class Debugger extends System {
       // Add components to the monster entity
       monster.add(new PositionComponent(position));
       monster.add(new DrawComponent(new SimpleIPath("character/monster/chort")));
-      monster.add(new VelocityComponent(1));
+      monster.add(VelocityComponent.defaultMoving(1.0f));
       monster.add(new HealthComponent());
       monster.add(new CollideComponent());
       monster.add(
           new AIComponent(
-              new AIChaseBehaviour(1), new RadiusWalk(5, 1), new SelfDefendTransition()));
+              new AIChaseBehaviour(), new RadiusWalk(5, 1), new SelfDefendTransition()));
 
       Game.add(monster);
       // Log that the monster was spawned
@@ -202,6 +235,7 @@ public class Debugger extends System {
 
   private static void pause() {
     UIComponent ui = PauseDialog.showPauseDialog(Game.player().orElseThrow());
+    if (ui == null) return;
     pauseMenu = ui.dialogContext().ownerEntity();
   }
 
@@ -236,6 +270,26 @@ public class Debugger extends System {
     Game.allTiles(LevelElement.DOOR).forEach(door -> ((DoorTile) door).open());
   }
 
+  private static void executeActions() {
+    for (Runnable action : actions) {
+      action.run();
+    }
+  }
+
+  /** Clears the debug actions. */
+  public static void clearActions() {
+    actions.clear();
+  }
+
+  /**
+   * Adds a debug action.
+   *
+   * @param action The action to add
+   */
+  public static void addAction(Runnable action) {
+    actions.add(action);
+  }
+
   @Override
   public void stop() {
     // Cant be stopped
@@ -250,15 +304,8 @@ public class Debugger extends System {
       Debugger.ZOOM_CAMERA(-0.2f);
     if (InputManager.isKeyJustPressed(KeyboardConfig.DEBUG_ZOOM_IN.value()))
       Debugger.ZOOM_CAMERA(0.2f);
-
     if (InputManager.isKeyJustPressed(KeyboardConfig.DEBUG_TELEPORT_TO_CURSOR.value()))
       Debugger.TELEPORT_TO_CURSOR();
-    if (InputManager.isKeyJustPressed(KeyboardConfig.DEBUG_TELEPORT_TO_END.value()))
-      Debugger.TELEPORT_TO_END();
-    if (InputManager.isKeyJustPressed(KeyboardConfig.DEBUG_TELEPORT_TO_START.value()))
-      Debugger.TELEPORT_TO_START();
-    if (InputManager.isKeyJustPressed(KeyboardConfig.DEBUG_TELEPORT_ON_END.value()))
-      Debugger.LOAD_NEXT_LEVEL();
     if (InputManager.isKeyJustPressed(KeyboardConfig.DEBUG_SPAWN_MONSTER.value())
         && !LevelEditorSystem.active()) Debugger.SPAWN_MONSTER_ON_CURSOR();
     if (InputManager.isKeyJustPressed(KeyboardConfig.DEBUG_OPEN_DOORS.value()))
@@ -267,8 +314,9 @@ public class Debugger extends System {
       Debugger.PAUSE_GAME();
     if (InputManager.isKeyJustPressed(core.configuration.KeyboardConfig.ADVANCE_FRAME.value()))
       Debugger.ADVANCE_FRAME();
-    if (InputManager.isKeyJustPressed(KeyboardConfig.DEBUG_TOGGLE_HUD.value()))
+    if (InputManager.isKeyJustPressed(KeyboardConfig.DEBUG_TOGGLE_HUD.value())) {
       Game.system(DebugDrawSystem.class, DebugDrawSystem::toggleHUD);
+    }
     if (InputManager.isKeyJustPressed(KeyboardConfig.DEBUG_TOGGLE_SCENE_HUD.value()))
       Game.stage().ifPresent(stage -> stage.setDebugAll(!stage.isDebugAll()));
     if (InputManager.isKeyJustPressed(KeyboardConfig.DEBUG_VALUE_UP.value())) {
@@ -279,7 +327,10 @@ public class Debugger extends System {
       multiPurposeDebugValue -= 1;
       LOGGER.info("multiPurposeDebugValue: " + multiPurposeDebugValue);
     }
-
+    if (InputManager.isKeyJustPressed(KeyboardConfig.DEBUG_ACTION.value())) {
+      LOGGER.info("Executed actions.");
+      executeActions();
+    }
     checkFrameAdvance();
   }
 }

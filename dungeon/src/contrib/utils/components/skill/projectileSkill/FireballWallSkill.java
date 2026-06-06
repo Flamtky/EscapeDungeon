@@ -35,7 +35,7 @@ public class FireballWallSkill extends FireballSkill {
   }
 
   @Override
-  protected void executeSkill(Entity caster) {
+  protected boolean executeSkill(Entity caster) {
     Point targetPos = endPoint();
     Point startPos = start(caster);
     Vector2 direction = targetPos.vectorTo(startPos).normalize();
@@ -51,5 +51,6 @@ public class FireballWallSkill extends FireballSkill {
             caster, startPos.translate(left.scale(i)), targetPos.translate(left.scale(i)));
       }
     }
+    return false;
   }
 }

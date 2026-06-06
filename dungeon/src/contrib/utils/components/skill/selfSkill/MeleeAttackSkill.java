@@ -12,11 +12,10 @@ import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
-import core.utils.Point;
-import core.utils.Tuple;
-import core.utils.Vector2;
+import core.utils.*;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A skill that does a melee attack in the direction the entity is looking, generates a short living
@@ -77,9 +76,11 @@ public class MeleeAttackSkill extends Skill {
    * the game.
    *
    * @param caster The entity using the skill.
+   * @return whether the skill was successfully executed.
    */
   @Override
-  protected void executeSkill(Entity caster) {
+  protected boolean executeSkill(Entity caster) {
+    AtomicBoolean success = new AtomicBoolean(false);
     caster
         .fetch(PositionComponent.class)
         .ifPresent(
@@ -146,6 +147,8 @@ public class MeleeAttackSkill extends Skill {
                     Game.remove(attack);
                   },
                   TIME_ALIVE);
+              success.set(true);
             });
+    return success.get();
   }
 }

@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * Implements an AI that protects a specific entity with a {@link HealthComponent} if the player
@@ -16,7 +16,7 @@ import java.util.function.Function;
  *
  * <p>Entity will stay in fight mode once entered.
  */
-public final class ProtectOnAttack implements Function<Entity, Boolean> {
+public final class ProtectOnAttack implements BiFunction<Entity, Entity, Boolean> {
   private final Collection<Entity> setupProtection;
   private final Set<Entity> toProtect = new HashSet<>();
   boolean setup = true;
@@ -48,10 +48,11 @@ public final class ProtectOnAttack implements Function<Entity, Boolean> {
    * PlayerComponent}, switch to fight mode.
    *
    * @param entity Entity which protects.
+   * @param player The player entity.
    * @return true if entity is in fight mode, false if entity is not.
    */
   @Override
-  public Boolean apply(final Entity entity) {
+  public Boolean apply(final Entity entity, final Entity player) {
     if (setup) doSetup();
     if (isInFight) return true;
 

@@ -111,4 +111,14 @@ public final class EntityIdProvider {
   public static void unregister(int id) {
     USED.remove(id);
   }
+
+  /**
+   * Check if an id is already registered.
+   *
+   * @param entityId the id to check
+   * @return true if the id is registered, false otherwise
+   */
+  public static boolean isRegistered(int entityId) {
+    return USED.containsKey(entityId);
+  }
 }

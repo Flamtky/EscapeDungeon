@@ -1,20 +1,18 @@
 package core.game;
 
-import contrib.entities.CharacterClass;
 import core.configuration.Configuration;
 import core.utils.IVoidFunction;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
  * Offers API functions for the configuration of the game.
  *
- * <p>Includes various settings such as window dimensions, frame rate, full-screen mode, and more.
- * This class contains all the necessary configurations that need to be set before the game starts.
+ * <p>Includes various settings such as window dimensions, game tick rate, borderless windowed
+ * fullscreen mode, and more. This class contains all the necessary configurations that need to be
+ * set before the game starts.
  *
  * <p>Use {@link #userOnFrame(IVoidFunction)}, {@link #userOnSetup(IVoidFunction)}, and {@link
  * #userOnLevelLoad(Consumer)} to configure event callbacks. This is the best way to include your
@@ -30,14 +28,12 @@ public final class PreRunConfiguration {
   private static String NETWORK_SERVER_ADDRESS = "127.0.0.1";
   private static int NETWORK_PORT = 7777;
   private static String USERNAME = "Player";
-  private static CharacterClass MULTIPLAYER_CHARACTER_CLASS = null;
-  private static List<CharacterClass> MULTIPLAYER_CHARACTER_CLASSES =
-      List.of(CharacterClass.WIZARD);
 
   private static int WINDOW_WIDTH = 1280;
   private static int WINDOW_HEIGHT = 720;
-  private static int FRAME_RATE = 30;
-  private static boolean FULL_SCREEN = false;
+  private static int TICK_RATE = 30;
+  private static int MAX_FPS = 0;
+  private static boolean BORDERLESS_WINDOWED_FULLSCREEN = false;
 
   private static boolean RESIZEABLE = true;
   private static String WINDOW_TITLE = "PM-Dungeon";
@@ -85,39 +81,72 @@ public final class PreRunConfiguration {
   }
 
   /**
-   * Gets the frame rate of the game.
+   * Gets the fixed game tick rate.
    *
-   * @return The frame rate of the game.
+   * @return The number of game ticks per second.
    */
-  public static int frameRate() {
-    return FRAME_RATE;
+  public static int tickRate() {
+    return TICK_RATE;
   }
 
   /**
-   * Sets the frame rate of the game.
+   * Sets the fixed game tick rate.
    *
-   * @param frameRate The frame rate of the game.
+   * @param tickRate The number of game ticks per second.
+   * @throws IllegalArgumentException if {@code tickRate} is not positive.
    */
-  public static void frameRate(int frameRate) {
-    FRAME_RATE = frameRate;
+  public static void tickRate(int tickRate) {
+    if (tickRate <= 0) {
+      throw new IllegalArgumentException("Game tick rate must be positive.");
+    }
+    TICK_RATE = tickRate;
   }
 
   /**
-   * Checks if the game is in full-screen mode.
+   * Gets the maximum render FPS.
    *
-   * @return True if the game is in full-screen mode, false otherwise.
+   * <p>A value of {@code 0} means rendering is uncapped.
+   *
+   * @return The maximum render frames per second.
+   */
+  public static int maxFPS() {
+    return MAX_FPS;
+  }
+
+  /**
+   * Sets the maximum render FPS.
+   *
+   * <p>A value of {@code 0} means rendering is uncapped.
+   *
+   * @param maxFPS The maximum render frames per second.
+   * @throws IllegalArgumentException if {@code maxFPS} is negative.
+   */
+  public static void maxFPS(int maxFPS) {
+    if (maxFPS < 0) {
+      throw new IllegalArgumentException("Max FPS must not be negative.");
+    }
+    MAX_FPS = maxFPS;
+  }
+
+  /**
+   * Checks if the game starts in borderless windowed fullscreen mode.
+   *
+   * @return True if the game starts in borderless windowed fullscreen mode, false otherwise.
    */
   public static boolean fullScreen() {
-    return FULL_SCREEN;
+    return BORDERLESS_WINDOWED_FULLSCREEN;
   }
 
   /**
-   * Sets whether the game should be in full-screen mode.
+   * Sets whether the game should start in borderless windowed fullscreen mode.
    *
-   * @param fullscreen True to enable full-screen mode, false otherwise.
+   * <p>This method keeps its historical name for API compatibility. It no longer requests exclusive
+   * fullscreen mode.
+   *
+   * @param fullscreen True to enable borderless windowed fullscreen mode, false otherwise.
    */
   public static void fullScreen(boolean fullscreen) {
-    FULL_SCREEN = fullscreen;
+    BORDERLESS_WINDOWED_FULLSCREEN = fullscreen;
   }
 
   /**
@@ -372,48 +401,5 @@ public final class PreRunConfiguration {
     } else {
       throw new IllegalArgumentException("Username must not be empty or contain underscores.");
     }
-  }
-
-  /**
-   * Gets the requested character class for multiplayer connections.
-   *
-   * @return the requested character class, or an empty {@link Optional} to use the server default
-   */
-  public static Optional<CharacterClass> multiplayerCharacterClass() {
-    return Optional.ofNullable(MULTIPLAYER_CHARACTER_CLASS);
-  }
-
-  /**
-   * Sets the requested character class for multiplayer connections.
-   *
-   * @param characterClass the requested character class
-   */
-  public static void multiplayerCharacterClass(CharacterClass characterClass) {
-    MULTIPLAYER_CHARACTER_CLASS = characterClass;
-  }
-
-  /**
-   * Gets the fallback character classes used by multiplayer servers for clients without an explicit
-   * class selection.
-   *
-   * @return the ordered fallback character classes used for round-robin assignment
-   */
-  public static List<CharacterClass> multiplayerCharacterClasses() {
-    return MULTIPLAYER_CHARACTER_CLASSES;
-  }
-
-  /**
-   * Sets the fallback character classes used by multiplayer servers for clients without an explicit
-   * class selection.
-   *
-   * @param characterClasses the ordered fallback character classes used for round-robin assignment
-   * @throws IllegalArgumentException if the list is null or empty
-   */
-  public static void multiplayerCharacterClasses(CharacterClass... characterClasses) {
-    if (characterClasses == null || characterClasses.length == 0) {
-      throw new IllegalArgumentException("characterClasses must not be null or empty.");
-    }
-
-    MULTIPLAYER_CHARACTER_CLASSES = List.of(characterClasses);
   }
 }

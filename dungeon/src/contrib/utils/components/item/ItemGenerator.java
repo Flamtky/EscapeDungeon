@@ -2,16 +2,12 @@ package contrib.utils.components.item;
 
 import contrib.item.HealthPotionType;
 import contrib.item.Item;
-import contrib.item.ItemRegistry;
+import contrib.item.concreteItem.ItemDefault;
 import contrib.item.concreteItem.ItemPotionHealth;
 import core.utils.logging.DungeonLogger;
 import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -46,7 +42,8 @@ public class ItemGenerator {
    * <p>For {@link ItemPotionHealth}, the default health potion is replaced with a random health
    * potion using {@link HealthPotionType#randomType()}.
    *
-   * @return An ItemGenerator with all {@link ItemRegistry#entries()} added with a weight of 1.
+   * @return An ItemGenerator with all {@link Item#registeredItems()} (except {@link ItemDefault})
+   *     added with a weight of 1.
    */
   public static ItemGenerator defaultItemGenerator() {
     ItemGenerator ig = new ItemGenerator();
@@ -66,7 +63,9 @@ public class ItemGenerator {
   }
 
   private void addAllItems() {
-    List<Class<? extends Item>> itemClasses = new ArrayList<>(ItemRegistry.entries().values());
+    List<Class<? extends Item>> itemClasses = new ArrayList<>(Item.registeredItems().values());
+    itemClasses.remove(ItemDefault.class); // Remove the default item
+
     // Replace the default health potion with a random health potion
     itemClasses.remove(ItemPotionHealth.class);
     addItem(() -> new ItemPotionHealth(HealthPotionType.randomType()), 1.0);

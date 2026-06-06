@@ -7,6 +7,7 @@ import contrib.hud.UIUtils;
 import contrib.hud.crafting.CraftingGUI;
 import contrib.hud.inventory.InventoryGUI;
 import contrib.modules.keypad.KeypadUI;
+import contrib.modules.puzzle.PuzzleDialog;
 import contrib.utils.AttributeBarUtil;
 import contrib.utils.components.showImage.ShowImageUI;
 import core.Entity;
@@ -15,8 +16,10 @@ import core.game.PreRunConfiguration;
 import core.network.messages.c2s.DialogResponseMessage;
 import core.utils.IVoidFunction;
 import core.utils.logging.DungeonLogger;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -60,7 +63,9 @@ public class DialogFactory {
     register(DialogType.DefaultTypes.KEYPAD, KeypadUI::build);
     register(DialogType.DefaultTypes.PROGRESS_BAR, AttributeBarUtil::buildProgressBar);
     register(DialogType.DefaultTypes.PAUSE_MENU, PauseDialog::build);
-    LOGGER.debug("Registered built-in dialog types");
+    register(DialogType.DefaultTypes.MULTIPLE_CHOICE, MultipleChoiceDialog::build);
+    register(DialogType.DefaultTypes.DIALOG_DIALOG, DialogDialog::build);
+    register(DialogType.DefaultTypes.PUZZLE, PuzzleDialog::build);
   }
 
   /**
@@ -292,12 +297,41 @@ public class DialogFactory {
       IVoidFunction onConfirm,
       String confirmLabel,
       int... targetEntityIds) {
+    return showTextDialog(text, title, onConfirm, confirmLabel, null, null, targetEntityIds);
+  }
+
+  /**
+   * Shows a dialog for a text message with configurable content size. Similar to an OK dialog, but
+   * designed for bigger texts and images that need scrolling.
+   *
+   * @param text The message to display in the dialog body
+   * @param title The dialog window title
+   * @param onConfirm Callback executed when the confirm button is pressed
+   * @param confirmLabel Label for the confirm button (uses default if null)
+   * @param contentWidth Preferred scrollable content width, or null for default
+   * @param contentHeight Maximum scrollable content height, or null for automatic height up to 80%
+   *     of the current screen height
+   * @param targetEntityIds The target entity IDs for which the dialog is displayed
+   * @return The {@link UIComponent} containing the dialog
+   */
+  public static UIComponent showTextDialog(
+      String text,
+      String title,
+      IVoidFunction onConfirm,
+      String confirmLabel,
+      Float contentWidth,
+      Float contentHeight,
+      int... targetEntityIds) {
     DialogContext.Builder builder =
         DialogContext.builder()
             .type(DialogType.DefaultTypes.TEXT)
             .put(DialogContextKeys.TITLE, title)
             .put(DialogContextKeys.MESSAGE, text);
     if (confirmLabel != null) builder.put(DialogContextKeys.CONFIRM_LABEL, confirmLabel);
+    if (contentWidth != null)
+      builder.put(DialogContextKeys.TEXT_DIALOG_CONTENT_WIDTH, contentWidth);
+    if (contentHeight != null)
+      builder.put(DialogContextKeys.TEXT_DIALOG_CONTENT_HEIGHT, contentHeight);
 
     UIComponent ui = show(builder.build(), targetEntityIds);
 
@@ -334,7 +368,7 @@ public class DialogFactory {
       String inputPlaceholder,
       String confirmLabel,
       String cancelLabel,
-      Consumer<DialogResponseMessage.Payload> onConfirm,
+      Consumer<java.io.Serializable> onConfirm,
       IVoidFunction onCancel,
       int... targetEntityIds) {
     Objects.requireNonNull(onConfirm, "onConfirm callback cannot be null");
@@ -364,6 +398,168 @@ public class DialogFactory {
           onCancel.execute();
           UIUtils.closeDialog(ui);
         });
+
+    return ui;
+  }
+
+  /**
+   * Shows a multiple choice dialog with a script-driven question (see {@link DialogScript} for the
+   * supported {@code [speaker]} / {@code [speaker clear]} / {@code [p]} markup) and a list of
+   * selectable options.
+   *
+   * <p>The {@code dialog} string is parsed exactly like for {@link #showDialogDialog}: it can
+   * contain multiple speaker pages separated by {@code [p]} and {@code [speaker ...]} tags. The
+   * selectable options appear once the script has finished playing and the last page's typewriter
+   * has fully revealed its text.
+   *
+   * @param dialog The dialog script (non-blank). May contain {@code [speaker]}/{@code [p]} markup.
+   * @param title The dialog window title (may be blank for no title)
+   * @param options The list of {@link ChoiceOption}s to choose from
+   * @param canCancel Whether to append a cancel option
+   * @param onSelected Callback receiving the selected option value as a {@link
+   *     DialogResponseMessage.Payload}
+   * @param onCancel Callback executed when cancel is pressed (only relevant if canCancel is true)
+   * @param targetEntityIds The target entity IDs for which the dialog is displayed
+   * @return The {@link UIComponent} containing the dialog
+   */
+  public static UIComponent showMultipleChoiceDialog(
+      String dialog,
+      String title,
+      List<ChoiceOption> options,
+      boolean canCancel,
+      Consumer<DialogResponseMessage.Payload> onSelected,
+      IVoidFunction onCancel,
+      int... targetEntityIds) {
+    return showMultipleChoiceDialog(
+        dialog, title, options, canCancel, onSelected, onCancel, false, targetEntityIds);
+  }
+
+  /**
+   * Shows a multiple choice dialog with optional Numpad font-size controls for the speaker text.
+   *
+   * @param dialog The non-empty dialog script.
+   * @param title The title shown above the dialog content.
+   * @param options The selectable dialog options.
+   * @param canCancel Whether a cancel option should be shown.
+   * @param onSelected Callback executed when an option is selected.
+   * @param onCancel Callback executed when the dialog is cancelled.
+   * @param textFontSizeControls Whether Numpad Plus/Minus resize the dialog script font.
+   * @param targetEntityIds The target entity IDs for which the dialog is displayed.
+   * @return The {@link UIComponent} containing the dialog.
+   */
+  public static UIComponent showMultipleChoiceDialog(
+      String dialog,
+      String title,
+      List<ChoiceOption> options,
+      boolean canCancel,
+      Consumer<DialogResponseMessage.Payload> onSelected,
+      IVoidFunction onCancel,
+      boolean textFontSizeControls,
+      int... targetEntityIds) {
+    Objects.requireNonNull(dialog, "dialog string cannot be null");
+    if (dialog.isBlank()) {
+      throw new IllegalArgumentException("dialog string cannot be blank");
+    }
+    Objects.requireNonNull(options, "options list cannot be null");
+    Objects.requireNonNull(onSelected, "onSelected callback cannot be null");
+
+    DialogContext.Builder builder =
+        DialogContext.builder()
+            .type(DialogType.DefaultTypes.MULTIPLE_CHOICE)
+            .put(DialogContextKeys.TITLE, title)
+            .put(DialogContextKeys.DIALOG, dialog)
+            .put(DialogContextKeys.OPTIONS, new ArrayList<>(options))
+            .put(DialogContextKeys.CAN_CANCEL, canCancel)
+            .put(DialogContextKeys.DIALOG_TEXT_FONT_SIZE_CONTROLS, textFontSizeControls);
+
+    UIComponent ui = show(builder.build(), targetEntityIds);
+
+    ui.registerCallback(
+        DialogContextKeys.ON_OPTION_SELECTED,
+        data -> {
+          if (data instanceof DialogResponseMessage.Payload payload) {
+            onSelected.accept(payload);
+          } else if (data != null) {
+            onSelected.accept(new DialogResponseMessage.CustomPayload(data));
+          } else {
+            onSelected.accept(null);
+          }
+          UIUtils.closeDialog(ui);
+        });
+
+    if (canCancel && onCancel != null) {
+      ui.registerCallback(
+          DialogContextKeys.ON_CANCEL,
+          data -> {
+            onCancel.execute();
+            UIUtils.closeDialog(ui);
+          });
+    }
+    return ui;
+  }
+
+  /**
+   * Shows a sequenced speaker dialogue (NPC dialog) from a single script string.
+   *
+   * <p>The {@code dialog} string is split into pages by the {@code [p]} tag. Each page may begin
+   * with an optional {@code [speaker img=<path> name="<displayName>"]} tag that sets the speaker
+   * portrait and display name for that page. If a page omits the tag, it inherits the speaker from
+   * the previous page (the very first page without a tag has no speaker, in which case its
+   * portrait/name column is omitted entirely). If a page includes a speaker tag, unspecified
+   * speaker parameters on that tag fall back to a default placeholder image and no name. The
+   * special form {@code [speaker clear]} resets the speaker to "no speaker" for this and subsequent
+   * pages until another {@code [speaker]} tag is seen. Pages are shown one after another. The user
+   * advances by clicking anywhere on the dialog or pressing the configured interact key. While a
+   * typewriter reveal is still running, the advance instead skips to the end of the current text.
+   * After the last page has been confirmed, {@code onFinished} is invoked and the dialog is closed.
+   *
+   * @param dialog The non-empty dialog script.
+   * @param onFinished Callback executed after the last page has been confirmed.
+   * @param targetEntityIds The target entity IDs for which the dialog is displayed.
+   * @return The {@link UIComponent} containing the dialog.
+   */
+  public static UIComponent showDialogDialog(
+      String dialog, IVoidFunction onFinished, int... targetEntityIds) {
+    return showDialogDialog(dialog, onFinished, false, targetEntityIds);
+  }
+
+  /**
+   * Shows a sequenced speaker dialogue with optional Numpad font-size controls for the speaker
+   * text.
+   *
+   * @param dialog The non-empty dialog script.
+   * @param onFinished Callback executed after the last page has been confirmed.
+   * @param textFontSizeControls Whether Numpad Plus/Minus resize the dialog script font.
+   * @param targetEntityIds The target entity IDs for which the dialog is displayed.
+   * @return The {@link UIComponent} containing the dialog.
+   */
+  public static UIComponent showDialogDialog(
+      String dialog,
+      IVoidFunction onFinished,
+      boolean textFontSizeControls,
+      int... targetEntityIds) {
+    Objects.requireNonNull(dialog, "dialog string cannot be null");
+    if (dialog.isBlank()) {
+      throw new IllegalArgumentException("dialog string cannot be blank");
+    }
+    Objects.requireNonNull(onFinished, "onFinished callback cannot be null");
+
+    DialogContext ctx =
+        DialogContext.builder()
+            .type(DialogType.DefaultTypes.DIALOG_DIALOG)
+            .put(DialogContextKeys.DIALOG, dialog)
+            .put(DialogContextKeys.DIALOG_TEXT_FONT_SIZE_CONTROLS, textFontSizeControls)
+            .build();
+
+    UIComponent ui = show(ctx, targetEntityIds);
+
+    ui.registerCallback(
+        DialogContextKeys.ON_CONFIRM,
+        data -> {
+          onFinished.execute();
+          UIUtils.closeDialog(ui);
+        });
+    ui.registerCallback(DialogContextKeys.ON_CLOSE, data -> onFinished.execute());
 
     return ui;
   }

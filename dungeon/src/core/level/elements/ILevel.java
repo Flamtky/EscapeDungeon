@@ -7,31 +7,21 @@ import com.badlogic.gdx.ai.pfa.indexed.IndexedAStarPathFinder;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedGraph;
 import com.badlogic.gdx.utils.Array;
 import contrib.entities.deco.Deco;
+import contrib.utils.EntityUtils;
 import core.Entity;
-import core.components.PositionComponent;
 import core.level.DungeonLevel;
 import core.level.Tile;
 import core.level.elements.astar.TileHeuristic;
-import core.level.elements.tile.DoorTile;
-import core.level.elements.tile.ExitTile;
-import core.level.elements.tile.FloorTile;
-import core.level.elements.tile.HoleTile;
-import core.level.elements.tile.PitTile;
-import core.level.elements.tile.SkipTile;
-import core.level.elements.tile.TileFactory;
-import core.level.elements.tile.WallTile;
+import core.level.elements.tile.*;
 import core.level.utils.Coordinate;
 import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
+import core.level.utils.TileTextureFactory;
 import core.utils.Point;
 import core.utils.Tuple;
 import core.utils.Vector2;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -118,6 +108,23 @@ public interface ILevel extends IndexedGraph<Tile> {
    * @param checkTile The tile for which connections to neighbors are added.
    */
   void addConnectionsToNeighbours(final Tile checkTile);
+
+  /** Refreshes the textures of all tiles in the level. */
+  default void refreshLevelTextures() {
+    LevelElement[][] levelElements = new LevelElement[layout().length][layout()[0].length];
+    for (int y = 0; y < layout().length; y++) {
+      for (int x = 0; x < layout()[0].length; x++) {
+        levelElements[y][x] = layout()[y][x].levelElement();
+      }
+    }
+    for (Tile[] row : layout()) {
+      for (Tile tile : row) {
+        tile.texturePath(
+            TileTextureFactory.findTexturePath(
+                tile, this.layout(), tile.levelElement(), levelElements));
+      }
+    }
+  }
 
   /**
    * Retrieves a random tile of the specified type from the level.
@@ -315,19 +322,15 @@ public interface ILevel extends IndexedGraph<Tile> {
   /**
    * Retrieves the tile on which the given entity is standing.
    *
-   * <p>The method fetches the position component of the entity using {@link Entity#fetch(Class)}
-   * and looks up the tile at that position. If the entity has no {@link PositionComponent} or the
-   * position is out of bounds / has no tile, an empty {@link Optional} is returned.
+   * <p>The method uses {@link EntityUtils#getPosition(Entity)} to get the position of the entity
+   * and then calls {@link #tileAt(Coordinate)} to retrieve the tile at that position.
    *
    * @param entity The entity for which to retrieve the tile.
    * @return An {@link Optional} containing the tile at the entity's position, or empty if
    *     unavailable.
    */
   default Optional<Tile> tileAtEntity(final Entity entity) {
-    return entity
-        .fetch(PositionComponent.class)
-        .map(PositionComponent::position)
-        .flatMap(this::tileAt);
+    return tileAt(EntityUtils.getPosition(entity));
   }
 
   /**
@@ -419,4 +422,18 @@ public interface ILevel extends IndexedGraph<Tile> {
    * @return A list of tuples containing decorations and their positions.
    */
   List<Tuple<Deco, Point>> decorations();
+
+  /**
+   * Returns whether the level is fully loaded.
+   *
+   * @return true if the level is loaded, false otherwise.
+   */
+  boolean finishedLoading();
+
+  /**
+   * Sets the loading status of the level.
+   *
+   * @param finishedLoading true if the level is loaded, false otherwise.
+   */
+  void finishedLoading(boolean finishedLoading);
 }

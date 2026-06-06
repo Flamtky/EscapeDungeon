@@ -28,6 +28,36 @@ tasks.register('runDemoRoom', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 
+tasks.register('runMAsingleplayer', JavaExec) {
+    group 'MA'
+    mainClass = 'starter.MASinglePlayer'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+tasks.register('runMAReplay', JavaExec) {
+    group 'MA'
+    mainClass = 'starter.MAReplay'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+tasks.register('runLevelEditor', JavaExec) {
+    group 'starter'
+    mainClass = 'starter.LevelEditorStarter'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+tasks.register('runMAclient', JavaExec) {
+    group 'MA'
+    mainClass = 'starter.MAClient'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+tasks.register('runMAserver', JavaExec) {
+    group 'MA'
+    mainClass = 'starter.MAServer'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 tasks.register('runSpriteTestRoom', JavaExec) {
     group 'starter'
     mainClass = 'starter.SpriteTestRoom'
@@ -37,6 +67,12 @@ tasks.register('runSpriteTestRoom', JavaExec) {
 tasks.register('runMushRoom', JavaExec) {
     group 'starter'
     mainClass = 'starter.MushRoom'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+tasks.register('runPresentationDemo', JavaExec) {
+    group 'starter'
+    mainClass = 'starter.PresentationDemo'
     classpath = sourceSets.main.runtimeClasspath
 }
 

@@ -73,6 +73,15 @@ public final class NetworkUtils {
   }
 
   /**
+   * Returns whether the current runtime is connected as a network client.
+   *
+   * @return true if this runtime is a connected client
+   */
+  public static boolean isNetworkClient() {
+    return !Game.network().isServer() && Game.network().isConnected();
+  }
+
+  /**
    * Gets all server sessions by accessing ServerRuntime through NettyNetworkHandler.
    *
    * @return map of client IDs to sessions or an empty map if server not initialized
@@ -87,14 +96,5 @@ public final class NetworkUtils {
         .map(ServerRuntime::transport)
         .map(ServerTransport::clientIdToSessionMap)
         .orElse(Map.of());
-  }
-
-  /**
-   * Checks if the current instance is a network client that should use network callbacks.
-   *
-   * @return true if we're a client connected to a server
-   */
-  public static boolean isNetworkClient() {
-    return !Game.network().isServer() && Game.network().isConnected();
   }
 }

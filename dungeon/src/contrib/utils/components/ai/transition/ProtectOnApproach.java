@@ -2,14 +2,14 @@ package contrib.utils.components.ai.transition;
 
 import core.Entity;
 import core.level.utils.LevelUtils;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * Implements an AI that protects an entity if the player is in the given range.
  *
  * <p>Entity will stay in fight mode once entered.
  */
-public final class ProtectOnApproach implements Function<Entity, Boolean> {
+public final class ProtectOnApproach implements BiFunction<Entity, Entity, Boolean> {
 
   private final float range;
   private final Entity toProtect;
@@ -31,12 +31,13 @@ public final class ProtectOnApproach implements Function<Entity, Boolean> {
    * entity. Once the entity enters fight mode, it stays in that state permanently.
    *
    * @param entity Entity that is protecting.
-   * @return true when the entity is in fight mode, else false.
+   * @param player The player entity.
+   * @return Optional of player if in fight mode, empty otherwise.
    */
   @Override
-  public Boolean apply(final Entity entity) {
+  public Boolean apply(final Entity entity, final Entity player) {
     if (!isInFight) {
-      isInFight = LevelUtils.playerInRange(toProtect, range);
+      isInFight = LevelUtils.entityInRange(toProtect, player, range);
     }
     return isInFight;
   }

@@ -15,12 +15,7 @@ import core.network.server.DialogTracker;
 import core.utils.Tuple;
 import core.utils.components.MissingComponentException;
 import core.utils.logging.DungeonLogger;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The basic handling of any UIComponent. Adds them to the Stage, updates the Stage each Frame to
@@ -86,25 +81,12 @@ public final class HudSystem extends System {
       remove.remove();
     }
     entityUIComponentMap.remove(entity);
-    int[] targets =
-        entity.fetch(UIComponent.class).map(UIComponent::targetEntityIds).orElse(new int[0]);
-
-    if (targets.length == 0) {
-      // if no specific targets, decrease for all players
-      Game.allPlayers()
-          .forEach(
-              playerEntity -> {
-                playerEntity
-                    .fetch(PlayerComponent.class)
-                    .ifPresent(PlayerComponent::decrementOpenDialogs);
-              });
-    } else {
-      for (Integer targetId : targets) {
-        Optional<Entity> target = Game.findEntityById(targetId);
-        target
-            .flatMap(t -> t.fetch(PlayerComponent.class))
-            .ifPresent(PlayerComponent::decrementOpenDialogs);
-      }
+    for (Integer targetId :
+        entity.fetch(UIComponent.class).map(UIComponent::targetEntityIds).orElse(new int[0])) {
+      Optional<Entity> target = Game.findEntityById(targetId);
+      target
+          .flatMap(t -> t.fetch(PlayerComponent.class))
+          .ifPresent(PlayerComponent::decrementOpenDialogs);
     }
   }
 

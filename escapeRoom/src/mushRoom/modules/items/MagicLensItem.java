@@ -1,7 +1,6 @@
 package mushRoom.modules.items;
 
 import contrib.components.InventoryComponent;
-import contrib.entities.HeroController;
 import contrib.item.Item;
 import core.Entity;
 import core.systems.DrawSystem;
@@ -72,6 +71,7 @@ public class MagicLensItem extends Item {
               if (!ic.hasItem(MagicLensItem.class)) {
                 return;
               }
+
               DrawSystem ds = DrawSystem.getInstance();
               if (ds.entityDepthShaders(DepthLayer.Player.depth() - 10).get("magicLens")
                   instanceof MagicLensLayerShader mlls) {
@@ -83,8 +83,6 @@ public class MagicLensItem extends Item {
                   Sounds.MAGIC_LENS_ACTIVATED.play();
                 }
               }
-
-              HeroController.closeInventory(player);
             });
   }
 }

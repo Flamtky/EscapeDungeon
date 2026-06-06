@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -45,6 +47,9 @@ public final class EntitySystemMapper {
   private final Lock readLock = lock.readLock();
   private final Lock writeLock = lock.writeLock();
 
+  /** Cached hash code of filterRules for faster lookups. */
+  private final int filterRulesHashCode;
+
   /**
    * Creates a new EntitySystemMapper with the given filter rules.
    *
@@ -53,6 +58,7 @@ public final class EntitySystemMapper {
    */
   public EntitySystemMapper(final Set<Class<? extends Component>> filterRules) {
     this.filterRules = filterRules;
+    this.filterRulesHashCode = filterRules.hashCode();
     entities = new HashSet<>();
     systems = new HashSet<>();
   }
@@ -60,6 +66,7 @@ public final class EntitySystemMapper {
   /** Creates a new EntitySystemMapper with no filter rules. */
   public EntitySystemMapper() {
     filterRules = new HashSet<>();
+    this.filterRulesHashCode = filterRules.hashCode();
     entities = new HashSet<>();
     systems = new HashSet<>();
   }
@@ -210,15 +217,28 @@ public final class EntitySystemMapper {
    */
   @Override
   public boolean equals(final Object o) {
-    readLock.lock();
-    try {
-      if (o == this) return true;
-      else if (o instanceof EntitySystemMapper)
-        return filterRules.equals(((EntitySystemMapper) o).filterRules);
-      return false;
-    } finally {
-      readLock.unlock();
+    if (o == this) return true;
+    if (o instanceof EntitySystemMapper other) {
+      // Fast path: check hash codes first
+      if (filterRulesHashCode != other.filterRulesHashCode) return false;
+      readLock.lock();
+      try {
+        return filterRules.equals(other.filterRules);
+      } finally {
+        readLock.unlock();
+      }
     }
+    return false;
+  }
+
+  /**
+   * Returns the hash code of this EntitySystemMapper based on filterRules.
+   *
+   * @return the hash code of filterRules.
+   */
+  @Override
+  public int hashCode() {
+    return filterRulesHashCode;
   }
 
   /**
@@ -231,6 +251,8 @@ public final class EntitySystemMapper {
    *     otherwise.
    */
   public boolean equals(final Set<Class<? extends Component>> o) {
+    // Fast path: check hash codes first
+    if (o.hashCode() != filterRulesHashCode) return false;
     readLock.lock();
     try {
       return o.equals(filterRules);
@@ -263,6 +285,35 @@ public final class EntitySystemMapper {
     readLock.lock();
     try {
       return systems.contains(system);
+    } finally {
+      readLock.unlock();
+    }
+  }
+
+  /**
+   * Performs the given action for each entity in the EntitySystemMapper.
+   *
+   * @param consumer the action to be performed for each entity
+   */
+  public void forEach(Consumer<Entity> consumer) {
+    readLock.lock();
+    try {
+      entities.forEach(consumer);
+    } finally {
+      readLock.unlock();
+    }
+  }
+
+  /**
+   * Checks if any entity in the EntitySystemMapper matches the given predicate.
+   *
+   * @param predicate the predicate to test entities against
+   * @return true if any entity matches the predicate, false otherwise
+   */
+  public boolean anyMatch(Predicate<Entity> predicate) {
+    readLock.lock();
+    try {
+      return entities.stream().anyMatch(predicate);
     } finally {
       readLock.unlock();
     }

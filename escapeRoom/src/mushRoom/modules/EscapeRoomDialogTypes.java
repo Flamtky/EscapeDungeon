@@ -9,10 +9,18 @@ import contrib.hud.dialogs.DialogType;
  * types specific to the Escape Room context.
  */
 public enum EscapeRoomDialogTypes implements DialogType {
-  /** A simple {@link hint.HintLogDialog} dialog type. */
-  SIMPLE_HINT("simple_hint"),
   /** The {@link mushRoom.modules.journal.JournalUI} dialog type. */
-  JOURNAL("journal");
+  JOURNAL("journal"),
+  /** The {@link mushRoom.modules.journal.CraftingBookUI} dialog type. */
+  CRAFTING_BOOK("crafting_book"),
+  /** The {@link mushRoom.modules.lockpick.LockPickUI} dialog type. */
+  LOCKPICK("lockpick"),
+  /** The {@link mushRoom.modules.qte.FollowingIndicatorUI} dialog type. */
+  FOLLOWING_INDICATOR("following_indicator"),
+  /** The {@link mushRoom.modules.slides.SlideDeckDialog} dialog type. */
+  SLIDE_DECK("slide_deck"),
+  /** The {@link tools.timer.TimerUI} dialog type. */
+  TIMER("timer");
 
   private final String typeName;
 

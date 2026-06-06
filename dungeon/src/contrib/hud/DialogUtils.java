@@ -17,6 +17,7 @@ import core.utils.IVoidFunction;
  * @see DialogFactory
  */
 public class DialogUtils {
+  private static final float DEFAULT_IMAGE_MAX_SIZE = 0.85f;
 
   /**
    * Displays a text popup.
@@ -55,18 +56,24 @@ public class DialogUtils {
    *
    * @param imagePath the path to the image to display
    * @param speed the transition speed for showing and hiding the image
+   * @param maxSize the maximum image size relative to the screen's largest fitting axis
    * @param onClose the callback function to execute when the popup is closed
    * @param targetIds the target entity IDs for which the popup is displayed
    * @see ShowImageUI
    */
   public static void showImagePopUp(
-      String imagePath, TransitionSpeed speed, IVoidFunction onClose, int... targetIds) {
+      String imagePath,
+      TransitionSpeed speed,
+      float maxSize,
+      IVoidFunction onClose,
+      int... targetIds) {
     Entity dialogEntity = new Entity();
     DialogContext context =
         DialogContext.builder()
             .type(DialogType.DefaultTypes.IMAGE)
             .put(DialogContextKeys.IMAGE, imagePath)
             .put(DialogContextKeys.IMAGE_TRANSITION_SPEED, speed)
+            .put(DialogContextKeys.IMAGE_MAX_SIZE, maxSize)
             .put(DialogContextKeys.OWNER_ENTITY, dialogEntity.id())
             .build();
     UIComponent ui = new UIComponent(context, true, true, targetIds);
@@ -75,6 +82,20 @@ public class DialogUtils {
 
     dialogEntity.add(ui);
     Game.add(dialogEntity);
+  }
+
+  /**
+   * Displays an image in a popup with a specified transition speed and an optional close callback.
+   *
+   * @param imagePath the path to the image to display
+   * @param speed the transition speed for showing and hiding the image
+   * @param onClose the callback function to execute when the popup is closed
+   * @param targetIds the target entity IDs for which the popup is displayed
+   * @see ShowImageUI
+   */
+  public static void showImagePopUp(
+      String imagePath, TransitionSpeed speed, IVoidFunction onClose, int... targetIds) {
+    showImagePopUp(imagePath, speed, DEFAULT_IMAGE_MAX_SIZE, onClose, targetIds);
   }
 
   /**

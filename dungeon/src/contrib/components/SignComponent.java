@@ -1,6 +1,6 @@
 package contrib.components;
 
-import contrib.hud.dialogs.DialogFactory;
+import contrib.hud.dialogs.*;
 import core.Component;
 import core.Entity;
 import core.utils.Point;

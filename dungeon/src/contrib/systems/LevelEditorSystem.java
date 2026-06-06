@@ -6,14 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import contrib.components.HealthComponent;
-import contrib.utils.systems.levelEditor.DecoMode;
-import contrib.utils.systems.levelEditor.LevelBoundsMode;
-import contrib.utils.systems.levelEditor.LevelEditorMode;
-import contrib.utils.systems.levelEditor.PointMode;
-import contrib.utils.systems.levelEditor.SaveMode;
-import contrib.utils.systems.levelEditor.ShiftLevelMode;
-import contrib.utils.systems.levelEditor.StartTilesMode;
-import contrib.utils.systems.levelEditor.TilesMode;
+import contrib.utils.systems.levelEditor.*;
 import core.Entity;
 import core.Game;
 import core.System;
@@ -22,9 +15,8 @@ import core.components.PlayerComponent;
 import core.level.DungeonLevel;
 import core.level.Tile;
 import core.systems.DrawSystem;
-import core.systems.input.InputManager;
-import core.utils.FontHelper;
-import core.utils.Point;
+import core.systems.InputManager;
+import core.utils.*;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.draw.shader.OutlineShader;
 import core.utils.components.draw.shader.PassthroughShader;
@@ -48,7 +40,6 @@ public class LevelEditorSystem extends System {
   private static boolean internalStopped = false;
   private static boolean active = false;
   private static final int TOGGLE_ACTIVE = Input.Keys.F4;
-  private static String pathToLevels = "";
 
   private static final int TOGGLE_DEBUG_SHADER = Input.Keys.SPACE;
   private boolean debugShaderActive = false;
@@ -69,19 +60,9 @@ public class LevelEditorSystem extends System {
   private static float feedbackMessageTimer = 0.0f;
   private static final float FEEDBACK_MESSAGE_DURATION = 3.0f; // seconds
 
-  private static Map<Integer, InputComponent.InputData> playerClallbacks = null;
+  private static Map<Integer, InputComponent.InputData> playerCallbacks = null;
 
-  /**
-   * Creates a new LevelEditorSystem.
-   *
-   * @param pathToLevels The folder in which the file is placed this system.
-   */
-  public LevelEditorSystem(String pathToLevels) {
-    super();
-    LevelEditorSystem.pathToLevels = pathToLevels;
-  }
-
-  /** Creates a new LevelEditorSystem. */
+  /** Constructs a new LevelEditorSystem. */
   public LevelEditorSystem() {
     super();
   }
@@ -102,51 +83,59 @@ public class LevelEditorSystem extends System {
    */
   public static void active(boolean active) {
     LevelEditorSystem.active = active;
-    Entity player = Game.player().orElseThrow();
+
     if (active) {
+      Game.player().ifPresent(LevelEditorSystem::removePlayerCallbacks);
+      currentModeInstance.onEnter();
+      return;
+    }
+
+    Game.player()
+        .ifPresentOrElse(LevelEditorSystem::restorePlayerCallbacks, () -> playerCallbacks = null);
+    currentModeInstance.onExit();
+  }
+
+  private static void restorePlayerCallbacks(Entity player) {
+    if (playerCallbacks != null) {
       player
           .fetch(InputComponent.class)
           .ifPresent(
               pc -> {
-                playerClallbacks = pc.callbacks();
-                pc.removeCallback(LevelEditorMode.PRIMARY_UP);
-                pc.removeCallback(LevelEditorMode.PRIMARY_DOWN);
-                pc.removeCallback(LevelEditorMode.SECONDARY_UP);
-                pc.removeCallback(LevelEditorMode.SECONDARY_DOWN);
-                pc.removeCallback(LevelEditorMode.TERTIARY);
-                pc.removeCallback(Input.Buttons.LEFT);
-                pc.removeCallback(Input.Buttons.RIGHT);
+                playerCallbacks.forEach(
+                    ((key, value) ->
+                        pc.registerCallback(
+                            key, value.callback(), value.repeat(), value.pauseable())));
               });
-      player
-          .fetch(HealthComponent.class)
-          .ifPresent(
-              hc -> {
-                hc.godMode(true);
-              });
-      if (currentModeInstance != null) {
-        currentModeInstance.onEnter();
-      }
-    } else {
-      if (playerClallbacks != null) {
-        player
-            .fetch(InputComponent.class)
-            .ifPresent(
-                pc -> {
-                  playerClallbacks.forEach(
-                      ((key, value) ->
-                          pc.registerCallback(
-                              key, value.callback(), value.repeat(), value.pauseable())));
-                });
-        playerClallbacks = null;
-        player
-            .fetch(HealthComponent.class)
-            .ifPresent(
-                hc -> {
-                  hc.godMode(false);
-                });
-      }
-      currentModeInstance.onExit();
+      playerCallbacks = null;
     }
+    player
+        .fetch(HealthComponent.class)
+        .ifPresent(
+            hc -> {
+              hc.godMode(false);
+            });
+  }
+
+  private static void removePlayerCallbacks(Entity player) {
+    player
+        .fetch(InputComponent.class)
+        .ifPresent(
+            pc -> {
+              playerCallbacks = pc.callbacks();
+              pc.removeCallback(LevelEditorMode.PRIMARY_UP);
+              pc.removeCallback(LevelEditorMode.PRIMARY_DOWN);
+              pc.removeCallback(LevelEditorMode.SECONDARY_UP);
+              pc.removeCallback(LevelEditorMode.SECONDARY_DOWN);
+              pc.removeCallback(LevelEditorMode.TERTIARY);
+              pc.removeCallback(Input.Buttons.LEFT);
+              pc.removeCallback(Input.Buttons.RIGHT);
+            });
+    player
+        .fetch(HealthComponent.class)
+        .ifPresent(
+            hc -> {
+              hc.godMode(true);
+            });
   }
 
   @Override
@@ -199,7 +188,9 @@ public class LevelEditorSystem extends System {
       active(!active);
     }
 
-    if (!active) return;
+    if (!active) {
+      return;
+    }
 
     Optional<PlayerComponent> pc = Game.player().flatMap(e -> e.fetch(PlayerComponent.class));
     if (pc.isPresent() && pc.get().openDialogs()) {
@@ -211,19 +202,19 @@ public class LevelEditorSystem extends System {
     }
 
     Mode previousMode = currentMode;
-    if (InputManager.isKeyPressed(MODE_1)) {
+    if (InputManager.isKeyJustPressed(MODE_1)) {
       currentMode = Mode.getMode(0);
-    } else if (InputManager.isKeyPressed(MODE_2)) {
+    } else if (InputManager.isKeyJustPressed(MODE_2)) {
       currentMode = Mode.getMode(1);
-    } else if (InputManager.isKeyPressed(MODE_3)) {
+    } else if (InputManager.isKeyJustPressed(MODE_3)) {
       currentMode = Mode.getMode(2);
-    } else if (InputManager.isKeyPressed(MODE_4)) {
+    } else if (InputManager.isKeyJustPressed(MODE_4)) {
       currentMode = Mode.getMode(3);
-    } else if (InputManager.isKeyPressed(MODE_5)) {
+    } else if (InputManager.isKeyJustPressed(MODE_5)) {
       currentMode = Mode.getMode(4);
-    } else if (InputManager.isKeyPressed(MODE_6)) {
+    } else if (InputManager.isKeyJustPressed(MODE_6)) {
       currentMode = Mode.getMode(5);
-    } else if (InputManager.isKeyPressed(MODE_7)) {
+    } else if (InputManager.isKeyJustPressed(MODE_7)) {
       currentMode = Mode.getMode(6);
     }
 
@@ -312,7 +303,7 @@ public class LevelEditorSystem extends System {
         case LevelBounds -> new LevelBoundsMode();
         case ShiftLevel -> new ShiftLevelMode();
         case StartTiles -> new StartTilesMode();
-        case SaveLevel -> new SaveMode(pathToLevels);
+        case SaveLevel -> new SaveMode();
       };
     }
   }

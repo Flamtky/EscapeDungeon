@@ -11,15 +11,17 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.Vector4;
 import com.badlogic.gdx.utils.Disposable;
 import core.utils.Rectangle;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Base abstract class for defining custom shader passes in the ECS rendering pipeline. Handles
  * lazy, static compilation of the ShaderProgram and binding of uniforms.
  */
-public abstract class AbstractShader implements Disposable {
+public abstract class AbstractShader implements Disposable, Serializable {
+  @Serial private static final long serialVersionUID = 1L;
+
   private static final String INCLUDE_DIRECTIVE = "// *****IMPORT: util.glsl*****";
   private static String utilGlslCache = null;
 
@@ -284,6 +286,26 @@ public abstract class AbstractShader implements Disposable {
   }
 
   /**
+   * Binds an array of Vector3 values.
+   *
+   * @param name The uniform name in the shader.
+   * @param values The Vector3 values to bind.
+   */
+  public record Vector3ArrayUniform(String name, List<Vector3> values) implements UniformBinding {
+    @Override
+    public void bind(ShaderProgram program) {
+      float[] flattenedValues = new float[values.size() * 3];
+      for (int i = 0; i < values.size(); i++) {
+        Vector3 value = values.get(i);
+        flattenedValues[i * 3] = value.x;
+        flattenedValues[i * 3 + 1] = value.y;
+        flattenedValues[i * 3 + 2] = value.z;
+      }
+      program.setUniform3fv(name, flattenedValues, 0, flattenedValues.length);
+    }
+  }
+
+  /**
    * Binds a Vector4 uniform.
    *
    * @param name The uniform name in the shader.
@@ -332,7 +354,7 @@ public abstract class AbstractShader implements Disposable {
     @Override
     public void bind(ShaderProgram program) {
       // Activate this texture in OpenGL
-      Gdx.gl.glActiveTexture(unit);
+      Gdx.gl.glActiveTexture(GL20.GL_TEXTURE0 + unit);
       texture.bind(unit);
       program.setUniformi(name, unit);
 
@@ -351,35 +373,6 @@ public abstract class AbstractShader implements Disposable {
     @Override
     public void bind(ShaderProgram program) {
       program.setUniformf(name, value);
-    }
-  }
-
-  /**
-   * Binds an array of Vector3 uniforms. Will additionally bind a uniform with the suffix "_count"
-   * to indicate how many elements are in the list.
-   *
-   * @param name The uniform name in the shader.
-   * @param values The list of Vector3 values to bind.
-   */
-  public record Vector3ArrayUniform(String name, List<Vector3> values) implements UniformBinding {
-    @Override
-    public void bind(ShaderProgram program) {
-      int count = Math.min(values.size(), 100); // Guard against array bounds
-
-      // Pass the count of active lights
-      program.setUniformi(name + "_count", count);
-
-      // Flatten the Vector3 list into a single float array
-      float[] flatArray = new float[count * 3];
-      for (int i = 0; i < count; i++) {
-        Vector3 v = values.get(i);
-        flatArray[i * 3] = v.x;
-        flatArray[i * 3 + 1] = v.y;
-        flatArray[i * 3 + 2] = v.z;
-      }
-
-      // Send the entire array to the GPU in one call
-      program.setUniform3fv(name, flatArray, 0, flatArray.length);
     }
   }
 }

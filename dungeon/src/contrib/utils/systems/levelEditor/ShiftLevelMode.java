@@ -8,7 +8,7 @@ import core.components.PositionComponent;
 import core.level.DungeonLevel;
 import core.level.Tile;
 import core.level.utils.LevelElement;
-import core.systems.input.InputManager;
+import core.systems.InputManager;
 import core.utils.Point;
 import java.util.LinkedHashMap;
 import java.util.Map;

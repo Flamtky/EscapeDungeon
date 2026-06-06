@@ -6,6 +6,9 @@ import core.level.utils.Coordinate;
 import core.utils.Direction;
 import core.utils.Point;
 import core.utils.Vector2;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Store the position of the associated entity in the level.
@@ -31,7 +34,8 @@ import core.utils.Vector2;
  * @see core.systems.PositionSystem
  * @see Point
  */
-public final class PositionComponent implements Component {
+public final class PositionComponent implements Component, Serializable {
+  @Serial private static final long serialVersionUID = 1L;
 
   /** The position of the entity in the level. */
   public static final Point ILLEGAL_POSITION = new Point(Integer.MIN_VALUE, Integer.MIN_VALUE);
@@ -50,6 +54,8 @@ public final class PositionComponent implements Component {
    * @param viewDirection Direction the entity is looking to.
    */
   public PositionComponent(final Point position, final Direction viewDirection) {
+    Objects.requireNonNull(position, "position must not be null");
+    Objects.requireNonNull(viewDirection, "viewDirection must not be null");
     this.position = position;
     this.viewDirection = viewDirection;
   }
@@ -116,7 +122,7 @@ public final class PositionComponent implements Component {
    * @return The position.
    */
   public Point position() {
-    return new Point(position);
+    return position;
   }
 
   /**

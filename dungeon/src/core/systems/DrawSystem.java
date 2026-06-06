@@ -21,7 +21,9 @@ import core.Game;
 import core.System;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
+import core.game.GameLoop;
 import core.level.Tile;
+import core.level.elements.ILevel;
 import core.level.utils.LevelElement;
 import core.utils.Point;
 import core.utils.Rectangle;
@@ -39,6 +41,7 @@ import core.utils.components.draw.shader.ShaderList;
 import core.utils.components.path.IPath;
 import core.utils.logging.DungeonLogger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -74,6 +77,8 @@ public final class DrawSystem extends System implements Disposable {
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(DrawSystem.class);
   private static DrawSystem INSTANCE = null;
 
+  private static final float TILE_SEAM_OVERDRAW = 0.002f;
+
   /**
    * The batch is necessary to draw ALL the stuff. Every object that uses draw need to know the
    * batch.
@@ -83,6 +88,7 @@ public final class DrawSystem extends System implements Disposable {
   private static SpriteBatch FBO_BATCH; // lazy initialized
 
   private final TreeMap<Integer, List<Entity>> sortedEntities = new TreeMap<>();
+  private final Map<Integer, DSData> entityDataCache = new HashMap<>();
 
   private final FrameBufferPool FBO_POOL = FrameBufferPool.getInstance();
   // Dedicated SpriteBatch for rendering locally to FBOs (Pass 1 & Post-Processing Ping-Pong)
@@ -127,30 +133,29 @@ public final class DrawSystem extends System implements Disposable {
   }
 
   private void onEntityChanged(Entity changed, boolean added) {
-    if (changed.fetch(DrawComponent.class).isEmpty()) return;
-    DSData data = DSData.build(changed);
-    int depth = data.dc.depth();
-    List<Entity> entitiesAtDepth = sortedEntities.get(depth);
-
-    if (entitiesAtDepth == null) {
-      if (added) {
-        entitiesAtDepth = new ArrayList<>();
-        entitiesAtDepth.add(changed);
-        sortedEntities.put(depth, entitiesAtDepth);
-      }
-    } else if (!entitiesAtDepth.contains(changed) && added) {
-      entitiesAtDepth.add(changed);
-    } else if (!added) {
-      entitiesAtDepth.remove(changed);
+    if (!added) {
+      entityDataCache.remove(changed.id());
+      EntityUtils.forgetRenderBasePosition(changed);
+      sortedEntities.values().forEach(entities -> entities.remove(changed));
+      sortedEntities.entrySet().removeIf(entry -> entry.getValue().isEmpty());
 
       // Clean up cached FBO if the entity is removed
       if (entityFboCache.containsKey(changed)) {
         FBO_POOL.free(entityFboCache.remove(changed));
       }
+      return;
+    }
 
-      if (entitiesAtDepth.isEmpty()) {
-        sortedEntities.remove(depth);
-      }
+    DSData data = dataFor(changed);
+    int depth = data.dc.depth();
+    List<Entity> entitiesAtDepth = sortedEntities.get(depth);
+
+    if (entitiesAtDepth == null) {
+      entitiesAtDepth = new ArrayList<>();
+      entitiesAtDepth.add(changed);
+      sortedEntities.put(depth, entitiesAtDepth);
+    } else if (!entitiesAtDepth.contains(changed)) {
+      entitiesAtDepth.add(changed);
     }
   }
 
@@ -162,7 +167,7 @@ public final class DrawSystem extends System implements Disposable {
    * @param depth The new depth of the entity
    */
   public void changeEntityDepth(Entity entity, int depth) {
-    DSData data = DSData.build(entity);
+    DSData data = dataFor(entity);
 
     int oldDepth = data.dc.depth();
     data.dc.depth(depth);
@@ -176,7 +181,9 @@ public final class DrawSystem extends System implements Disposable {
     }
 
     List<Entity> entitiesAtDepth = sortedEntities.computeIfAbsent(depth, k -> new ArrayList<>());
-    entitiesAtDepth.add(entity);
+    if (!entitiesAtDepth.contains(entity)) {
+      entitiesAtDepth.add(entity);
+    }
   }
 
   /** DrawSystem can't be paused. */
@@ -273,7 +280,13 @@ public final class DrawSystem extends System implements Disposable {
    */
   @Override
   public void execute() {
-    filteredEntityStream().map(DSData::build).forEach(dsd -> dsd.dc.update());
+    entityDataCache
+        .values()
+        .forEach(
+            dsd -> {
+              EntityUtils.captureRenderBasePosition(dsd.e);
+              dsd.dc.update();
+            });
 
     if (stableWidth == -1) {
       stableWidth = Game.windowWidth();
@@ -307,17 +320,13 @@ public final class DrawSystem extends System implements Disposable {
     }
   }
 
-  /**
-   * Makes the render pipeline use the current window size without waiting for resize debouncing.
-   *
-   * <p>Fullscreen transitions are discrete mode switches, not interactive resize drags. Deferring
-   * FBO resizing during those transitions can leave stale-sized framebuffers on screen for several
-   * frames on Windows and Linux.
-   */
-  public void useCurrentWindowSizeImmediately() {
+  /** Synchronizes cached render dimensions with the current window size immediately. */
+  public void synchronizeWindowSize() {
     int currentWidth = Game.windowWidth();
     int currentHeight = Game.windowHeight();
-    if (currentWidth <= 0 || currentHeight <= 0) return;
+    if (currentWidth == 0 || currentHeight == 0) {
+      return;
+    }
 
     stableWidth = currentWidth;
     stableHeight = currentHeight;
@@ -331,6 +340,13 @@ public final class DrawSystem extends System implements Disposable {
     if (stableWidth == -1) return;
 
     shadersActiveLastFrame = 0;
+
+    if (!hasEnabledShaders()) {
+      renderWithoutShaders();
+      FBO_POOL.update();
+      secondsElapsed += delta;
+      return;
+    }
 
     // Pass 1: Render shaders to FBOs (Entity-local shaders)
     renderEntitiesPass1();
@@ -350,19 +366,21 @@ public final class DrawSystem extends System implements Disposable {
 
     // 2. Render each Entity Depth Group to its FBO and apply depth shaders
     Map<Integer, FrameBuffer> depthFbos = new HashMap<>();
-    for (Integer depth : sortedEntities.keySet()) {
-      List<DSData> sortedGroup =
-          sortedEntities.get(depth).stream()
-              .map(DSData::build)
-              .sorted(Comparator.comparingDouble((DSData d) -> -EntityUtils.getPosition(d.e).y()))
-              .filter(this::shouldDraw)
-              .toList();
+    Rectangle cameraBounds = CameraSystem.getCameraWorldBounds();
+    ILevel currentLevel = Game.currentLevel().orElse(null);
+    for (Map.Entry<Integer, List<Entity>> entry : sortedEntities.entrySet()) {
+      Integer depth = entry.getKey();
+      List<VisibleDSData> sortedGroup =
+          visibleSortedGroup(entry.getValue(), cameraBounds, currentLevel);
 
       if (!sortedGroup.isEmpty()) {
         ShaderList shaders = entityDepthShaders.get(depth);
         FrameBuffer depthFbo =
             drawToIntermediateFbo(
-                () -> sortedGroup.forEach(this::drawFinal), shaders, sceneWidth, sceneHeight);
+                () -> sortedGroup.forEach(data -> drawFinal(data.dsd())),
+                shaders,
+                sceneWidth,
+                sceneHeight);
         depthFbos.put(depth, depthFbo);
       }
     }
@@ -517,12 +535,25 @@ public final class DrawSystem extends System implements Disposable {
    * These FBOs use LOCAL transformations (padding, scale) and ignore world position/rotation.
    */
   private void renderEntitiesPass1() {
+    Rectangle cameraBounds = CameraSystem.getCameraWorldBounds();
+    ILevel currentLevel = Game.currentLevel().orElse(null);
+    if (currentLevel == null) {
+      return;
+    }
+
     for (List<Entity> group : sortedEntities.values()) {
-      group.stream()
-          .map(DSData::build)
-          .filter(this::shouldDraw)
-          .filter(dsd -> dsd.dc.shaders().hasEnabledShaders())
-          .forEach(this::processShaderPassesSingleEntity);
+      for (Entity entity : group) {
+        DSData dsd = dataFor(entity);
+        if (!dsd.dc.shaders().hasEnabledShaders()) {
+          continue;
+        }
+
+        Point entityCenter =
+            EntityUtils.getRenderPosition(dsd.e, GameLoop.renderInterpolationAlpha());
+        if (shouldDraw(dsd, entityCenter, cameraBounds, currentLevel)) {
+          processShaderPassesSingleEntity(dsd);
+        }
+      }
     }
   }
 
@@ -699,27 +730,23 @@ public final class DrawSystem extends System implements Disposable {
       // --- Draw FBO Texture (Shader Result) ---
       Texture fboTexture = finalFbo.getColorBufferTexture();
 
-      float worldWidth = dsd.dc.getWidth();
-      float worldHeight = dsd.dc.getHeight();
-
       float padding = dsd.dc.shaders().getTotalPadding();
-      float paddingX = padding / dsd.dc.getSpriteWidth();
-      float paddingY = padding / dsd.dc.getSpriteHeight();
-
-      // Final world size includes padding on all sides
-      Vector2 finalWorldSize =
-          Vector2.of(
-              worldWidth + 2 * paddingX * worldWidth, worldHeight + 2 * paddingY * worldHeight);
+      float unitSize = dsd.getUnitSizeInPixels();
+      float paddingWorldUnits = padding / unitSize;
 
       // Scale is being factored into the transformation everywhere except the position, since it is
       // passed directly to the draw method. Thus, we need to factor it in here to offset the
       // padding.
       Point offsetPosition =
-          dsd.pc
-              .position()
+          renderPosition(dsd)
               .translate(
-                  -paddingX * dsd.pc.scale().x() * worldWidth,
-                  -paddingY * dsd.pc.scale().y() * worldHeight);
+                  -paddingWorldUnits * dsd.pc.scale().x(), -paddingWorldUnits * dsd.pc.scale().y());
+
+      // Final world size includes padding on all sides
+      float worldWidth = dsd.dc.getWidth();
+      float worldHeight = dsd.dc.getHeight();
+      Vector2 finalWorldSize =
+          Vector2.of(worldWidth + 2 * paddingWorldUnits, worldHeight + 2 * paddingWorldUnits);
 
       DrawConfig conf = makeConfig(dsd, finalWorldSize, dsd.pc.scale());
       draw(offsetPosition, fboTexture, conf);
@@ -770,7 +797,7 @@ public final class DrawSystem extends System implements Disposable {
     Sprite sprite = dsd.dc.getSprite();
     DrawConfig conf =
         makeConfig(dsd, Vector2.of(dsd.dc.getWidth(), dsd.dc.getHeight()), dsd.pc.scale());
-    draw(dsd.pc.position(), sprite, conf);
+    draw(renderPosition(dsd), sprite, conf);
   }
 
   /**
@@ -890,11 +917,21 @@ public final class DrawSystem extends System implements Disposable {
                     IPath texturePath = t.texturePath();
                     int tintColor =
                         t.tintColor() == -1 ? Color.rgba8888(Color.WHITE) : t.tintColor();
-                    draw(t.position(), texturePath, new DrawConfig().withTintColor(tintColor));
+                    draw(t.position(), texturePath, tileDrawConfig(tintColor));
                   }
                 }
               }
             });
+  }
+
+  private DrawConfig tileDrawConfig(int tintColor) {
+    return new DrawConfig(
+        Vector2.ZERO,
+        Vector2.of(1f + TILE_SEAM_OVERDRAW, 1f + TILE_SEAM_OVERDRAW),
+        Vector2.ONE,
+        tintColor,
+        false,
+        0f);
   }
 
   private boolean shouldDrawTile(Tile tile) {
@@ -918,6 +955,64 @@ public final class DrawSystem extends System implements Disposable {
 
   private record TileBounds(int minX, int maxX, int minY, int maxY) {}
 
+  private boolean hasEnabledShaders() {
+    return levelShaders.hasEnabledShaders()
+        || sceneShaders.hasEnabledShaders()
+        || entityDepthShaders.values().stream().anyMatch(ShaderList::hasEnabledShaders)
+        || sortedEntities.values().stream()
+            .flatMap(Collection::stream)
+            .map(this::dataFor)
+            .anyMatch(dsd -> dsd.dc.shaders().hasEnabledShaders());
+  }
+
+  private void renderWithoutShaders() {
+    Rectangle cameraBounds = CameraSystem.getCameraWorldBounds();
+    ILevel currentLevel = Game.currentLevel().orElse(null);
+
+    Gdx.gl.glClearColor(0f, 0f, 0f, 0f);
+    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+    batch().setProjectionMatrix(CameraSystem.camera().combined);
+    batch().begin();
+    BlendUtils.setBlending(batch());
+    batch().setColor(Color.WHITE);
+    drawLevel();
+
+    for (List<Entity> group : sortedEntities.values()) {
+      visibleSortedGroup(group, cameraBounds, currentLevel)
+          .forEach(visibleData -> draw(visibleData.dsd()));
+    }
+
+    batch().end();
+  }
+
+  private List<VisibleDSData> visibleSortedGroup(
+      List<Entity> group, Rectangle cameraBounds, ILevel currentLevel) {
+    if (currentLevel == null) {
+      return List.of();
+    }
+
+    List<VisibleDSData> sortedGroup = new ArrayList<>(group.size());
+    for (Entity entity : group) {
+      DSData dsd = dataFor(entity);
+      Point entityCenter =
+          EntityUtils.getRenderPosition(dsd.e, GameLoop.renderInterpolationAlpha());
+      if (shouldDraw(dsd, entityCenter, cameraBounds, currentLevel)) {
+        sortedGroup.add(new VisibleDSData(dsd, entityCenter.y()));
+      }
+    }
+
+    sortedGroup.sort(Comparator.comparingDouble(VisibleDSData::drawY).reversed());
+    return sortedGroup;
+  }
+
+  private boolean contains(Rectangle rectangle, float x, float y) {
+    return x >= rectangle.x()
+        && x <= rectangle.x() + rectangle.width()
+        && y >= rectangle.y()
+        && y <= rectangle.y() + rectangle.height();
+  }
+
   /**
    * Checks if an entity should be drawn. By checking:
    *
@@ -927,39 +1022,45 @@ public final class DrawSystem extends System implements Disposable {
    * </ol>
    *
    * @param data the components of the entity to check
+   * @param entityCenter the entity center point used for tile visibility fallback
+   * @param cameraBounds the currently visible camera world bounds
+   * @param currentLevel the currently rendered level
    * @return true if the entity should be drawn, false otherwise
    * @see DrawComponent#isVisible()
    */
-  private boolean shouldDraw(DSData data) {
+  private boolean shouldDraw(
+      DSData data, Point entityCenter, Rectangle cameraBounds, ILevel currentLevel) {
     if (!data.dc.isVisible()) {
       return false;
     }
 
-    Rectangle cameraBounds = CameraSystem.getCameraWorldBounds();
-
-    Point pos = data.pc.position();
+    Point pos = renderPosition(data);
     float width = data.dc.getWidth() * data.pc.scale().x();
     float height = data.dc.getHeight() * data.pc.scale().y();
-    List<Point> corners =
-        List.of(
-            pos.translate(0, 0),
-            pos.translate(width, 0),
-            pos.translate(0, height),
-            pos.translate(width, height));
-    Point entityCenter = EntityUtils.getPosition(data.e);
+    float minX = pos.x();
+    float minY = pos.y();
+    float maxX = minX + width;
+    float maxY = minY + height;
 
-    return Game.currentLevel()
-        .map(
-            level ->
-                corners.stream().anyMatch(cameraBounds::contains)
-                    || level
-                        .tileAt(entityCenter)
-                        .filter(tile -> tile.visible() && !TileUtils.isTilePitAndOpen(tile))
-                        .isPresent())
-        .orElse(false);
+    return contains(cameraBounds, minX, minY)
+        || contains(cameraBounds, maxX, minY)
+        || contains(cameraBounds, minX, maxY)
+        || contains(cameraBounds, maxX, maxY)
+        || currentLevel
+            .tileAt(entityCenter)
+            .filter(tile -> tile.visible() && !TileUtils.isTilePitAndOpen(tile))
+            .isPresent();
   }
 
   // endregion
+
+  private DSData dataFor(Entity entity) {
+    return entityDataCache.computeIfAbsent(entity.id(), ignored -> DSData.build(entity));
+  }
+
+  private Point renderPosition(DSData dsd) {
+    return EntityUtils.getRenderBasePosition(dsd.e, GameLoop.renderInterpolationAlpha());
+  }
 
   /**
    * Gets the total seconds elapsed since the DrawSystem started. If the DrawSystem is not found in
@@ -981,6 +1082,8 @@ public final class DrawSystem extends System implements Disposable {
     return getInstance().shadersActiveLastFrame;
   }
 
+  private record VisibleDSData(DSData dsd, double drawY) {}
+
   private record DSData(Entity e, DrawComponent dc, PositionComponent pc) {
     /**
      * Builds the data record used by this system.
@@ -998,6 +1101,16 @@ public final class DrawSystem extends System implements Disposable {
               .fetch(PositionComponent.class)
               .orElseThrow(() -> MissingComponentException.build(entity, PositionComponent.class));
       return new DSData(entity, dc, pc);
+    }
+
+    /**
+     * Returns the size of one world unit that this texture is drawn with, in pixels. The smallest
+     * dimension is assumed to be 1 world unit.
+     *
+     * @return the size of one world unit in pixels
+     */
+    float getUnitSizeInPixels() {
+      return Math.min(dc.getSpriteWidth(), dc.getSpriteHeight());
     }
   }
 }

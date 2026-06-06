@@ -8,20 +8,26 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.backends.headless.HeadlessFiles;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Window;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.SharedLibraryLoader;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
+import contrib.components.SkillComponent;
 import contrib.components.UIComponent;
 import contrib.crafting.Crafting;
 import contrib.entities.CharacterClass;
 import contrib.entities.HeroBuilder;
+import contrib.entities.deco.Deco;
 import contrib.entities.deco.DecoFactory;
 import contrib.hud.UIUtils;
 import contrib.hud.dialogs.DialogFactory;
 import contrib.systems.AttributeBarSystem;
 import contrib.systems.DebugDrawSystem;
+import contrib.systems.EventScheduler;
+import contrib.systems.SkillHudSystem;
 import contrib.utils.CheckPatternPainter;
 import core.Entity;
 import core.Game;
@@ -29,13 +35,13 @@ import core.System;
 import core.components.DrawComponent;
 import core.components.PlayerComponent;
 import core.components.PositionComponent;
-import core.components.SoundComponent;
 import core.level.loader.DungeonLoader;
 import core.level.loader.LevelParser;
 import core.network.ConnectionListener;
 import core.network.MessageDispatcher;
 import core.network.client.ClientNetwork;
 import core.network.messages.c2s.InputMessage;
+import core.network.messages.s2c.DeltaSnapshotMessage;
 import core.network.messages.s2c.DialogCloseMessage;
 import core.network.messages.s2c.DialogShowMessage;
 import core.network.messages.s2c.EntityDespawnEvent;
@@ -43,33 +49,36 @@ import core.network.messages.s2c.EntitySpawnEvent;
 import core.network.messages.s2c.GameOverEvent;
 import core.network.messages.s2c.LevelChangeEvent;
 import core.network.messages.s2c.SnapshotMessage;
-import core.network.messages.s2c.SoundPlayMessage;
-import core.network.messages.s2c.SoundStopMessage;
-import core.network.server.SoundTracker;
 import core.sound.player.GdxSoundPlayer;
 import core.sound.player.ISoundPlayer;
 import core.sound.player.NoSoundPlayer;
 import core.systems.CameraSystem;
 import core.systems.DrawSystem;
 import core.systems.FrictionSystem;
+import core.systems.InputManager;
+import core.systems.InputSystem;
 import core.systems.LevelSystem;
 import core.systems.MoveSystem;
 import core.systems.PositionSystem;
 import core.systems.VelocitySystem;
-import core.systems.input.InputManager;
-import core.systems.input.InputSystem;
-import core.systems.input.JoystickSystem;
+import core.utils.ClientNamePersistence;
 import core.utils.Direction;
+import core.utils.EntityIdProvider;
 import core.utils.IVoidFunction;
+import core.utils.Point;
+import core.utils.Tuple;
 import core.utils.components.MissingComponentException;
-import core.utils.components.draw.DrawComponentFactory;
 import core.utils.logging.DungeonLogger;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
+import org.lwjgl.glfw.GLFWNativeWin32;
+import org.lwjgl.system.Platform;
+import org.lwjgl.system.windows.User32;
 
 /**
  * The Dungeon-GameLoop.
@@ -85,10 +94,21 @@ import java.util.Set;
 public final class GameLoop extends ScreenAdapter {
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(GameLoop.class);
   private static ISoundPlayer soundPlayer = new NoSoundPlayer();
+  private static final List<IResizable> resizables = new ArrayList<>();
   private static Stage stage;
+  private static boolean borderlessWindowedFullscreen = false;
+  private static int windowedWidthBeforeBorderless = PreRunConfiguration.windowWidth();
+  private static int windowedHeightBeforeBorderless = PreRunConfiguration.windowHeight();
+  private static int windowedXBeforeBorderless = 0;
+  private static int windowedYBeforeBorderless = 0;
+  private static boolean windowedPositionBeforeBorderlessAvailable = false;
+  private static boolean borderlessWindowListenersRegistered = false;
+  private static long windowStyleBeforeBorderless = 0L;
+  private static boolean windowStyleBeforeBorderlessAvailable = false;
   private boolean doSetup = true;
-  private int displayModeTransitionFrames = 0;
-  private static final Set<IResizable> resizables = new HashSet<>();
+  private float tickAccumulator = 0f;
+  private boolean tickOnNextRender = true;
+  private static float renderInterpolationAlpha = 0f;
 
   /**
    * Sets {@link Game#currentLevel} to the new level and changes the currently active entity
@@ -103,16 +123,16 @@ public final class GameLoop extends ScreenAdapter {
    */
   public static final IVoidFunction onLevelLoad =
       () -> {
-        boolean firstLoad = !ECSManagement.levelStorageMap().containsKey(Game.currentLevel().get());
-        if (firstLoad && Game.isCheckPatternEnabled())
+        if (Game.isCheckPatternEnabled())
           Game.currentLevel()
               .ifPresent(level -> CheckPatternPainter.paintCheckerPattern(level.layout()));
 
         if (!PreRunConfiguration.isNetworkServer()) return; // no authority
 
-        SoundTracker.instance().clear();
+        Game.currentLevel().ifPresent(level -> level.finishedLoading(false));
 
         List<Entity> allPlayers = ECSManagement.allPlayers().toList();
+        boolean firstLoad = !ECSManagement.levelStorageMap().containsKey(Game.currentLevel().get());
         allPlayers.forEach(ECSManagement::remove);
         // Remove the systems so that each triggerOnRemove(entity) will be called (basically
         // cleanup).
@@ -137,10 +157,39 @@ public final class GameLoop extends ScreenAdapter {
 
         Game.currentLevel()
             .ifPresent(
-                level ->
-                    level
-                        .decorations()
-                        .forEach(tuple -> Game.add(DecoFactory.createDeco(tuple.b(), tuple.a()))));
+                level -> {
+                  // hero pos or default 0,0
+                  final Point heroPos =
+                      allPlayers.stream()
+                          .findFirst()
+                          .flatMap(e -> e.fetch(PositionComponent.class))
+                          .map(PositionComponent::position)
+                          .orElse(new Point(0, 0));
+                  final int batch_size = 25;
+
+                  List<Tuple<Deco, Point>> sortedDecos =
+                      level.decorations().stream()
+                          .sorted(Comparator.comparingDouble(d -> heroPos.distanceSquared(d.b())))
+                          .toList();
+
+                  long batches = (sortedDecos.size() + batch_size - 1) / batch_size;
+
+                  for (int i = 0; i < batches; i++) {
+                    final int skip = i * batch_size;
+                    final int limit = Math.min(batch_size, sortedDecos.size() - skip);
+                    int finalI = i;
+                    EventScheduler.scheduleAction(
+                        () -> {
+                          sortedDecos
+                              .subList(skip, skip + limit)
+                              .forEach(t -> Game.add(DecoFactory.createDeco(t.b(), t.a())));
+                          if (finalI == batches - 1) {
+                            level.finishedLoading(true);
+                          }
+                        },
+                        15L * i);
+                  }
+                });
 
         PreRunConfiguration.userOnLevelLoad().accept(firstLoad);
       };
@@ -158,8 +207,9 @@ public final class GameLoop extends ScreenAdapter {
    */
   public static void run() {
     Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-    config.setWindowSizeLimits(0, 0, 9999, 9999);
-    config.setForegroundFPS(PreRunConfiguration.frameRate());
+    config.setWindowSizeLimits(
+        PreRunConfiguration.windowWidth(), PreRunConfiguration.windowHeight(), 9999, 9999);
+    config.setForegroundFPS(PreRunConfiguration.maxFPS());
     config.setResizable(PreRunConfiguration.resizeable());
     config.setTitle(PreRunConfiguration.windowTitle());
     config.setWindowIcon(PreRunConfiguration.logoPath().pathString());
@@ -168,8 +218,10 @@ public final class GameLoop extends ScreenAdapter {
     if (SharedLibraryLoader.isMac && Gdx.app == null) {
       org.lwjgl.system.Configuration.GLFW_LIBRARY_NAME.set("glfw_async");
     }
-    if (PreRunConfiguration.fullScreen()) {
-      config.setFullscreenMode(Lwjgl3ApplicationConfiguration.getDisplayMode());
+    borderlessWindowedFullscreen = PreRunConfiguration.fullScreen();
+    registerBorderlessWindowListeners();
+    if (borderlessWindowedFullscreen) {
+      configureBorderlessWindowedFullscreen(config);
     } else {
       config.setWindowedMode(PreRunConfiguration.windowWidth(), PreRunConfiguration.windowHeight());
     }
@@ -204,26 +256,135 @@ public final class GameLoop extends ScreenAdapter {
   }
 
   private static void setupStage() {
-    int width = currentWindowWidth();
-    int height = currentWindowHeight();
-    stage = new Stage(new ScalingViewport(Scaling.stretch, width, height), new SpriteBatch());
+    stage =
+        new Stage(
+            new ScalingViewport(
+                Scaling.stretch,
+                PreRunConfiguration.windowWidth(),
+                PreRunConfiguration.windowHeight()),
+            new SpriteBatch());
     Gdx.input.setInputProcessor(stage);
+    InputManager.init();
   }
 
-  private static int currentWindowWidth() {
-    int width = Game.windowWidth();
-    return width > 0 ? width : PreRunConfiguration.windowWidth();
+  private static void configureBorderlessWindowedFullscreen(Lwjgl3ApplicationConfiguration config) {
+    config.setWindowedMode(PreRunConfiguration.windowWidth(), PreRunConfiguration.windowHeight());
+    config.setMaximized(true);
+    if (!isWindows()) {
+      config.setDecorated(false);
+      config.setResizable(true);
+    }
   }
 
-  private static int currentWindowHeight() {
-    int height = Game.windowHeight();
-    return height > 0 ? height : PreRunConfiguration.windowHeight();
+  private static void registerBorderlessWindowListeners() {
+    if (borderlessWindowListenersRegistered) {
+      return;
+    }
+
+    WindowEventManager.registerWindowCreatedListener(
+        window -> {
+          if (borderlessWindowedFullscreen && enterNativeBorderlessWindow(window)) {
+            window.postRunnable(GameLoop::synchronizeWindowAfterTransition);
+          }
+        });
+    WindowEventManager.registerFocusChangeListener(
+        focused -> {
+          if (focused && borderlessWindowedFullscreen && Gdx.app != null) {
+            Gdx.app.postRunnable(GameLoop::synchronizeWindowAfterTransition);
+          }
+        });
+    borderlessWindowListenersRegistered = true;
+  }
+
+  private static void synchronizeWindowAfterTransition() {
+    if (Gdx.graphics == null) {
+      return;
+    }
+
+    int width = Gdx.graphics.getWidth();
+    int height = Gdx.graphics.getHeight();
+    stage()
+        .ifPresent(
+            x -> {
+              x.getViewport().setWorldSize(width, height);
+              x.getViewport().update(width, height, true);
+            });
+    resizables.forEach(resizable -> resizable.onResize(width, height));
+    WindowEventManager.windowListener().refreshRequested();
+    ECSManagement.system(DrawSystem.class, DrawSystem::synchronizeWindowSize);
+    Gdx.graphics.requestRendering();
+  }
+
+  private static void synchronizeWindowAfterTransitionNowAndNextFrame() {
+    synchronizeWindowAfterTransition();
+    if (Gdx.app != null) {
+      Gdx.app.postRunnable(GameLoop::synchronizeWindowAfterTransition);
+    }
+  }
+
+  private static boolean isWindows() {
+    return Platform.get() == Platform.WINDOWS;
+  }
+
+  private static boolean enterNativeBorderlessWindow(Lwjgl3Window window) {
+    if (!isWindows()) {
+      return false;
+    }
+
+    long hwnd = GLFWNativeWin32.glfwGetWin32Window(window.getWindowHandle());
+    if (hwnd == 0L) {
+      return false;
+    }
+
+    long currentStyle = User32.GetWindowLongPtr(hwnd, User32.GWL_STYLE);
+    if (!windowStyleBeforeBorderlessAvailable) {
+      windowStyleBeforeBorderless = currentStyle;
+      windowStyleBeforeBorderlessAvailable = true;
+    }
+
+    User32.SetWindowLongPtr(hwnd, User32.GWL_STYLE, currentStyle & ~User32.WS_CAPTION);
+    applyWindowFrameStyle(hwnd);
+    User32.ShowWindow(hwnd, User32.SW_MAXIMIZE);
+    return true;
+  }
+
+  private static boolean exitNativeBorderlessWindow(Lwjgl3Window window) {
+    if (!isWindows()) {
+      return false;
+    }
+
+    long hwnd = GLFWNativeWin32.glfwGetWin32Window(window.getWindowHandle());
+    if (hwnd == 0L) {
+      return false;
+    }
+
+    User32.ShowWindow(hwnd, User32.SW_RESTORE);
+    if (windowStyleBeforeBorderlessAvailable) {
+      User32.SetWindowLongPtr(hwnd, User32.GWL_STYLE, windowStyleBeforeBorderless);
+      applyWindowFrameStyle(hwnd);
+    }
+    return true;
+  }
+
+  private static void applyWindowFrameStyle(long hwnd) {
+    User32.SetWindowPos(
+        hwnd,
+        0L,
+        0,
+        0,
+        0,
+        0,
+        User32.SWP_NOMOVE
+            | User32.SWP_NOSIZE
+            | User32.SWP_NOZORDER
+            | User32.SWP_NOACTIVATE
+            | User32.SWP_FRAMECHANGED);
   }
 
   /**
    * Get the current tick of the game.
    *
-   * <p>The tick is incremented every frame, starting from 0 at the beginning of the game.
+   * <p>The tick is incremented every game tick, starting from 0 at the beginning of the game.
    *
    * @return the current tick
    */
@@ -232,31 +393,71 @@ public final class GameLoop extends ScreenAdapter {
   }
 
   /**
-   * Main game loop.
+   * Returns how far rendering is between the previous and current fixed game tick.
    *
-   * <p>Triggers the execution of the systems and the event callbacks.
+   * <p>Rendering can use this value for visual-only interpolation while gameplay logic stays on
+   * fixed ticks.
    *
-   * <p>Will trigger {@link #frame} and {@link PreRunConfiguration#userOnFrame()}.
+   * @return interpolation factor in the range {@code [0, 1]}
+   */
+  public static float renderInterpolationAlpha() {
+    return renderInterpolationAlpha;
+  }
+
+  /**
+   * Main render loop.
+   *
+   * <p>Triggers rendering as fast as libGDX can provide frames and advances fixed-rate game ticks
+   * when due.
+   *
+   * <p>Will trigger {@link #frame} and {@link PreRunConfiguration#userOnFrame()} when a game tick
+   * is due.
    *
    * <p>On the first frame, {@link #setup()} and {@link PreRunConfiguration#userOnSetup()} are
    * triggered.
    *
-   * @param delta The time since the last loop.
+   * @param delta The time since the last rendered frame.
    */
   @Override
   public void render(float delta) {
     if (doSetup) setup();
+    runDueGameTicks(delta);
+    renderInterpolationAlpha = Math.min(1f, tickAccumulator / tickInterval());
+    ECSManagement.system(CameraSystem.class, cameraSystem -> cameraSystem.prepareRender(delta));
     ECSManagement.system(
         DrawSystem.class,
         drawSystem -> DrawSystem.batch().setProjectionMatrix(CameraSystem.camera().combined));
-    // Drain any inbound network messages on the game thread before running systems
+    clearScreen();
+
+    ECSManagement.renderSystems(delta);
+
+    // stage logic
+    stage().ifPresent(GameLoop::updateStage);
+  }
+
+  private void runDueGameTicks(float delta) {
+    tickAccumulator += delta;
+    float tickInterval = tickInterval();
+
+    while (tickOnNextRender || tickAccumulator >= tickInterval) {
+      gameTick(tickInterval);
+      tickAccumulator = Math.max(0f, tickAccumulator - tickInterval);
+      tickOnNextRender = false;
+    }
+  }
+
+  private static float tickInterval() {
+    return 1f / PreRunConfiguration.tickRate();
+  }
+
+  private void gameTick(float delta) {
+    // Drain any inbound network messages on the game thread before running systems.
     try {
       Game.network().pollAndDispatch();
     } catch (Exception e) {
       LOGGER.warn("Error while polling network messages: {}", e.getMessage(), e);
     }
     frame(delta);
-    clearScreen();
 
     // Execute ECS tick using shared runner. In MP client mode, run render/input/camera only.
     final boolean isMultiplayerClient =
@@ -265,9 +466,6 @@ public final class GameLoop extends ScreenAdapter {
         isMultiplayerClient ? System.AuthoritativeSide.CLIENT : System.AuthoritativeSide.BOTH);
 
     InputManager.update();
-    CameraSystem.camera().update();
-    // stage logic
-    stage().ifPresent(GameLoop::updateStage);
   }
 
   /**
@@ -346,8 +544,6 @@ public final class GameLoop extends ScreenAdapter {
     PreRunConfiguration.userOnSetup().execute();
     Game.network().start();
 
-    if (!Game.isHeadless()) InputManager.init();
-
     if (!DungeonLoader.levelOrder().isEmpty()) {
       if (Game.currentLevel().isEmpty()) DungeonLoader.loadLevel(0); // load the first level
     } else LOGGER.warn("No levels found to load!");
@@ -362,7 +558,7 @@ public final class GameLoop extends ScreenAdapter {
           LOGGER.info("Received EntitySpawnEvent event: " + event.entityId());
 
           // check if the entity already exists
-          if (Game.allEntities().anyMatch(e -> e.id() == event.entityId())) {
+          if (EntityIdProvider.isRegistered(event.entityId())) {
             LOGGER.warn(
                 "Received spawn event for already existing entity with ID: " + event.entityId());
             return;
@@ -375,7 +571,7 @@ public final class GameLoop extends ScreenAdapter {
             boolean isLocal = Objects.equals(pc.playerName(), PreRunConfiguration.username());
 
             if (alreadyGotAHero) {
-              LOGGER.info("Already got a hero, checking if local player...");
+              LOGGER.debug("Already got a hero, checking if local player...");
               if (isLocal) {
                 LOGGER.warn(
                     "Received spawn event for local player, but we already have a local player! ID: {} ",
@@ -384,24 +580,36 @@ public final class GameLoop extends ScreenAdapter {
               }
             }
 
-            Game.add(
+            Entity hero =
                 HeroBuilder.builder()
                     .id(event.entityId())
                     .characterClass(CharacterClass.fromByteId(event.characterClassId()))
                     .isLocalPlayer(isLocal)
                     .username(pc.playerName())
-                    .build());
+                    .build();
+
+            // Apply skill sync data from spawn event for proper cooldown display
+            if (event.skillData() != null) {
+              hero.fetch(SkillComponent.class).ifPresent(sc -> sc.applySyncData(event.skillData()));
+            }
+
+            Game.add(hero);
             return;
           }
 
           Entity newEntity = new Entity(event.entityId());
-          if (event.positionComponent() != null) {
-            newEntity.add(event.positionComponent());
-          }
-          if (event.drawInfo() != null) {
-            newEntity.add(DrawComponentFactory.fromDrawInfo(event.drawInfo()));
-          }
+          newEntity.add(event.positionComponent());
+          if (event.decoComponent() != null) newEntity.add(event.decoComponent());
+          if (event.drawComponent() != null) newEntity.add(event.drawComponent());
           newEntity.persistent(event.isPersistent());
+
+          // Apply skill data if present
+          if (event.skillData() != null) {
+            SkillComponent sc = new SkillComponent();
+            sc.applySyncData(event.skillData());
+            newEntity.add(sc);
+          }
+
           Game.add(newEntity);
         });
 
@@ -413,8 +621,7 @@ public final class GameLoop extends ScreenAdapter {
                   + event.entityId()
                   + ", reason: "
                   + event.reason());
-          Entity entity =
-              Game.allEntities().filter(e -> e.id() == event.entityId()).findFirst().orElse(null);
+          Entity entity = Game.findEntityById(event.entityId()).orElse(null);
           if (entity == null) {
             LOGGER.warn("Received despawn event for unknown entity with ID: " + event.entityId());
             return;
@@ -428,7 +635,16 @@ public final class GameLoop extends ScreenAdapter {
           LOGGER.info("Received LevelChangeEvent event: {}", event.levelName());
           try {
             Game.currentLevel(LevelParser.parseLevel(event.levelData(), event.levelName()));
-            Game.player().ifPresent(GameLoop::placeOnLevelStart);
+            Game.player()
+                .ifPresent(
+                    entity -> {
+                      placeOnLevelStart(entity);
+                      Game.system(
+                          CameraSystem.class,
+                          cs -> {
+                            Game.positionOf(entity).ifPresent(cs::instantFocus);
+                          });
+                    });
           } catch (Exception e) {
             LOGGER.error("Failed to handle LevelChangeEvent: {}", e.getMessage(), e);
           }
@@ -438,6 +654,7 @@ public final class GameLoop extends ScreenAdapter {
         (ctx, event) -> {
           LOGGER.info("Received GameOverEvent event (reason: {})", event.reason());
           ClientNetwork.invalidateLastSessionFile();
+          ClientNamePersistence.invalidate();
           Game.exit(event.reason());
         });
     dispatcher.registerHandler(
@@ -445,46 +662,19 @@ public final class GameLoop extends ScreenAdapter {
         (ctx, event) -> {
           try {
             Game.network().snapshotTranslator().applySnapshot(event, dispatcher);
-          } catch (Exception e) {
-            LOGGER.warn("Error while applying snapshot message: {}", e.getMessage(), e);
+          } catch (Exception ignored) {
+            LOGGER.warn("Error while applying snapshot message: {}", ignored.getMessage(), ignored);
           }
         });
 
     dispatcher.registerHandler(
-        SoundPlayMessage.class,
-        (ctx, msg) -> {
-          LOGGER.debug(
-              "Received SoundPlayMessage: {} (instance={})",
-              msg.soundSpec().soundName(),
-              msg.soundSpec().instanceId());
-
-          Optional<Entity> entity = Game.findEntityById(msg.entityId());
-          if (entity.isEmpty() && msg.soundSpec().maxDistance() > 0f) {
-            LOGGER.warn(
-                "Entity {} not found for positional sound {}",
-                msg.entityId(),
-                msg.soundSpec().soundName());
-            return;
+        DeltaSnapshotMessage.class,
+        (ctx, event) -> {
+          try {
+            Game.network().snapshotTranslator().applyDelta(event, dispatcher);
+          } catch (Exception ignored) {
+            LOGGER.warn("Error while applying delta snapshot: {}", ignored.getMessage(), ignored);
           }
-
-          Entity targetEntity = entity.orElseGet(() -> Game.audio().ensureSoundHub());
-          SoundComponent sc =
-              targetEntity
-                  .fetch(SoundComponent.class)
-                  .orElseGet(
-                      () -> {
-                        SoundComponent newSc = new SoundComponent();
-                        targetEntity.add(newSc);
-                        return newSc;
-                      });
-          sc.add(msg.soundSpec());
-        });
-
-    dispatcher.registerHandler(
-        SoundStopMessage.class,
-        (ctx, msg) -> {
-          LOGGER.debug("Received SoundStopMessage: {}", msg.soundInstanceId());
-          Game.audio().stopInstance(msg.soundInstanceId());
         });
 
     dispatcher.registerHandler(
@@ -492,7 +682,7 @@ public final class GameLoop extends ScreenAdapter {
         (ctx, msg) -> {
           LOGGER.debug("Received DialogShowMessage for dialog: {}", msg.context().dialogId());
 
-          DialogFactory.show(msg.context(), false, msg.canBeClosed());
+          DialogFactory.show(msg.context(), false, msg.canBeClosed(), new int[] {});
         });
 
     dispatcher.registerHandler(
@@ -525,10 +715,6 @@ public final class GameLoop extends ScreenAdapter {
    */
   private void frame(float delta) {
     fullscreenKey();
-    if (displayModeTransitionFrames > 0) {
-      synchronizeWindowSize();
-      displayModeTransitionFrames--;
-    }
     Game.soundPlayer().update(delta);
     PreRunConfiguration.userOnFrame().execute();
   }
@@ -536,20 +722,57 @@ public final class GameLoop extends ScreenAdapter {
   private void fullscreenKey() {
     if (InputManager.isKeyJustPressed(
         core.configuration.KeyboardConfig.TOGGLE_FULLSCREEN.value())) {
-      boolean modeChanged;
-      if (!Gdx.graphics.isFullscreen()) {
-        modeChanged = Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+      if (borderlessWindowedFullscreen || Gdx.graphics.isFullscreen()) {
+        exitBorderlessWindowedFullscreen();
       } else {
-        modeChanged =
-            Gdx.graphics.setWindowedMode(
-                PreRunConfiguration.windowWidth(), PreRunConfiguration.windowHeight());
-      }
-      if (modeChanged) {
-        displayModeTransitionFrames = 8;
-        synchronizeWindowSize();
-        Gdx.graphics.requestRendering();
+        enterBorderlessWindowedFullscreen();
       }
     }
+  }
+
+  private void enterBorderlessWindowedFullscreen() {
+    if (!(Gdx.graphics instanceof Lwjgl3Graphics lwjglGraphics)) {
+      return;
+    }
+
+    rememberWindowedMode(lwjglGraphics);
+    if (!enterNativeBorderlessWindow(lwjglGraphics.getWindow())) {
+      Gdx.graphics.setUndecorated(true);
+      Gdx.graphics.setResizable(true);
+      lwjglGraphics.getWindow().maximizeWindow();
+    }
+    borderlessWindowedFullscreen = true;
+    synchronizeWindowAfterTransitionNowAndNextFrame();
+  }
+
+  private void exitBorderlessWindowedFullscreen() {
+    if (!(Gdx.graphics instanceof Lwjgl3Graphics lwjglGraphics)) {
+      return;
+    }
+
+    if (!exitNativeBorderlessWindow(lwjglGraphics.getWindow())) {
+      lwjglGraphics.getWindow().restoreWindow();
+      Gdx.graphics.setUndecorated(false);
+      Gdx.graphics.setResizable(PreRunConfiguration.resizeable());
+    }
+    Gdx.graphics.setWindowedMode(windowedWidthBeforeBorderless, windowedHeightBeforeBorderless);
+    if (windowedPositionBeforeBorderlessAvailable) {
+      lwjglGraphics.getWindow().setPosition(windowedXBeforeBorderless, windowedYBeforeBorderless);
+    }
+    borderlessWindowedFullscreen = false;
+    synchronizeWindowAfterTransitionNowAndNextFrame();
+  }
+
+  private void rememberWindowedMode(Lwjgl3Graphics lwjglGraphics) {
+    if (borderlessWindowedFullscreen || Gdx.graphics.isFullscreen()) {
+      return;
+    }
+
+    windowedWidthBeforeBorderless = Gdx.graphics.getWidth();
+    windowedHeightBeforeBorderless = Gdx.graphics.getHeight();
+    windowedXBeforeBorderless = lwjglGraphics.getWindow().getPositionX();
+    windowedYBeforeBorderless = lwjglGraphics.getWindow().getPositionY();
+    windowedPositionBeforeBorderlessAvailable = true;
   }
 
   /**
@@ -581,7 +804,6 @@ public final class GameLoop extends ScreenAdapter {
    * <p>Needs to be called before redraw something.
    */
   private void clearScreen() {
-    Gdx.gl.glViewport(0, 0, Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight());
     Gdx.gl.glClearColor(0, 0, 0, 1);
     Gdx.gl.glClear(GL_COLOR_BUFFER_BIT);
   }
@@ -589,46 +811,34 @@ public final class GameLoop extends ScreenAdapter {
   @Override
   public void resize(int width, int height) {
     super.resize(width, height);
-    if (width <= 0 || height <= 0) return;
-    resizeStageAndListeners(width, height);
-    DrawSystem.getInstance().useCurrentWindowSizeImmediately();
-  }
-
-  private static void synchronizeWindowSize() {
-    int width = Game.windowWidth();
-    int height = Game.windowHeight();
-    if (width <= 0 || height <= 0) return;
-    resizeStageAndListeners(width, height);
-    DrawSystem.getInstance().useCurrentWindowSizeImmediately();
-  }
-
-  private static void resizeStageAndListeners(int width, int height) {
     stage()
         .ifPresent(
             x -> {
               x.getViewport().setWorldSize(width, height);
               x.getViewport().update(width, height, true);
             });
-    resizables.forEach(r -> r.onResize(width, height));
+    resizables.forEach(resizable -> resizable.onResize(width, height));
+    WindowEventManager.windowListener().refreshRequested();
   }
 
   /**
-   * Register an {@link IResizable} to be notified when the window is resized.
+   * Registers a UI element for resize callbacks.
    *
-   * @param resizable the resizable to register
+   * @param resizable element to register
    */
   public static void registerResizable(IResizable resizable) {
-    resizables.add(resizable);
+    if (!resizables.contains(resizable)) {
+      resizables.add(resizable);
+    }
   }
 
   /**
-   * Unregister an {@link IResizable} to stop being notified when the window is resized.
+   * Removes a UI element from resize callbacks.
    *
-   * @param resizable the resizable to unregister
-   * @return true if the resizable was registered and removed, false otherwise
+   * @param resizable element to remove
    */
-  public static boolean removeResizable(IResizable resizable) {
-    return resizables.remove(resizable);
+  public static void removeResizable(IResizable resizable) {
+    resizables.remove(resizable);
   }
 
   /**
@@ -651,6 +861,6 @@ public final class GameLoop extends ScreenAdapter {
     ECSManagement.add(new InputSystem());
     ECSManagement.add(new DebugDrawSystem());
     ECSManagement.add(new AttributeBarSystem());
-    ECSManagement.add(new JoystickSystem());
+    ECSManagement.add(new SkillHudSystem());
   }
 }

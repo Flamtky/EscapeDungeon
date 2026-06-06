@@ -52,6 +52,12 @@ public class DialogContextKeys {
   /** The key for the callback function to execute on closure of the dialog. */
   public static final String ON_CLOSE = "onClose";
 
+  /** The key for the preferred content width in a text dialog. */
+  public static final String TEXT_DIALOG_CONTENT_WIDTH = "textDialogContentWidth";
+
+  /** The key for the preferred content height in a text dialog. */
+  public static final String TEXT_DIALOG_CONTENT_HEIGHT = "textDialogContentHeight";
+
   /** The key for the callback function to execute on a "Resume" response. */
   public static final String ON_RESUME = "onResume";
 
@@ -63,6 +69,9 @@ public class DialogContextKeys {
 
   /** The key for the pre-filled text in an input field. */
   public static final String INPUT_PREFILL = "inputPrefill";
+
+  /** The key for a callback function receiving free-form input. */
+  public static final String INPUT_CALLBACK = "inputCallback";
 
   /**
    * The key for specifying additional buttons in the dialog.
@@ -81,8 +90,35 @@ public class DialogContextKeys {
   /** The key for the image transition speed in the dialog. */
   public static final String IMAGE_TRANSITION_SPEED = "imageTransitionSpeed";
 
+  /** The key for the maximum image size in the dialog, relative to the screen. */
+  public static final String IMAGE_MAX_SIZE = "imageMaxSize";
+
   /** The key for the progress bar component in the dialog. */
   public static final String PROGRESS_BAR = "progressBar";
+
+  /** The key for the description text shown below the main message. */
+  public static final String DESCRIPTION = "description";
+
+  /**
+   * The key for the list of selectable options (ArrayList&lt;String&gt;) in a multiple choice
+   * dialog.
+   */
+  public static final String OPTIONS = "options";
+
+  /** The key for whether a cancel option should be appended (Boolean). */
+  public static final String CAN_CANCEL = "canCancel";
+
+  /** The key for the callback function to execute when an option is selected. */
+  public static final String ON_OPTION_SELECTED = "onOptionSelected";
+
+  /** The key for the dialog script (String) used by {@link DialogDialog}. */
+  public static final String DIALOG = "dialog";
+
+  /** The key for whether dialog text font-size controls are enabled (Boolean). */
+  public static final String DIALOG_TEXT_FONT_SIZE_CONTROLS = "dialogTextFontSizeControls";
+
+  /** The key for the puzzle complete callback */
+  public static final String ON_COMPLETE = "onComplete";
 
   private DialogContextKeys() {}
 }

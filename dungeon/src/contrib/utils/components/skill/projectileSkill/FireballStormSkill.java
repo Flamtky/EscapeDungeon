@@ -42,7 +42,7 @@ public class FireballStormSkill extends FireballSkill {
   }
 
   @Override
-  protected void executeSkill(Entity caster) {
+  protected boolean executeSkill(Entity caster) {
     Point casterPosition = start(caster);
 
     for (int i = 0; i < totalFireballs; i++) {
@@ -55,5 +55,6 @@ public class FireballStormSkill extends FireballSkill {
           },
           (long) i * delayBetweenFireballs);
     }
+    return false;
   }
 }

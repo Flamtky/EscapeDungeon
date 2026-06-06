@@ -3,6 +3,7 @@ package core.network.server;
 import core.game.PreRunConfiguration;
 import core.network.MessageDispatcher;
 import core.network.messages.NetworkMessage;
+import core.network.messages.s2c.GameOverEvent;
 import core.utils.logging.DungeonLogger;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
@@ -75,6 +76,7 @@ public final class ServerRuntime {
    * <p>If the server is not running, this method does nothing.
    */
   public void stop() {
+    broadcastMessage(new GameOverEvent("Server stopped"), true);
     if (loop != null) loop.stop();
     if (transport != null) transport.stop();
   }
@@ -146,5 +148,14 @@ public final class ServerRuntime {
    */
   public ServerTransport transport() {
     return transport;
+  }
+
+  /**
+   * Checks if the server is currently running.
+   *
+   * @return true if the server loop is active, false otherwise.
+   */
+  public boolean isRunning() {
+    return loop != null && loop.isRunning();
   }
 }

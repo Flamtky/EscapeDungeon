@@ -8,8 +8,8 @@ import core.System;
  * A system that restores mana to all entities with a {@link ManaComponent}.
  *
  * <p>The restoration is based on the mana regeneration rate defined in each {@code ManaComponent}.
- * The system ensures that restoration is applied frame-rate-independently by dividing the
- * per-second restoration rate by the current game frame rate.
+ * The system ensures that restoration is applied tick-rate-independently by dividing the per-second
+ * restoration rate by the current game tick rate.
  */
 public class ManaRestoreSystem extends System {
 
@@ -28,15 +28,15 @@ public class ManaRestoreSystem extends System {
    * <p>For each entity, the system fetches the component and restores an amount of mana equal to:
    *
    * <pre>
-   * restorePerSecond / Game.frameRate()
+   * restorePerSecond / Game.tickRate()
    * </pre>
    *
-   * <p>This ensures a smooth, frame-rate-independent regeneration of mana.
+   * <p>This ensures smooth, tick-rate-independent regeneration of mana.
    */
   @Override
   public void execute() {
     filteredEntityStream()
         .flatMap(e -> e.fetch(ManaComponent.class).stream())
-        .forEach(m -> m.restore(m.restorePerSecond() / Game.frameRate()));
+        .forEach(m -> m.restore(m.restorePerSecond() / Game.tickRate()));
   }
 }

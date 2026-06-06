@@ -34,7 +34,7 @@ public class BasicStarter {
     }
     Game.disableAudio(true);
     Game.userOnSetup(() -> Game.add(EntityFactory.newHero()));
-    Game.frameRate(30);
+    Game.tickRate(30);
     Game.windowTitle("Basic Dungeon");
     Game.run();
   }

@@ -1,8 +1,6 @@
 package mushRoom;
 
-import contrib.components.CollideComponent;
-import contrib.components.DecoComponent;
-import contrib.components.InventoryComponent;
+import contrib.components.*;
 import contrib.entities.EntityFactory;
 import contrib.entities.LeverFactory;
 import contrib.entities.NPCFactory;
@@ -39,14 +37,7 @@ import core.utils.components.draw.shader.HueRemapShader;
 import core.utils.components.draw.shader.OutlineShader;
 import core.utils.components.path.SimpleIPath;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
 import mushRoom.modules.items.AxeItem;
 import mushRoom.modules.items.CustomHammerItem;
@@ -430,7 +421,7 @@ public class MainLevel extends DungeonLevel {
               pushStone.add(new PositionComponent(p));
               pushStone.add(new DrawComponent(new SimpleIPath("objects/push-stone.png")));
               pushStone.add(new CollideComponent(Vector2.of(0.05f, 0.05f), Vector2.of(0.9f, 0.9f)));
-              pushStone.add(new VelocityComponent(5.0f));
+              pushStone.add(VelocityComponent.defaultMoving(5));
               Game.add(pushStone);
               puzzlePushEntities.add(pushStone);
             });

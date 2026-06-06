@@ -3,7 +3,6 @@ package core.network;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import core.network.handler.LocalNetworkHandler;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
@@ -40,7 +39,7 @@ public class LocalNetworkHandlerTest {
           }
         });
 
-    handler.initialize(false, "localhost", 0, "user", Optional.empty());
+    handler.initialize(false, "localhost", 0, "user");
     handler.start();
     assertEquals(1, connected.get());
 

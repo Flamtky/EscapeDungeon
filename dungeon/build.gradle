@@ -3,7 +3,6 @@ plugins {
     id 'com.google.protobuf'
 }
 
-
 dependencies {
     // LibGDX: expose this API to users because of core.level.elements.ILevel
     api supportDependencies.gdx
@@ -19,10 +18,13 @@ dependencies {
 
     // Netty for server-client communication
     implementation supportDependencies.netty_all
-
-    // Protobuf for network serialization
     api supportDependencies.protobuf_java
     implementation supportDependencies.protobuf_java_util
+
+    // Database and Analytics: exposed to the API for evaluation logic
+    api supportDependencies.postgresql
+    api supportDependencies.hikari
+    api supportDependencies.dotenv
 
     // JUnit and Mockito for testing
     testImplementation supportDependencies.junit
@@ -34,43 +36,21 @@ dependencies {
     testImplementation("com.badlogicgames.gdx:gdx:$gdxVersion")
 }
 
+sourceSets.main.java.srcDirs = ['src/', "$buildDir/generated/sources/proto/main/java"]
+sourceSets.main.resources.srcDirs = ['assets/']
+sourceSets.main.proto.srcDirs = ['proto/']
+
+sourceSets.test.java.srcDirs = ['test/']
+sourceSets.test.resources.srcDirs = ['test_assets/']
+
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:${protobufVersion}"
-    }
-    generateProtoTasks {
-        all().configureEach { task ->
-            task.builtins {
-                java { }
-            }
-        }
-    }
-}
-
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src/', "$buildDir/generated/sources/proto/main/java"]
-        }
-        resources {
-            srcDirs = ['assets/']
-        }
-        proto {
-            srcDir 'proto'
-        }
-    }
-    test {
-        java {
-            srcDirs = ['test/']
-        }
-        resources {
-            srcDirs = ['test_assets/']
-        }
+        artifact = "com.google.protobuf:protoc:$protobufVersion"
     }
 }
 
 tasks.named('compileJava') {
-    dependsOn 'generateProto'
+    dependsOn tasks.named('generateProto')
 }
 
 tasks.register('runBasicStarter', JavaExec) {
@@ -100,14 +80,4 @@ tasks.register('runMPClient', JavaExec) {
 
 tasks.named('test', Test) {
     useJUnitPlatform()
-}
-
-tasks.named('checkstyleMain') {
-    exclude 'build/generated/source/proto/**'
-    exclude '**/core/network/proto/**'
-}
-
-tasks.named('checkstyleTest') {
-    exclude 'build/generated/source/proto/**'
-    exclude '**/core/network/proto/**'
 }

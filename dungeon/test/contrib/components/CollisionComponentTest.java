@@ -1,6 +1,6 @@
 package contrib.components;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import contrib.systems.CollisionSystem;
 import core.Entity;

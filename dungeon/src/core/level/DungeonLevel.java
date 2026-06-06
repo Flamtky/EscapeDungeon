@@ -5,17 +5,7 @@ import contrib.utils.level.ITickable;
 import core.level.elements.ILevel;
 import core.level.elements.astar.TileConnection;
 import core.level.elements.astar.TileHeuristic;
-import core.level.elements.tile.DoorTile;
-import core.level.elements.tile.ExitTile;
-import core.level.elements.tile.FloorTile;
-import core.level.elements.tile.GitterTile;
-import core.level.elements.tile.GlasswandTile;
-import core.level.elements.tile.HoleTile;
-import core.level.elements.tile.PitTile;
-import core.level.elements.tile.PortalTile;
-import core.level.elements.tile.SkipTile;
-import core.level.elements.tile.TileFactory;
-import core.level.elements.tile.WallTile;
+import core.level.elements.tile.*;
 import core.level.utils.Coordinate;
 import core.level.utils.DesignLabel;
 import core.level.utils.LevelElement;
@@ -24,15 +14,7 @@ import core.utils.Point;
 import core.utils.Tuple;
 import core.utils.Vector2;
 import core.utils.components.path.IPath;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -50,6 +32,8 @@ public class DungeonLevel implements ILevel, ITickable {
 
   protected final Map<String, Point> namedPoints = new HashMap<>();
   protected final List<Tuple<Deco, Point>> decorations = new ArrayList<>();
+
+  private boolean finishedLoading = true;
 
   private static int levelNameSuffix = 1;
   protected String levelName;
@@ -401,6 +385,16 @@ public class DungeonLevel implements ILevel, ITickable {
     return decorations;
   }
 
+  @Override
+  public boolean finishedLoading() {
+    return finishedLoading;
+  }
+
+  @Override
+  public void finishedLoading(boolean finishedLoading) {
+    this.finishedLoading = finishedLoading;
+  }
+
   /**
    * Adds a decoration to the level at the specified position.
    *
@@ -426,10 +420,12 @@ public class DungeonLevel implements ILevel, ITickable {
    *
    * @param name the name of the point
    * @return the point associated with the given name, or null if not found
+   * @throws IllegalArgumentException if no point with the given name exists
    */
   public Point getPoint(String name) {
-    if (!namedPoints.containsKey(name))
-      throw new NoSuchElementException("No point found with name: " + name);
+    if (!namedPoints.containsKey(name)) {
+      throw new IllegalArgumentException("No point found with name: " + name);
+    }
     return namedPoints.get(name);
   }
 

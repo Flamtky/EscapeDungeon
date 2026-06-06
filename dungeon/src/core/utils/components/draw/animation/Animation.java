@@ -9,12 +9,8 @@ import core.utils.components.draw.TextureMap;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
 import core.utils.logging.DungeonLogger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.io.*;
+import java.util.*;
 
 /**
  * Represents an animation consisting of one or more {@link Sprite}s.
@@ -34,7 +30,9 @@ import java.util.Optional;
  * <p>Animation frames are stored internally as {@link Sprite} objects and can be updated
  * frame-by-frame with {@link #update()}.
  */
-public class Animation implements Cloneable {
+public class Animation implements Serializable, Cloneable {
+  @Serial private static final long serialVersionUID = 1L;
+
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(Animation.class);
 
   /** Path to the missing texture fallback image. */
@@ -203,6 +201,21 @@ public class Animation implements Cloneable {
   }
 
   /**
+   * Gets the source image path used by this animation.
+   *
+   * @return the spritesheet path, first frame path, or an empty {@link Optional} if unavailable
+   */
+  public Optional<IPath> sourcePath() {
+    if (sourceType == SourceType.SPRITESHEET) {
+      return Optional.ofNullable(sheetPath);
+    }
+    if (framePaths == null || framePaths.isEmpty()) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(framePaths.get(0));
+  }
+
+  /**
    * Get the scale factor in the X direction.
    *
    * @return The scale factor in the X direction.
@@ -218,24 +231,6 @@ public class Animation implements Cloneable {
    */
   public float getScaleY() {
     return config.scaleY() == 0 ? config.scaleX() : config.scaleY();
-  }
-
-  /**
-   * Returns the source path for this animation, if available.
-   *
-   * <p>For spritesheets this returns the sheet path. For single or multi-frame animations this
-   * returns the first frame path.
-   *
-   * @return an Optional containing the source path
-   */
-  public Optional<IPath> sourcePath() {
-    if (sourceType == SourceType.SPRITESHEET) {
-      return Optional.ofNullable(sheetPath);
-    }
-    if (framePaths == null || framePaths.isEmpty()) {
-      return Optional.empty();
-    }
-    return Optional.of(framePaths.get(0));
   }
 
   /**
@@ -489,15 +484,47 @@ public class Animation implements Cloneable {
     int offsetX = ssc.x();
     int offsetY = ssc.y();
 
+    // read padding/margin from animation config (defaults to 0)
+    int paddingX = config.paddingX();
+    int paddingY = config.paddingY();
+    int marginX = config.marginX();
+    int marginY = config.marginY();
+
     sprites = new Sprite[ssc.rows() * ssc.columns()];
-    for (int y = 0; y < ssc.rows(); y++) {
-      for (int x = 0; x < ssc.columns(); x++) {
-        int index = y * ssc.columns() + x;
+    for (int row = 0; row < ssc.rows(); row++) {
+      for (int col = 0; col < ssc.columns(); col++) {
+        int index = row * ssc.columns() + col;
         if (canUseTextures() && spritesheet != null) {
-          sprites[index] =
-              new Sprite(
-                  new TextureRegion(
-                      spritesheet, offsetX + sWidth * x, offsetY + sHeight * y, sWidth, sHeight));
+          int sx = offsetX + marginX + col * (sWidth + paddingX);
+          int sy = offsetY + marginY + row * (sHeight + paddingY);
+
+          int texW = spritesheet.getWidth();
+          int texH = spritesheet.getHeight();
+
+          if (sx < 0) sx = 0;
+          if (sy < 0) sy = 0;
+
+          if (sx >= texW || sy >= texH) {
+            LOGGER.debug(
+                "Sprite region outside texture bounds: sx={}, sy={}, texW={}, texH={}",
+                sx,
+                sy,
+                texW,
+                texH);
+            sprites[index] = new Sprite();
+            continue;
+          }
+
+          int frameW = Math.min(sWidth, texW - sx);
+          int frameH = Math.min(sHeight, texH - sy);
+
+          if (frameW <= 0 || frameH <= 0) {
+            LOGGER.debug(
+                "Sprite frame has non-positive size after clipping: w={}, h={}", frameW, frameH);
+            sprites[index] = new Sprite();
+          } else {
+            sprites[index] = new Sprite(new TextureRegion(spritesheet, sx, sy, frameW, frameH));
+          }
         } else {
           sprites[index] = new Sprite();
         }
@@ -527,6 +554,19 @@ public class Animation implements Cloneable {
       return dirName + "/" + baseName + ".png";
     }
     return pathString;
+  }
+
+  @Serial
+  private void writeObject(ObjectOutputStream out) throws IOException {
+    out.defaultWriteObject();
+  }
+
+  @Serial
+  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+    this.sprites = null;
+    this.loaded = false;
+    // width/height will be recomputed on load; keep existing values as hints
   }
 
   @Override

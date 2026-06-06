@@ -1,21 +1,117 @@
 package core.network.messages.s2c;
 
-import java.util.Objects;
-import java.util.Set;
+import core.Game;
+import core.level.Tile;
+import core.level.elements.tile.DoorTile;
+import core.level.utils.Coordinate;
+import core.network.messages.NetworkMessage;
+import java.io.Serial;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
- * Snapshot state for the current level.
+ * Represents the state of a level, including door states and design labels.
  *
- * @param doorStates all door tiles with their open/closed state
+ * @param doorStates An array representing the open/closed states of doors in the level.
+ * @param designLabelBytes A 2D array representing the design labels of tiles in the level. (can be
+ *     null)
  */
-public record LevelState(Set<DoorTileState> doorStates) {
+public record LevelState(
+    Map<Coordinate, Boolean> doorStates, Map<Coordinate, Byte> designLabelBytes)
+    implements NetworkMessage {
+  @Serial private static final long serialVersionUID = 1L;
 
   /**
-   * Creates a new immutable level state snapshot.
+   * Captures the current state of the level, including door states and design labels.
    *
-   * @param doorStates all door tiles with their open/closed state
+   * @return The current LevelState of the game.
    */
-  public LevelState {
-    doorStates = Set.copyOf(Objects.requireNonNull(doorStates, "doorStates"));
+  public static LevelState currentLevelStateFull() {
+    return new LevelState(getDoorStates(), getDesignLabels());
+  }
+
+  /**
+   * Creates a delta LevelState containing only changes since the previous state.
+   *
+   * @param previous the previous LevelState to compare against, or null for full state
+   * @return a new LevelState containing only changed doors and design labels
+   */
+  public static LevelState createDelta(LevelState previous) {
+    if (previous == null) {
+      return currentLevelStateFull();
+    }
+    Map<Coordinate, Boolean> deltaDoors =
+        generateDoorStateDelta(previous.doorStates() != null ? previous.doorStates() : Map.of());
+    Map<Coordinate, Byte> deltaLabels =
+        generateDesignLabelDelta(
+            previous.designLabelBytes() != null ? previous.designLabelBytes() : Map.of());
+    return new LevelState(deltaDoors, deltaLabels);
+  }
+
+  /**
+   * Returns true if this LevelState has no data.
+   *
+   * @return true if both doorStates and designLabelBytes are empty or null
+   */
+  public boolean isEmpty() {
+    boolean doorsEmpty = doorStates == null || doorStates.isEmpty();
+    boolean labelsEmpty = designLabelBytes == null || designLabelBytes.isEmpty();
+    return doorsEmpty && labelsEmpty;
+  }
+
+  private static Map<Coordinate, Boolean> generateDoorStateDelta(
+      Map<Coordinate, Boolean> previousDoorStates) {
+    var currentDoorStates = getDoorStates();
+    return currentDoorStates.entrySet().parallelStream()
+        .filter(
+            entry -> {
+              Boolean previousState = previousDoorStates.get(entry.getKey());
+              return previousState == null || !previousState.equals(entry.getValue());
+            })
+        .collect(Collectors.toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private static Map<Coordinate, Byte> generateDesignLabelDelta(
+      Map<Coordinate, Byte> previousDesignLabels) {
+    var currentDesignLabels = getDesignLabels();
+    return currentDesignLabels.entrySet().parallelStream()
+        .filter(
+            entry -> {
+              Byte previousLabel = previousDesignLabels.get(entry.getKey());
+              return previousLabel == null || !previousLabel.equals(entry.getValue());
+            })
+        .collect(Collectors.toConcurrentMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private static Map<Coordinate, Boolean> getDoorStates() {
+    var doorTiles = Game.currentLevel().orElseThrow().doorTiles();
+    Map<Coordinate, Boolean> doorStates = new HashMap<>();
+    for (DoorTile doorTile : doorTiles) {
+      doorStates.put(doorTile.coordinate(), doorTile.isOpen());
+    }
+    return doorStates;
+  }
+
+  private static Map<Coordinate, Byte> getDesignLabels() {
+    var level = Game.currentLevel().orElseThrow();
+    int width = level.layout().length;
+    int height = level.layout()[0].length;
+    Map<Coordinate, Byte> designLabels = new ConcurrentHashMap<>();
+    Tile[][] levelLayout = level.layout();
+
+    IntStream.range(0, width)
+        .parallel()
+        .forEach(
+            x -> {
+              for (int y = 0; y < height; y++) {
+                Tile tile = levelLayout[x][y];
+                designLabels.put(tile.coordinate(), tile.designLabel().toByte());
+              }
+            });
+
+    return designLabels;
   }
 }

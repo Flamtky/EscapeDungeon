@@ -2,15 +2,10 @@ package contrib.components;
 
 import contrib.item.Item;
 import core.Component;
+import core.Game;
+import core.game.PreRunConfiguration;
 import core.utils.logging.DungeonLogger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -300,10 +295,15 @@ public final class InventoryComponent implements Component {
       return false;
     }
     if (this.inventory[index] == item) return true; // no change
+    var isNewItem = !this.hasItem(item);
     this.inventory[index % this.inventory.length] = item;
-    if (item == null) return true; // no callback for null items
+    if (item == null) return true; // do not call added on null items
 
     this.onItemAdded.accept(item);
+
+    if (PreRunConfiguration.isNetworkServer() && isNewItem) {
+      item.added(Game.findInLevel(this).orElse(null));
+    }
     return true;
   }
 
@@ -323,44 +323,41 @@ public final class InventoryComponent implements Component {
   }
 
   /**
-   * Removes one unit from the first matching item in the inventory.
+   * Removes one unit from the smallest stack of an item of the same class as the specified item in
+   * the inventory.
    *
-   * <p>The method first searches for an exact reference match ({@code ==}). If none is found, it
-   * falls back to an {@link Object#equals(Object) equals}-based match. The first match encountered
-   * (in slot order) has its stack size decremented by one. If the stack size reaches zero or below,
-   * the item is removed from the inventory entirely.
+   * <p>If multiple stacks of items of the same class exist, the unit is removed from the stack with
+   * the smaller size. If only one stack exists, the unit ist removed from that stack. If the stack
+   * size reaches zero or below, the item is removed from the inventory entirely.
    *
-   * @param item The reference item used to find a matching inventory entry.
+   * @param item The reference item whose class is used to determine which item to remove one unit
+   *     from.
    * @return true if one unit was successfully removed; false if no matching item was found in the
    *     inventory.
    */
   public boolean removeOne(Item item) {
-    // Exact instance match
+    Item itemToRemoveOne =
+        Arrays.stream(inventory)
+                    .filter(Objects::nonNull)
+                    .filter(it -> it.getClass().equals(item.getClass()))
+                    .count()
+                > 1
+            ? smallestStackOfItemClass(item.getClass()).orElse(null)
+            : item;
+
+    if (itemToRemoveOne == null) {
+      return false;
+    }
+
     for (int i = 0; i < inventory.length; i++) {
-      if (inventory[i] == item) {
+      if (inventory[i] != null && inventory[i].equals(itemToRemoveOne)) {
         Item it = inventory[i];
-        it.stackSize(it.stackSize() - 1);
-        if (it.stackSize() <= 0) {
-          inventory[i] = null;
-        }
+        it.stackSize((byte) (it.stackSize() - 1));
+        if (it.stackSize() <= 0) inventory[i] = null;
         this.onItemRemoved.accept(it);
         return true;
       }
     }
-
-    // Equals-based match
-    for (int i = 0; i < inventory.length; i++) {
-      if (inventory[i] != null && inventory[i].equals(item)) {
-        Item it = inventory[i];
-        it.stackSize(it.stackSize() - 1);
-        if (it.stackSize() <= 0) {
-          inventory[i] = null;
-        }
-        this.onItemRemoved.accept(it);
-        return true;
-      }
-    }
-
     return false;
   }
 

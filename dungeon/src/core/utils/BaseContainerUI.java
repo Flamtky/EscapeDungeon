@@ -25,6 +25,7 @@ public class BaseContainerUI extends Table implements IResizable {
   private float offsetX;
   private float offsetY;
   private boolean grow;
+  private Cell<Actor> contentCell;
 
   /**
    * Creates a new BaseContainerUI with the specified content actor.
@@ -89,6 +90,7 @@ public class BaseContainerUI extends Table implements IResizable {
     } else {
       GameLoop.registerResizable(this);
       setSize(stage.getWidth(), stage.getHeight());
+      beforePositionContent(stage.getWidth(), stage.getHeight());
       positionContent();
     }
   }
@@ -102,8 +104,18 @@ public class BaseContainerUI extends Table implements IResizable {
   @Override
   public void onResize(int width, int height) {
     setSize(width, height);
+    beforePositionContent(width, height);
     positionContent();
   }
+
+  /**
+   * Allows subclasses to update their content dimensions before the content is positioned inside
+   * this full-stage container.
+   *
+   * @param width The current container width.
+   * @param height The current container height.
+   */
+  protected void beforePositionContent(float width, float height) {}
 
   /**
    * Sets the content actor to display.
@@ -115,6 +127,7 @@ public class BaseContainerUI extends Table implements IResizable {
       super.removeActor(this.content);
     }
     this.content = actor;
+    contentCell = null;
     if (actor != null) {
       positionContent();
     }
@@ -170,8 +183,14 @@ public class BaseContainerUI extends Table implements IResizable {
       return;
     }
 
-    this.clearChildren();
-    Cell<Actor> cell = this.add(content).align(align);
+    this.align(align);
+
+    if (contentCell == null || content.getParent() != this) {
+      this.clearChildren();
+      contentCell = this.add(content);
+    }
+
+    Cell<Actor> cell = contentCell.align(align).pad(0f);
 
     if (grow) cell.grow();
 

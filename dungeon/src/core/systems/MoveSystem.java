@@ -1,6 +1,8 @@
 package core.systems;
 
+import analytics.DungeonAnalyticsAPI;
 import contrib.components.CollideComponent;
+import contrib.components.StaminaComponent;
 import contrib.systems.CollisionSystem;
 import contrib.systems.PositionSync;
 import contrib.utils.components.collide.Collider;
@@ -8,17 +10,15 @@ import contrib.utils.components.collide.CollisionUtils;
 import core.Entity;
 import core.Game;
 import core.System;
+import core.components.AnalyticsComponent;
 import core.components.PositionComponent;
 import core.components.VelocityComponent;
+import core.level.Tile;
 import core.utils.Direction;
 import core.utils.Point;
 import core.utils.Vector2;
 import core.utils.components.MissingComponentException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * System responsible for updating the position of entities based on their velocity, while
@@ -79,16 +79,15 @@ public class MoveSystem extends System {
   private void updatePosition(MSData data) {
     VelocityComponent vc = data.vc;
 
-    Vector2 velocity = data.vc.currentVelocity();
+    Vector2 velocity = data.vc.currentVelocity().normalize();
 
-    // Cap velocity magnitude to maxSpeed, mainly for diagonal movement
-    if (velocity.length() > data.vc.maxSpeed()) {
-      velocity = velocity.normalize().scale(data.vc.maxSpeed());
-    }
+    velocity = velocity.scale(vc.totalModifiers());
+    vc.removeModifier("sprint");
+
     Vector2 absVelocity = Vector2.of(Math.abs(velocity.x()), Math.abs(velocity.y()));
 
     // Calculate scaled velocity vector per frame time
-    Vector2 sv = velocity.scale(1f / Game.frameRate());
+    Vector2 sv = velocity.scale(1f / Game.tickRate());
     Point oldPos = data.pc.position();
     Collider collider = data.cc != null ? data.cc.collider() : null;
 
@@ -126,8 +125,11 @@ public class MoveSystem extends System {
 
       // If corner correction not possible, hit wall
       if (!triggeredXCC) {
-        float colliderEdge = hasCollider ? scaledXEdge(collider, sv.x() > 0) : 0f;
-        float wallX = snapToWall(newPos.x(), sv.x() > 0, colliderEdge);
+        float wallX = fromWall(newPos.x(), sv.x() > 0);
+        if (hasCollider) {
+          float xOffset = collider.offset().x();
+          wallX += sv.x() > 0 ? xOffset : -xOffset;
+        }
         newPos = new Point(wallX, newPos.y());
         hasHitWall = true;
       }
@@ -158,8 +160,11 @@ public class MoveSystem extends System {
 
       // If corner correction not possible, hit wall
       if (!triggeredYCC) {
-        float colliderEdge = hasCollider ? scaledYEdge(collider, sv.y() > 0) : 0f;
-        float wallY = snapToWall(newPos.y(), sv.y() > 0, colliderEdge);
+        float wallY = fromWall(newPos.y(), sv.y() > 0);
+        if (hasCollider) {
+          float yOffset = collider.offset().y();
+          wallY += sv.y() > 0 ? yOffset + collider.size().scale(0.5f).y() : -yOffset;
+        }
         newPos = new Point(newPos.x(), wallY);
         hasHitWall = true;
       }
@@ -170,8 +175,7 @@ public class MoveSystem extends System {
       cornerCorrectTimers.put(data.e, CORNER_CORRECT_COOLDOWN);
     } else {
       cornerCorrectTimers.put(
-          data.e,
-          Math.max(0, cornerCorrectTimers.getOrDefault(data.e, 0f) - 1f / Game.frameRate()));
+          data.e, Math.max(0, cornerCorrectTimers.getOrDefault(data.e, 0f) - 1f / Game.tickRate()));
     }
 
     // Final check if newPos is accessible. If no, abort to oldPos.
@@ -180,28 +184,59 @@ public class MoveSystem extends System {
     }
     data.pc.position(newPos);
 
+    if (data.e.isPresent(AnalyticsComponent.class)) {
+      Tile currentTile = Game.tileAt(newPos).orElse(null);
+      Tile oldTile = Game.tileAt(oldPos).orElse(null);
+      if (currentTile != null && currentTile != oldTile) {
+        Vector2 finalVelocity = velocity;
+        var posData = Map.of("x", (int) newPos.x(), "y", (int) newPos.y());
+        data.e
+            .fetch(AnalyticsComponent.class)
+            .ifPresent(
+                ac -> {
+                  DungeonAnalyticsAPI.logXApiStatement(
+                      ac,
+                      DungeonAnalyticsAPI.Verb.MOVED,
+                      data.e,
+                      Map.of(
+                          "success",
+                          true,
+                          "direction",
+                          finalVelocity.direction().toString(),
+                          "pos",
+                          posData,
+                          "stamina",
+                          data.e
+                              .fetch(StaminaComponent.class)
+                              .map(StaminaComponent::currentAmount)
+                              .map(s -> String.format("%.2f", s))
+                              .orElse("N/A")),
+                      null);
+                });
+      }
+    }
+
     if (hasHitWall) {
       data.vc.onWallHit().accept(data.e);
     }
   }
 
-  private float snapToWall(float position, boolean positiveDirection, float colliderEdge) {
-    float absoluteEdge = position + colliderEdge;
-    float wallEdge =
-        positiveDirection ? (float) Math.floor(absoluteEdge) : (float) Math.ceil(absoluteEdge);
-    float distance =
-        positiveDirection
-            ? -CollisionSystem.COLLIDE_SET_DISTANCE
-            : CollisionSystem.COLLIDE_SET_DISTANCE;
-    return wallEdge - colliderEdge + distance;
-  }
-
-  private float scaledXEdge(Collider collider, boolean positiveDirection) {
-    return (positiveDirection ? collider.right() : collider.left()) * collider.scale().x();
-  }
-
-  private float scaledYEdge(Collider collider, boolean positiveDirection) {
-    return (positiveDirection ? collider.top() : collider.bottom()) * collider.scale().y();
+  /**
+   * Returns either the lower or upper edge position of a wall. Adds a small epsilon to avoid
+   * floating point precision issues.
+   *
+   * @param position the current position
+   * @param lower whether to return the lower edge (true) or upper edge (false)
+   * @return the wall edge position
+   */
+  private float fromWall(float position, boolean lower) {
+    if (lower) {
+      return (float) Math.floor(position)
+          - CollisionSystem.COLLIDE_SET_DISTANCE; // Lower edge + a bit of distance in -x direction
+    } else {
+      return (float) Math.ceil(position)
+          + CollisionSystem.COLLIDE_SET_DISTANCE; // Upper edge + a bit of distance in +x direction
+    }
   }
 
   private Optional<Point> closestAvailablePos(

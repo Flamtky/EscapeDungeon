@@ -2,8 +2,7 @@ package contrib.entities;
 
 import contrib.utils.components.health.DamageType;
 import core.Game;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 /** Defines and build Monster-Entities for the Dungeon. */
@@ -31,9 +30,10 @@ public enum DungeonMonster {
               .idleSound(MonsterIdleSound.HIGH_PITCH)
               .fightAI(AIFactory::randomFightAI)
               .idleAI(AIFactory::randomIdleAI)
-              .transitionAI(() -> (self) -> AIFactory.randomTransition(self).apply(self))
+              .transitionAI(
+                  () -> (self, player) -> AIFactory.randomTransition(self).apply(self, player))
               .collideDamage(5)
-              .collideCooldown(2 * Game.frameRate())
+              .collideCooldown(2 * Game.tickRate())
               .damageType(DamageType.PHYSICAL)),
   /**
    * A slow-moving undead. Relatively low health but moderate mass. Cannot enter open pits. Emits a
@@ -58,9 +58,10 @@ public enum DungeonMonster {
               .idleSound(MonsterIdleSound.BURP)
               .fightAI(AIFactory::randomFightAI)
               .idleAI(AIFactory::randomIdleAI)
-              .transitionAI(() -> (self) -> AIFactory.randomTransition(self).apply(self))
+              .transitionAI(
+                  () -> (self, player) -> AIFactory.randomTransition(self).apply(self, player))
               .collideDamage(4)
-              .collideCooldown(2 * Game.frameRate())
+              .collideCooldown(2 * Game.tickRate())
               .damageType(DamageType.PHYSICAL)),
   /**
    * A large, powerful monster. Slow but deals high collision damage. Cannot enter open pits. Emits
@@ -85,9 +86,10 @@ public enum DungeonMonster {
               .idleSound(MonsterIdleSound.LOWER_PITCH)
               .fightAI(AIFactory::randomFightAI)
               .idleAI(AIFactory::randomIdleAI)
-              .transitionAI(() -> (self) -> AIFactory.randomTransition(self).apply(self))
+              .transitionAI(
+                  () -> (self, player) -> AIFactory.randomTransition(self).apply(self, player))
               .collideDamage(8)
-              .collideCooldown(2 * Game.frameRate())
+              .collideCooldown(2 * Game.tickRate())
               .damageType(DamageType.PHYSICAL)),
   /**
    * A small, agile goblin. Fast and light, deals low collision damage. Cannot enter open pits. Uses
@@ -112,9 +114,10 @@ public enum DungeonMonster {
               .idleSound(MonsterIdleSound.BASIC)
               .fightAI(AIFactory::randomFightAI)
               .idleAI(AIFactory::randomIdleAI)
-              .transitionAI(() -> (self) -> AIFactory.randomTransition(self).apply(self))
+              .transitionAI(
+                  () -> (self, player) -> AIFactory.randomTransition(self).apply(self, player))
               .collideDamage(3)
-              .collideCooldown(2 * Game.frameRate())
+              .collideCooldown(2 * Game.tickRate())
               .damageType(DamageType.PHYSICAL)),
   /**
    * An undead ice-themed monster. Moderate speed and health. Cannot enter open pits. Emits a
@@ -139,9 +142,10 @@ public enum DungeonMonster {
               .idleSound(MonsterIdleSound.LOWER_PITCH)
               .fightAI(AIFactory::randomFightAI)
               .idleAI(AIFactory::randomIdleAI)
-              .transitionAI(() -> (self) -> AIFactory.randomTransition(self).apply(self))
+              .transitionAI(
+                  () -> (self, player) -> AIFactory.randomTransition(self).apply(self, player))
               .collideDamage(4)
-              .collideCooldown(2 * Game.frameRate())
+              .collideCooldown(2 * Game.tickRate())
               .damageType(DamageType.PHYSICAL)),
   /**
    * A magical orc shaman. Moderate speed and health, cannot enter open pits. Uses basic death
@@ -166,9 +170,10 @@ public enum DungeonMonster {
               .idleSound(MonsterIdleSound.LOWER_PITCH)
               .fightAI(AIFactory::randomFightAI)
               .idleAI(AIFactory::randomIdleAI)
-              .transitionAI(() -> (self) -> AIFactory.randomTransition(self).apply(self))
+              .transitionAI(
+                  () -> (self, player) -> AIFactory.randomTransition(self).apply(self, player))
               .collideDamage(4)
-              .collideCooldown(2 * Game.frameRate())
+              .collideCooldown(2 * Game.tickRate())
               .damageType(DamageType.PHYSICAL));
 
   /** Random instance for monsters. */

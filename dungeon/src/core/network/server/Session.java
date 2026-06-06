@@ -26,14 +26,11 @@ public final class Session {
 
   private final ChannelHandlerContext tcpCtx;
   private volatile InetSocketAddress udpAddress;
-  private volatile boolean udpReady;
-  private volatile long udpLastSeenTimeMs;
 
   private volatile ClientState clientState;
 
-  private final BiFunction<InetSocketAddress, NetworkMessage, CompletableFuture<Boolean>> udpSender;
-  private final BiFunction<ChannelHandlerContext, NetworkMessage, CompletableFuture<Boolean>>
-      tcpSender;
+  private final BiFunction<InetSocketAddress, Object, CompletableFuture<Boolean>> udpSender;
+  private final BiFunction<ChannelHandlerContext, Object, CompletableFuture<Boolean>> tcpSender;
 
   /**
    * Creates a Session with TCP context and senders.
@@ -44,8 +41,8 @@ public final class Session {
    */
   public Session(
       ChannelHandlerContext tcpCtx,
-      BiFunction<InetSocketAddress, NetworkMessage, CompletableFuture<Boolean>> udpSender,
-      BiFunction<ChannelHandlerContext, NetworkMessage, CompletableFuture<Boolean>> tcpSender) {
+      BiFunction<InetSocketAddress, Object, CompletableFuture<Boolean>> udpSender,
+      BiFunction<ChannelHandlerContext, Object, CompletableFuture<Boolean>> tcpSender) {
     this.tcpCtx = tcpCtx;
     this.udpSender = udpSender;
     this.tcpSender = tcpSender;
@@ -133,38 +130,6 @@ public final class Session {
     this.udpAddress = addr;
   }
 
-  /**
-   * Returns whether UDP is currently considered healthy for this session.
-   *
-   * @return true when UDP is ready to be used, false otherwise
-   */
-  public boolean udpReady() {
-    return udpReady;
-  }
-
-  /**
-   * Updates whether UDP is currently considered healthy for this session.
-   *
-   * @param ready true when UDP is healthy, false otherwise
-   */
-  public void udpReady(boolean ready) {
-    this.udpReady = ready;
-  }
-
-  /**
-   * Returns the timestamp of the last known UDP activity for this session.
-   *
-   * @return the last UDP activity time in system milliseconds
-   */
-  public long udpLastSeenTimeMs() {
-    return udpLastSeenTimeMs;
-  }
-
-  /** Updates the last-known UDP activity timestamp to the current system time. */
-  public void markUdpActivity() {
-    this.udpLastSeenTimeMs = System.currentTimeMillis();
-  }
-
   /** Closes the TCP channel associated with this session. */
   public void close() {
     try {
@@ -186,16 +151,33 @@ public final class Session {
   /**
    * Sends a NetworkMessage over TCP or UDP based on the reliability requirement.
    *
+   * <p>When reliable is false (UDP), the message is first attempted via UDP. If UDP fails (e.g.,
+   * payload too large or channel unavailable), the message is automatically retried via TCP as a
+   * fallback.
+   *
    * @param msg the NetworkMessage to send
-   * @param reliable true to send over TCP, false to send over UDP
-   * @return a CompletableFuture that completes with true if the request was successful acknowledged
-   *     (if reliable) or sent (if unreliable), false otherwise
+   * @param reliable true to send over TCP, false to send over UDP (with TCP fallback)
+   * @return a CompletableFuture that completes with true if the message was sent successfully,
+   *     false otherwise
    */
   public CompletableFuture<Boolean> sendMessage(NetworkMessage msg, boolean reliable) {
     if (reliable) {
       return sendTcpObject(msg);
     } else {
-      return sendUdpObject(msg);
+      // Try UDP first, fallback to TCP if UDP fails
+      return sendUdpObject(msg)
+          .thenCompose(
+              success -> {
+                if (success) {
+                  return CompletableFuture.completedFuture(true);
+                } else {
+                  // UDP failed, fallback to TCP
+                  LOGGER.debug(
+                      "UDP send failed, falling back to TCP for {}",
+                      msg.getClass().getSimpleName());
+                  return sendTcpObject(msg);
+                }
+              });
     }
   }
 
@@ -208,12 +190,10 @@ public final class Session {
   }
 
   private CompletableFuture<Boolean> sendUdpObject(NetworkMessage msg) {
-    if (!udpReady || udpSender == null || udpAddress == null) {
-      return sendTcpObject(msg);
+    if (udpSender == null || udpAddress == null) {
+      LOGGER.debug("UDP sender or address is null; will fallback to TCP.");
+      return CompletableFuture.completedFuture(false);
     }
-    return udpSender
-        .apply(udpAddress, msg)
-        .thenCompose(
-            success -> success ? CompletableFuture.completedFuture(true) : sendTcpObject(msg));
+    return udpSender.apply(udpAddress, msg);
   }
 }

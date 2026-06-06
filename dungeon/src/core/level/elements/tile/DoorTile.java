@@ -32,6 +32,7 @@ public class DoorTile extends Tile {
   public DoorTile(
       final IPath texturePath, final Coordinate globalPosition, final DesignLabel designLabel) {
     super(texturePath, globalPosition, designLabel);
+
     levelElement = LevelElement.DOOR;
     open = true;
   }
@@ -108,6 +109,15 @@ public class DoorTile extends Tile {
     return open;
   }
 
+  private IPath closedTexturePath() {
+    if (texturePath != null) {
+      String[] splitPath = texturePath.pathString().split("\\.");
+      return new SimpleIPath(splitPath[0] + "_closed." + splitPath[1]);
+    } else {
+      return null;
+    }
+  }
+
   @Override
   public IPath texturePath() {
     if (open && (otherDoor == null || otherDoor.isOpen())) return texturePath;
@@ -132,14 +142,5 @@ public class DoorTile extends Tile {
         + ", OtherDoor="
         + otherDoorStr
         + "}";
-  }
-
-  private IPath closedTexturePath() {
-    if (texturePath != null) {
-      String[] splitPath = texturePath.pathString().split("\\.");
-      return new SimpleIPath(splitPath[0] + "_closed." + splitPath[1]);
-    } else {
-      return null;
-    }
   }
 }

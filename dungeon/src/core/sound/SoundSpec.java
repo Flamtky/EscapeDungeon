@@ -1,5 +1,8 @@
 package core.sound;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 /**
  * Describes a single sound instance to be played for an entity.
  *
@@ -27,8 +30,6 @@ package core.sound;
  *     attenuation).
  * @param attenuationFactor Factor for distance-based volume attenuation. 1.0 is default linear
  *     attenuation, higher values increase attenuation rate.
- * @param targetEntityIds Optional target entity IDs for multiplayer clients. Empty array targets
- *     all clients.
  * @see core.components.SoundComponent
  * @see core.sound.AudioApi
  */
@@ -40,37 +41,9 @@ public record SoundSpec(
     float pitch,
     float pan,
     float maxDistance,
-    float attenuationFactor,
-    int... targetEntityIds) {
-
-  /**
-   * Constructs a SoundSpec with the specified parameters. The targetEntityIds array is defensively
-   * copied to ensure immutability.
-   *
-   * @param instanceId Globally unique instance identifier.
-   * @param soundName The name of the sound asset to play (file name without extension).
-   * @param baseVolume The base volume level before distance attenuation. Range: [0.0, 1.0].
-   * @param looping Whether the sound should loop indefinitely until explicitly stopped.
-   * @param pitch The playback pitch multiplier. 1.0 is normal speed, 2.0 is double speed, 0.5 is
-   *     half speed.
-   * @param pan The stereo pan position. -1.0 is left, 0.0 is center, 1.0 is right.
-   * @param maxDistance Maximum distance for sound audibility. -1 means infinite range (no distance
-   *     attenuation).
-   * @param attenuationFactor Factor for distance-based volume attenuation. 1.0 is default linear
-   *     attenuation, higher values increase attenuation rate.
-   * @param targetEntityIds Optional target entity IDs for multiplayer clients. Empty array targets
-   *     all clients.
-   * @throws IllegalArgumentException if soundName is null or blank, or if baseVolume is out of
-   *     range
-   */
-  public SoundSpec {
-    if (soundName == null || soundName.isBlank())
-      throw new IllegalArgumentException("soundName required");
-    if (baseVolume < 0f || baseVolume > 1f)
-      throw new IllegalArgumentException("baseVolume must be in range [0.0, 1.0]");
-
-    targetEntityIds = targetEntityIds.clone(); // Defensive copy for immutability
-  }
+    float attenuationFactor)
+    implements Serializable {
+  @Serial private static final long serialVersionUID = 1L;
 
   /** Default volume level for sound playback. Range: [0.0, 1.0]. Default: 0.5 */
   public static final float DEFAULT_VOLUME = 0.5f;
@@ -83,16 +56,6 @@ public record SoundSpec(
 
   /** Default attenuation factor for distance-based volume reduction. Default: 1.0 */
   public static final float DEFAULT_ATTENUATION = 1.0f;
-
-  /**
-   * Returns a defensive copy of the target entity IDs.
-   *
-   * @return the target entity IDs, or an empty array if none were set
-   */
-  @Override
-  public int[] targetEntityIds() {
-    return targetEntityIds.clone();
-  }
 
   /**
    * Creates a new builder for constructing a SoundSpec.
@@ -128,7 +91,6 @@ public record SoundSpec(
     private float pan = DEFAULT_PAN;
     private float maxDistance = -1f;
     private float attenuationFactor = DEFAULT_ATTENUATION;
-    private int[] targetEntityIds = new int[0];
 
     /**
      * Creates a new builder with the specified sound name.
@@ -225,19 +187,6 @@ public record SoundSpec(
     }
 
     /**
-     * Sets the target entity IDs that should hear this sound.
-     *
-     * <p>Empty array means all clients.
-     *
-     * @param ids the entity IDs to target
-     * @return this builder for method chaining
-     */
-    public Builder targets(int... ids) {
-      this.targetEntityIds = ids == null ? new int[0] : ids.clone();
-      return this;
-    }
-
-    /**
      * Builds the immutable SoundSpec instance.
      *
      * @return a new SoundSpec with the configured values
@@ -251,20 +200,7 @@ public record SoundSpec(
           this.pitch,
           this.pan,
           this.maxDistance,
-          this.attenuationFactor,
-          this.targetEntityIds);
+          this.attenuationFactor);
     }
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    return this.instanceId() == ((SoundSpec) o).instanceId();
-  }
-
-  @Override
-  public int hashCode() {
-    return Long.hashCode(this.instanceId());
   }
 }

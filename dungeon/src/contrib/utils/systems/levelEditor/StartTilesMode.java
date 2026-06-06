@@ -11,7 +11,7 @@ import core.level.DungeonLevel;
 import core.level.Tile;
 import core.level.utils.LevelElement;
 import core.systems.CameraSystem;
-import core.systems.input.InputManager;
+import core.systems.InputManager;
 import core.utils.FontHelper;
 import core.utils.Point;
 import java.util.LinkedHashMap;

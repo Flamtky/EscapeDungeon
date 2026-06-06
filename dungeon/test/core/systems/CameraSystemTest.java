@@ -1,8 +1,6 @@
 package core.systems;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import core.Entity;
 import core.Game;
@@ -60,6 +58,7 @@ public class CameraSystemTest {
     entity.add(new CameraComponent());
 
     cameraSystem.execute();
+    cameraSystem.prepareRender(1f / Game.tickRate());
     assertEquals(expectedFocusPoint.x(), CameraSystem.camera().position.x, 0.001);
     assertEquals(expectedFocusPoint.y(), CameraSystem.camera().position.y, 0.001);
   }
@@ -72,6 +71,7 @@ public class CameraSystemTest {
     expectedFocusPoint = level.startTile().orElseThrow().position();
 
     cameraSystem.execute();
+    cameraSystem.prepareRender(1f / Game.tickRate());
 
     assertEquals(expectedFocusPoint.x(), CameraSystem.camera().position.x, 0.001);
     assertEquals(expectedFocusPoint.y(), CameraSystem.camera().position.y, 0.001);
@@ -83,6 +83,7 @@ public class CameraSystemTest {
     Game.currentLevel(null);
     Point expectedFocusPoint = new Point(0, 0);
     cameraSystem.execute();
+    cameraSystem.prepareRender(1f / Game.tickRate());
     assertEquals(expectedFocusPoint.x(), CameraSystem.camera().position.x, 0.001);
     assertEquals(expectedFocusPoint.y(), CameraSystem.camera().position.y, 0.001);
   }

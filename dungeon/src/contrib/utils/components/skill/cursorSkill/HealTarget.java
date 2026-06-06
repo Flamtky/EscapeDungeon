@@ -6,6 +6,7 @@ import core.Entity;
 import core.Game;
 import core.utils.Point;
 import core.utils.Tuple;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 /**
@@ -74,9 +75,18 @@ public class HealTarget extends CursorSkill {
    *
    * @param caster The entity using the skill.
    * @param point The cursor position in the game world where the skill is applied.
+   * @return whether the skill was successfully executed.
    */
   @Override
-  protected void executeOnCursor(Entity caster, Point point) {
-    Game.entityAtPoint(point).findFirst().ifPresent(this::heal);
+  protected boolean executeOnCursor(Entity caster, Point point) {
+    AtomicBoolean success = new AtomicBoolean(false);
+    Game.entityAtPoint(point)
+        .findFirst()
+        .ifPresent(
+            entity -> {
+              heal(entity);
+              success.set(true);
+            });
+    return success.get();
   }
 }

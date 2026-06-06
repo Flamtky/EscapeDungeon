@@ -3,24 +3,9 @@ package starter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import contrib.entities.EntityFactory;
-import contrib.systems.AISystem;
-import contrib.systems.CollisionSystem;
-import contrib.systems.FallingSystem;
-import contrib.systems.HealthSystem;
-import contrib.systems.IdleSoundSystem;
-import contrib.systems.LevelEditorSystem;
-import contrib.systems.LevelTickSystem;
-import contrib.systems.LeverSystem;
-import contrib.systems.ManaRestoreSystem;
-import contrib.systems.PathSystem;
-import contrib.systems.PitSystem;
-import contrib.systems.PressurePlateSystem;
-import contrib.systems.ProjectileSystem;
-import contrib.systems.SpikeSystem;
-import contrib.systems.StaminaRestoreSystem;
+import contrib.systems.*;
 import contrib.utils.components.Debugger;
-import coopDungeon.level.Level01;
-import coopDungeon.level.Level02;
+import coopDungeon.level.*;
 import core.Game;
 import core.level.loader.DungeonLoader;
 import core.utils.Tuple;
@@ -75,7 +60,7 @@ public class CoopDungeon {
         contrib.configuration.KeyboardConfig.class,
         core.configuration.KeyboardConfig.class);
     Game.disableAudio(false);
-    Game.frameRate(30);
+    Game.tickRate(30);
   }
 
   private static void createSystems() {
@@ -87,7 +72,6 @@ public class CoopDungeon {
     Game.add(new SpikeSystem());
     if (!DEBUG_MODE) Game.add(new FallingSystem());
     Game.add(new PathSystem());
-    Game.add(new LevelTickSystem());
     Game.add(new PitSystem());
     Game.add(new LeverSystem());
     Game.add(new PressurePlateSystem());

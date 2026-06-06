@@ -16,17 +16,7 @@ public interface CraftingIngredient {
    */
   boolean match(final CraftingIngredient input);
 
-  /**
-   * Sets the amount of the ingredient.
-   *
-   * @param count The amount to set.
-   */
   void setAmount(int count);
 
-  /**
-   * Gets the amount of the ingredient.
-   *
-   * @return The amount of the ingredient.
-   */
   int getAmount();
 }

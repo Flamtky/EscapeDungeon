@@ -4,9 +4,8 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogFactory;
 import core.Component;
-import core.network.messages.c2s.DialogResponseMessage;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Serializable;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -24,9 +23,10 @@ public final class UIComponent implements Component {
   private final boolean canBeClosed;
   private final int[] targetEntityIds;
   private final DialogContext dialogContext;
+  private final long createdAt;
 
   /** Server-side callbacks map. Keys match callback keys sent by clients. */
-  private final Map<String, Consumer<DialogResponseMessage.Payload>> callbacks = new HashMap<>();
+  private final Map<String, Consumer<Serializable>> callbacks = new HashMap<>();
 
   private Group dialog = null;
 
@@ -48,6 +48,7 @@ public final class UIComponent implements Component {
     this.willPauseGame = willPauseGame;
     this.canBeClosed = canBeClosed;
     this.targetEntityIds = targetEntityIds;
+    this.createdAt = System.currentTimeMillis();
   }
 
   /**
@@ -82,11 +83,10 @@ public final class UIComponent implements Component {
    * executes it with the provided data.
    *
    * @param key the callback key (e.g., "onConfirm", "craft", "cancel")
-   * @param callback the callback to execute, receives optional custom payload
+   * @param callback the callback to execute, receives optional custom data
    * @return this UIComponent for method chaining
    */
-  public UIComponent registerCallback(
-      String key, Consumer<DialogResponseMessage.Payload> callback) {
+  public UIComponent registerCallback(String key, Consumer<Serializable> callback) {
     if (key == null || callback == null) {
       throw new IllegalArgumentException("key and callback must not be null");
     }
@@ -99,7 +99,7 @@ public final class UIComponent implements Component {
    *
    * @return the callbacks map (unmodifiable view)
    */
-  public Map<String, Consumer<DialogResponseMessage.Payload>> callbacks() {
+  public Map<String, Consumer<Serializable>> callbacks() {
     return Map.copyOf(callbacks);
   }
 
@@ -148,6 +148,15 @@ public final class UIComponent implements Component {
    */
   public DialogContext dialogContext() {
     return dialogContext;
+  }
+
+  /**
+   * Get the creation timestamp of this UIComponent.
+   *
+   * @return the creation timestamp in milliseconds
+   */
+  public long createdAt() {
+    return createdAt;
   }
 
   /**

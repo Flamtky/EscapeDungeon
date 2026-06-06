@@ -11,6 +11,8 @@ import core.Component;
  */
 public class StaminaComponent implements Component, BarDisplayable {
 
+  private static boolean barsVisible = true;
+
   /** The maximum amount of stamina the entity can have. */
   private float maxAmount;
 
@@ -19,6 +21,9 @@ public class StaminaComponent implements Component, BarDisplayable {
 
   /** The amount of stamina restored per second. */
   private float restorePerSecond;
+
+  /** Whether the entity is currently in an exhausted state due to depleted stamina. */
+  private boolean exhausted;
 
   /**
    * Creates a new {@code EnergyComponent} with the given maximum stamina, initial stamina, and
@@ -32,6 +37,25 @@ public class StaminaComponent implements Component, BarDisplayable {
     this.maxAmount = maxAmount;
     this.currentAmount = Math.min(currentAmount, maxAmount);
     this.restorePerSecond = restorePerSecond;
+    this.exhausted = false;
+  }
+
+  /**
+   * Sets whether stamina bars should be visible globally.
+   *
+   * @param visible true to show stamina bars
+   */
+  public static void barsVisible(boolean visible) {
+    barsVisible = visible;
+  }
+
+  /**
+   * Returns whether stamina bars are globally visible.
+   *
+   * @return true if stamina bars are visible
+   */
+  public static boolean barsVisible() {
+    return barsVisible;
   }
 
   /**
@@ -159,5 +183,34 @@ public class StaminaComponent implements Component, BarDisplayable {
   @Override
   public int barPriority() {
     return 2;
+  }
+
+  @Override
+  public boolean barVisible() {
+    return barsVisible;
+  }
+
+  /**
+   * Returns whether the entity is currently in an exhausted state.
+   *
+   * <p>An entity becomes exhausted when their stamina is fully depleted and remains exhausted until
+   * stamina recovers above a certain threshold.
+   *
+   * @return {@code true} if the entity is exhausted, {@code false} otherwise
+   */
+  public boolean isExhausted() {
+    return exhausted;
+  }
+
+  /**
+   * Sets the exhausted state of the entity.
+   *
+   * <p>This is typically called by systems that manage stamina depletion and recovery to track when
+   * the entity should have reduced capabilities (e.g., slower movement speed).
+   *
+   * @param exhausted {@code true} to mark the entity as exhausted, {@code false} otherwise
+   */
+  public void setExhausted(boolean exhausted) {
+    this.exhausted = exhausted;
   }
 }

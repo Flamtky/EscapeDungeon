@@ -17,16 +17,12 @@ public class KeyboardConfig {
       new ConfigKey<>(new String[] {"ui", "close"}, new ConfigIntValue(Input.Keys.ESCAPE));
 
   /** WTF? . */
-  public static final ConfigKey<Integer> PAUSE_MENU =
-      new ConfigKey<>(new String[] {"ui", "open_pause_menu"}, new ConfigIntValue(Input.Keys.P));
-
-  /** WTF? . */
   public static final ConfigKey<Integer> INTERACT_WORLD =
       new ConfigKey<>(new String[] {"interact", "world"}, new ConfigIntValue(Input.Keys.E));
 
   /** This key is used to interact with the world. */
   public static final ConfigKey<Integer> MOUSE_INTERACT_WORLD =
-      new ConfigKey<>(new String[] {"interact", "mouse"}, new ConfigIntValue(Input.Buttons.MIDDLE));
+      new ConfigKey<>(new String[] {"interact", "mouse"}, new ConfigIntValue(Input.Buttons.RIGHT));
 
   /** WTF? . */
   public static final ConfigKey<Integer> USE_ITEM =
@@ -49,48 +45,23 @@ public class KeyboardConfig {
           new String[] {"inventory", "transfer"}, new ConfigIntValue(Input.Buttons.RIGHT));
 
   /** This key is used to use the active skill. */
-  public static final ConfigKey<Integer> USE_MAIN_SKILL =
-      new ConfigKey<>(new String[] {"skill", "fireball"}, new ConfigIntValue(Input.Keys.Q));
+  public static final ConfigKey<Integer> USE_SKILL =
+      new ConfigKey<>(new String[] {"skill", "fireball"}, new ConfigIntValue(Input.Keys.PERIOD));
 
-  /**
-   * Select the next skill as active main Skill in the {@link contrib.components.SkillComponent}.
-   */
-  public static final ConfigKey<Integer> NEXT_MAIN_SKILL =
+  /** Select the next skill as active Skill in the {@link contrib.components.SkillComponent}. */
+  public static final ConfigKey<Integer> NEXT_SKILL =
       new ConfigKey<>(
-          new String[] {"skill", "select next main skill"}, new ConfigIntValue(Input.Keys.RIGHT));
+          new String[] {"skill", "select next skill"}, new ConfigIntValue(Input.Keys.Q));
 
-  /**
-   * Select the previous skill as active main Skill in the {@link
-   * contrib.components.SkillComponent}.
-   */
-  public static final ConfigKey<Integer> PREV_MAIN_SKILL =
+  /** Select the previous skill as active Skill in the {@link contrib.components.SkillComponent}. */
+  public static final ConfigKey<Integer> PREV_SKILL =
       new ConfigKey<>(
-          new String[] {"skill", "select prev main skill"}, new ConfigIntValue(Input.Keys.LEFT));
-
-  /**
-   * Select the next skill as active second Skill in the {@link contrib.components.SkillComponent}.
-   */
-  public static final ConfigKey<Integer> NEXT_SECOND_SKILL =
-      new ConfigKey<>(
-          new String[] {"skill", "select next second skill"}, new ConfigIntValue(Input.Keys.UP));
-
-  /**
-   * Select the previous skill as active second Skill in the {@link
-   * contrib.components.SkillComponent}.
-   */
-  public static final ConfigKey<Integer> PREV_SECOND_SKILL =
-      new ConfigKey<>(
-          new String[] {"skill", "select prev second skill"}, new ConfigIntValue(Input.Keys.DOWN));
+          new String[] {"skill", "select prev skill"}, new ConfigIntValue(Input.Keys.COMMA));
 
   /** This key is used shoot the active skill. */
-  public static final ConfigKey<Integer> MOUSE_USE_MAIN_SKILL =
+  public static final ConfigKey<Integer> MOUSE_USE_SKILL =
       new ConfigKey<>(
-          new String[] {"skill", "mouse_left_skill"}, new ConfigIntValue(Input.Buttons.LEFT));
-
-  /** This key is used shoot the active skill. */
-  public static final ConfigKey<Integer> MOUSE_USE_SECOND_SKILL =
-      new ConfigKey<>(
-          new String[] {"skill", "mouse_right_skill"}, new ConfigIntValue(Input.Buttons.RIGHT));
+          new String[] {"skill", "mouse_fireball"}, new ConfigIntValue(Input.Buttons.LEFT));
 
   /** Keybinding to zoom in ,if the {@link contrib.utils.components.Debugger} is active. */
   public static final ConfigKey<Integer> DEBUG_ZOOM_IN =
@@ -106,27 +77,6 @@ public class KeyboardConfig {
    */
   public static final ConfigKey<Integer> DEBUG_SPAWN_MONSTER =
       new ConfigKey<>(new String[] {"debug", "spawn_monster"}, new ConfigIntValue(Input.Keys.X));
-
-  /**
-   * Keybinding to teleport the player on the Start-Tile, if the {@link
-   * contrib.utils.components.Debugger} is active.
-   */
-  public static final ConfigKey<Integer> DEBUG_TELEPORT_TO_START =
-      new ConfigKey<>(new String[] {"debug", "teleport_Start"}, new ConfigIntValue(Input.Keys.J));
-
-  /**
-   * Keybinding to teleport the player next to the {@link core.level.elements.tile.ExitTile}, if the
-   * {@link contrib.utils.components.Debugger} is active.
-   */
-  public static final ConfigKey<Integer> DEBUG_TELEPORT_TO_END =
-      new ConfigKey<>(new String[] {"debug", "teleport_end"}, new ConfigIntValue(Input.Keys.H));
-
-  /**
-   * Keybinding to teleport the player on the {@link core.level.elements.tile.ExitTile}, if the
-   * {@link contrib.utils.components.Debugger} is active.
-   */
-  public static final ConfigKey<Integer> DEBUG_TELEPORT_ON_END =
-      new ConfigKey<>(new String[] {"debug", "teleport_onEnd"}, new ConfigIntValue(Input.Keys.G));
 
   /**
    * Keybinding to teleport the player to the cursor mouse location, if the {@link
@@ -164,4 +114,8 @@ public class KeyboardConfig {
    */
   public static final ConfigKey<Integer> DEBUG_VALUE_DOWN =
       new ConfigKey<>(new String[] {"debug", "value_down"}, new ConfigIntValue(Input.Keys.DOWN));
+
+  /** Keybinding to execute all registered debug actions. */
+  public static final ConfigKey<Integer> DEBUG_ACTION =
+      new ConfigKey<>(new String[] {"debug", "action"}, new ConfigIntValue(Input.Keys.NUMPAD_1));
 }

@@ -74,7 +74,67 @@
     "isLooping": true,
     "centered": false
   },
+  "idle_down": {
+    "config": {
+      "spriteWidth": 16,
+      "spriteHeight": 28,
+      "x": 0,
+      "y": 100,
+      "rows": 1,
+      "columns": 4
+    },
+    "framesPerSprite": 10,
+    "scaleX": 1,
+    "scaleY": 0,
+    "isLooping": true,
+    "centered": false
+  },
+  "idle_up": {
+    "config": {
+      "spriteWidth": 16,
+      "spriteHeight": 28,
+      "x": 0,
+      "y": 72,
+      "rows": 1,
+      "columns": 4
+    },
+    "framesPerSprite": 10,
+    "scaleX": 1,
+    "scaleY": 0,
+    "isLooping": true,
+    "centered": false
+  },
   "run_left": {
+    "config": {
+      "spriteWidth": 16,
+      "spriteHeight": 28,
+      "x": 0,
+      "y": 128,
+      "rows": 1,
+      "columns": 4
+    },
+    "framesPerSprite": 10,
+    "scaleX": 1,
+    "scaleY": 0,
+    "isLooping": true,
+    "centered": false
+  },
+  "run_down": {
+    "config": {
+      "spriteWidth": 16,
+      "spriteHeight": 28,
+      "x": 0,
+      "y": 156,
+      "rows": 1,
+      "columns": 4
+    },
+    "framesPerSprite": 10,
+    "scaleX": 1,
+    "scaleY": 0,
+    "isLooping": true,
+    "centered": false
+  },
+  "run_up": {
     "config": {
       "spriteWidth": 16,
       "spriteHeight": 28,

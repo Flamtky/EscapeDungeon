@@ -1,24 +1,30 @@
 package core.network.server;
 
+import static core.network.config.NetworkConfig.FULL_SNAPSHOT_INTERVAL_TICKS;
 import static core.network.config.NetworkConfig.SERVER_SNAPSHOT_HZ;
 import static core.network.config.NetworkConfig.SERVER_TICK_HZ;
 
+import analytics.DungeonAnalyticsAPI;
+import contrib.entities.CharacterClass;
 import contrib.entities.HeroBuilder;
 import contrib.entities.HeroController;
 import core.Entity;
 import core.Game;
+import core.components.AnalyticsComponent;
 import core.components.PositionComponent;
 import core.game.ECSManagement;
 import core.game.PreRunConfiguration;
 import core.level.Tile;
 import core.level.loader.DungeonLoader;
+import core.network.SnapshotTranslator;
+import core.network.debug.SnapshotDebugger;
 import core.network.messages.s2c.EntitySpawnEvent;
 import core.network.messages.s2c.GameOverEvent;
-import core.utils.Point;
+import core.network.messages.s2c.LevelState;
+import core.network.messages.s2c.SnapshotMessage;
 import core.utils.logging.DungeonLogger;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.UUID;
+import java.util.concurrent.*;
 
 /**
  * The main server loop for the authoritative multiplayer server.
@@ -46,9 +52,22 @@ public final class AuthoritativeServerLoop {
       DungeonLogger.getLogger(AuthoritativeServerLoop.class);
   private static final boolean PRINT_RTT = false; // to debug latency issues
 
+  /** Enable detailed timing prints for ticks and snapshots */
+  public static boolean PRINT_TIMING = true; // to debug performance issues
+
   private final ServerTransport net;
   private final ScheduledExecutorService executor;
   private volatile int serverTick = 0;
+
+  // Timing buffers for last 1000 cycles
+  private static final int TIMING_PRINT_INTERVAL = 1000;
+  private final long[] tickTimesNs = new long[TIMING_PRINT_INTERVAL];
+  private final long[] snapshotTimesNs = new long[TIMING_PRINT_INTERVAL];
+  private int timingIndex = 0;
+  private int timingFilled = 0;
+
+  // for analytics session tracking
+  private UUID sessionID = null;
 
   /**
    * Creates a new AuthoritativeServerLoop with the given ServerTransport.
@@ -71,13 +90,19 @@ public final class AuthoritativeServerLoop {
    * tasks.
    */
   public void start() {
-    PreRunConfiguration.frameRate(SERVER_TICK_HZ);
+    PreRunConfiguration.tickRate(SERVER_TICK_HZ);
 
-    DungeonLoader.afterAllLevels(
-        () -> {
-          Game.network().broadcast(new GameOverEvent("All levels completed"), true);
-          Game.exit("Game Over");
-        });
+    sessionID = DungeonAnalyticsAPI.startSession("{}");
+
+    try {
+      DungeonLoader.afterAllLevels(
+          () -> {
+            Game.network().broadcast(new GameOverEvent("All levels completed"), true);
+            Game.exit("Game Over");
+          });
+    } catch (Exception e) {
+      LOGGER.warn("Failed to load initial level on server", e);
+    }
 
     long tickPeriodMs = 1000L / SERVER_TICK_HZ;
     long snapshotPeriodMs = 1000L / SERVER_SNAPSHOT_HZ;
@@ -107,7 +132,16 @@ public final class AuthoritativeServerLoop {
 
   /** Stops the server loop, shutting down the executor service. */
   public void stop() {
+    DungeonAnalyticsAPI.endSession(sessionID);
+
     executor.shutdownNow();
+    try {
+      executor.awaitTermination(1, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      LOGGER.debug(
+          "Interrupted while waiting for executor termination (expected if console is blocking)");
+      // Don't re-interrupt - let the shutdown proceed
+    }
     LOGGER.info("ServerLoop stopped");
   }
 
@@ -121,6 +155,7 @@ public final class AuthoritativeServerLoop {
   }
 
   private void tick() {
+    long tickStart = System.nanoTime();
     try {
       //noinspection NonAtomicOperationOnVolatileField only place where serverTick is modified
       serverTick++;
@@ -139,16 +174,105 @@ public final class AuthoritativeServerLoop {
       LOGGER.fatal("Unexpected error in server loop", t);
       stop();
     }
+    long tickEnd = System.nanoTime();
+    tickTimesNs[timingIndex] = tickEnd - tickStart;
   }
 
   private void sendSnapshot() {
-    Game.network()
-        .snapshotTranslator()
-        .translateToSnapshot(serverTick)
-        .ifPresent(
-            snapshot -> {
-              Game.network().broadcast(snapshot, true);
-            });
+    long snapshotStart = System.nanoTime();
+    net.connectedClients().forEach(this::sendSnapshotToClient);
+    long snapshotEnd = System.nanoTime();
+    snapshotTimesNs[timingIndex] = snapshotEnd - snapshotStart;
+
+    timingIndex = (timingIndex + 1) % TIMING_PRINT_INTERVAL;
+    if (timingFilled < TIMING_PRINT_INTERVAL) timingFilled++;
+
+    if (PRINT_TIMING && timingFilled == TIMING_PRINT_INTERVAL) {
+      long sumTickNs = 0, sumSnapshotNs = 0;
+      for (int i = 0; i < TIMING_PRINT_INTERVAL; i++) {
+        sumTickNs += tickTimesNs[i];
+        sumSnapshotNs += snapshotTimesNs[i];
+      }
+      long avgTickNs = sumTickNs / TIMING_PRINT_INTERVAL;
+      long avgSnapshotNs = sumSnapshotNs / TIMING_PRINT_INTERVAL;
+      long avgTotalNs = avgTickNs + avgSnapshotNs;
+      double avgTickMs = avgTickNs / 1_000_000.0;
+      double avgSnapshotMs = avgSnapshotNs / 1_000_000.0;
+      double avgTotalMs = avgTotalNs / 1_000_000.0;
+      System.out.printf(
+          "[ServerLoop Timing] avgTick=%d ns (%.3f ms), avgSnapshot=%d ns (%.3f ms), avgTotal=%d ns (%.3f ms) over last %d cycles%n",
+          avgTickNs,
+          avgTickMs,
+          avgSnapshotNs,
+          avgSnapshotMs,
+          avgTotalNs,
+          avgTotalMs,
+          TIMING_PRINT_INTERVAL);
+
+      // Reset buffers and counters
+      timingFilled = 0;
+      timingIndex = 0;
+    }
+  }
+
+  /**
+   * Sends a snapshot to a specific client. Decides whether to send a full snapshot or delta based
+   * on the time since last full snapshot.
+   *
+   * @param clientState the client to send the snapshot to
+   */
+  private void sendSnapshotToClient(ClientState clientState) {
+    int lastFullTick = clientState.lastFullSnapshotTick();
+    boolean needsFullSnapshot =
+        lastFullTick < 0 || (serverTick - lastFullTick) >= FULL_SNAPSHOT_INTERVAL_TICKS;
+
+    if (needsFullSnapshot) {
+      // Send full snapshot via TCP
+      Game.network()
+          .snapshotTranslator()
+          .translateToSnapshot(serverTick)
+          .ifPresent(
+              snapshot -> {
+                SnapshotMessage filteredSnapshot = snapshot.filterForRecipient(clientState);
+                SnapshotDebugger.logFull(filteredSnapshot);
+                Game.network().send(clientState.clientId(), filteredSnapshot, true);
+
+                // Update client's cache with the full snapshot data
+                clientState.lastFullSnapshotTick(serverTick);
+                clientState.lastSentLevelState(LevelState.currentLevelStateFull());
+
+                // Update entity state cache and track static vs mobile entities
+                clientState.lastSentEntityStates().clear();
+                clientState.lastVisibleEntityIds().clear();
+                clientState.sentStaticEntityIds().clear();
+
+                for (var entityState : filteredSnapshot.entities()) {
+                  int entityId = entityState.entityId();
+                  clientState.lastSentEntityStates().put(entityId, entityState);
+
+                  // Classify entity as static or mobile
+                  Game.findEntityById(entityId)
+                      .ifPresent(
+                          entity -> {
+                            if (SnapshotTranslator.relevantForDelta(entity)) {
+                              clientState.lastVisibleEntityIds().add(entityId);
+                            } else {
+                              clientState.sentStaticEntityIds().add(entityId);
+                            }
+                          });
+                }
+              });
+    } else {
+      // Send delta snapshot via UDP (with automatic TCP fallback)
+      Game.network()
+          .snapshotTranslator()
+          .translateToDelta(serverTick, clientState)
+          .ifPresent(
+              delta -> {
+                SnapshotDebugger.logDelta(delta);
+                Game.network().send(clientState.clientId(), delta, false);
+              });
+    }
   }
 
   private void syncClientsToEntities() {
@@ -161,14 +285,32 @@ public final class AuthoritativeServerLoop {
   }
 
   private Entity spawnHeroForClient(ClientState state) {
+    CharacterClass charClass;
+    try {
+      var fullName = state.username();
+      var className = fullName.substring(fullName.lastIndexOf('#') + 1);
+      charClass = CharacterClass.valueOf(className.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      charClass = CharacterClass.ROGUE;
+    }
     Entity hero =
         HeroBuilder.builder()
             .username(state.username())
-            .characterClass(state.characterClass())
+            .characterClass(charClass)
             .isLocalPlayer(true)
             .build();
+
+    DungeonAnalyticsAPI.upsertPlayer(state, charClass);
+    DungeonAnalyticsAPI.joinSession(sessionID, state);
+    hero.add(new AnalyticsComponent(state, sessionID));
+
     hero.fetch(PositionComponent.class)
-        .ifPresent(pc -> pc.position(Game.startTile().map(Tile::position).orElse(new Point(0, 0))));
+        .ifPresent(
+            pc ->
+                pc.position(
+                    Game.startTile()
+                        .map(Tile::position)
+                        .orElse(PositionComponent.ILLEGAL_POSITION)));
     // Add the hero to the game, after the client knows the id.
     Game.network()
         .send(state.clientId(), new EntitySpawnEvent(hero), true)

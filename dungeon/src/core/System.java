@@ -30,10 +30,10 @@ import java.util.stream.Stream;
  */
 public abstract class System {
   /**
-   * Determines how many frames pass between two executions of the {@link #execute()}-loop.
+   * Determines how many game ticks pass between two executions of the {@link #execute()}-loop.
    *
-   * <p>The value 1 means that no frames are skipped, the {@link #execute()}-loop is executed every
-   * frame.
+   * <p>The value 1 means that no game ticks are skipped, the {@link #execute()}-loop is executed
+   * every game tick.
    */
   public static final int DEFAULT_EVERY_FRAME_EXECUTE = 1;
 
@@ -49,8 +49,6 @@ public abstract class System {
    * <p>Use this in your own system to implement logic that should be executed after an entity was
    * added.
    *
-   * <p>This will also be triggered, if a new level was loaded or the System was added to the ECS.
-   *
    * <p>The default implementation is just empty.
    */
   protected Consumer<Entity> onEntityAdd = (e) -> {};
@@ -60,9 +58,6 @@ public abstract class System {
    *
    * <p>Use this in your own system to implement logic that should be executed after an entity was
    * removed.
-   *
-   * <p>This will also be triggered, if a new level was loaded or the System was removed from the
-   * ECS.
    *
    * <p>The default implementation is just empty.
    */
@@ -76,7 +71,7 @@ public abstract class System {
    * <p>A System needs to be registered with the Game via {@link Game#add(System)}.
    *
    * @param authSide The authoritative side the system should run on.
-   * @param executeEveryXFrames how often the system should be executed 1 means every frame
+   * @param executeEveryXFrames how often the system should be executed 1 means every game tick
    * @param filterRules Needed Component-Classes. Entities need the components to be processed by
    *     this system.
    */
@@ -98,7 +93,7 @@ public abstract class System {
    *
    * <p>A System needs to be registered with the Game via {@link Game#add(System)}.
    *
-   * <p>This constructor will set the system to be executed every frame.
+   * <p>This constructor will set the system to be executed every game tick.
    *
    * <p>The system will be marked as running on {@link AuthoritativeSide#SERVER server} side.
    *
@@ -115,7 +110,7 @@ public abstract class System {
    *
    * <p>A System needs to be registered with the Game via {@link Game#add(System)}.
    *
-   * <p>This constructor will set the system to be executed every frame.
+   * <p>This constructor will set the system to be executed every game tick.
    *
    * @param authSide The authoritative side the system should run on.
    * @param filterRules Needed Component-Classes. Entities need the components to be processed by
@@ -257,14 +252,14 @@ public abstract class System {
   }
 
   /**
-   * @return the frame count the system should have between executes
+   * @return the game tick count the system should have between executes
    */
   public int executeEveryXFrames() {
     return executeEveryXFrames;
   }
 
   /**
-   * @return the amount of frames the System did not execute
+   * @return the amount of game ticks the System did not execute
    */
   public int lastExecuteInFrames() {
     return lastExecuteInFrames;
@@ -273,7 +268,7 @@ public abstract class System {
   /**
    * Allows updating the time the system was last executed.
    *
-   * @param lastExecuteInFrames the Frames since the last execute
+   * @param lastExecuteInFrames the game ticks since the last execute
    */
   public void lastExecuteInFrames(int lastExecuteInFrames) {
     this.lastExecuteInFrames = lastExecuteInFrames;

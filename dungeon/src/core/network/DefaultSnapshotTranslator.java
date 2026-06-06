@@ -1,46 +1,53 @@
 package core.network;
 
-import contrib.components.HealthComponent;
-import contrib.components.InventoryComponent;
-import contrib.components.ManaComponent;
-import contrib.components.UIComponent;
+import contrib.components.*;
+import contrib.item.Item;
+import contrib.item.ItemSnapshot;
 import contrib.systems.PositionSync;
 import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
+import core.components.SoundComponent;
+import core.level.elements.ILevel;
 import core.level.elements.tile.DoorTile;
+import core.level.utils.Coordinate;
+import core.level.utils.DesignLabel;
 import core.network.messages.c2s.RequestEntitySpawn;
-import core.network.messages.s2c.DoorTileState;
+import core.network.messages.s2c.DeltaSnapshotMessage;
 import core.network.messages.s2c.EntityState;
 import core.network.messages.s2c.LevelState;
 import core.network.messages.s2c.SnapshotMessage;
+import core.network.server.ClientState;
 import core.utils.Direction;
+import core.utils.Point;
 import core.utils.logging.DungeonLogger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
  * The default implementation of {@link SnapshotTranslator}.
  *
- * <p>Server-side: builds a {@link SnapshotMessage} from authoritative entities.
+ * <p>Server-side: builds a {@link SnapshotMessage} from authoritative entities. Supports both full
+ * snapshots and delta snapshots for bandwidth optimization.
  *
- * <p>Client-side: applies a {@link SnapshotMessage} by dispatching granular updates via {@link
- * MessageDispatcher}.
+ * <p>Client-side: applies a {@link SnapshotMessage} or {@link DeltaSnapshotMessage} by dispatching
+ * granular updates via {@link MessageDispatcher}.
  *
  * <p>By default, it includes entities with {@link PositionComponent} and {@link DrawComponent}, as
  * well as UI entities (with {@link UIComponent}).
  *
  * @see SnapshotTranslator
  */
-public final class DefaultSnapshotTranslator implements SnapshotTranslator {
+public class DefaultSnapshotTranslator implements SnapshotTranslator {
   private static final DungeonLogger LOGGER =
       DungeonLogger.getLogger(DefaultSnapshotTranslator.class);
 
-  private long latestServerTick = -1;
+  private static final long SPAWN_REQUEST_COOLDOWN_MS = 1000L;
+
+  protected long latestServerTick = -1;
+  protected final Map<Integer, Long> lastSpawnRequestTimes = new HashMap<>();
 
   /**
    * Checks if the server tick is valid. A server tick is valid if it is non-negative and greater
@@ -53,19 +60,26 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
    * @param serverTick the server tick to validate
    * @return true if the server tick is valid, false otherwise
    */
-  private boolean isServerTickValid(int serverTick) {
+  protected boolean isServerTickValid(int serverTick) {
     final int MAX_TICK_THRESHOLD = 1000; // Threshold to reset latestServerTick
     if (serverTick < 0) {
+      LOGGER.warn("Received negative server tick: {}", serverTick);
       return false; // Server tick must be non-negative
     }
 
     if (serverTick > Integer.MAX_VALUE - MAX_TICK_THRESHOLD) {
       // If server tick is near Long.MAX_VALUE, reset latestServerTick
+      LOGGER.info(
+          "Server tick near max value ({}), resetting latestServerTick from {} to -1",
+          serverTick,
+          latestServerTick);
       latestServerTick = -1;
       return true; // Allow lower ticks to be valid
     }
 
     if (serverTick <= latestServerTick) {
+      LOGGER.warn(
+          "Received out-of-order server tick: {}, latest: {}", serverTick, latestServerTick);
       return false; // Server tick must be greater than the latest received tick
     }
 
@@ -82,76 +96,275 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
     }
     latestServerTick = serverTick;
 
-    List<EntityState> list = new ArrayList<>();
-
-    Game.levelEntities()
-        .filter(this::isClientRelevant)
-        .forEach(
-            e -> {
-              EntityState.Builder builder = EntityState.builder();
-              builder.entityId(e.id());
-              builder.entityName(e.name());
-
-              // Position
-              e.fetch(PositionComponent.class)
-                  .ifPresent(
-                      pc -> {
-                        builder.position(pc.position());
-                        builder.viewDirection(pc.viewDirection());
-                        builder.rotation(pc.rotation());
-                        builder.scale(pc.scale());
-                      });
-
-              // Health
-              e.fetch(HealthComponent.class)
-                  .ifPresent(
-                      hc -> {
-                        builder.currentHealth(hc.currentHealthpoints());
-                        builder.maxHealth(hc.maximalHealthpoints());
-                      });
-
-              // Mana
-              e.fetch(contrib.components.ManaComponent.class)
-                  .ifPresent(
-                      mc -> {
-                        builder.currentMana(mc.currentAmount());
-                        builder.maxMana(mc.maxAmount());
-                      });
-
-              // Animation
-              e.fetch(DrawComponent.class)
-                  .ifPresent(
-                      dc -> {
-                        builder.stateName(dc.stateMachine().getCurrentStateName());
-                        builder.tintColor(dc.tintColor());
-                      });
-
-              // Inventory
-              e.fetch(InventoryComponent.class).ifPresent(ic -> builder.inventory(ic.items()));
-
-              list.add(builder.build());
-            });
-    return Optional.of(new SnapshotMessage(serverTick, list, currentLevelState()));
-  }
-
-  private LevelState currentLevelState() {
-    Set<DoorTileState> doorStates =
-        Game.currentLevel()
+    List<EntityState> list =
+        Game.levelEntities()
+            .filter(this::isClientRelevant)
+            .parallel()
             .map(
-                level ->
-                    level.doorTiles().stream()
-                        .map(door -> new DoorTileState(door.coordinate(), door.isOpen()))
-                        .collect(Collectors.toSet()))
-            .orElseGet(Set::of);
-    return new LevelState(doorStates);
+                e -> {
+                  EntityState.Builder builder = createBuilder(e);
+                  populateBuilder(e, builder);
+                  return builder.build();
+                })
+            .collect(Collectors.toList());
+
+    return Optional.of(new SnapshotMessage(serverTick, list, LevelState.currentLevelStateFull()));
   }
 
-  private boolean isClientRelevant(Entity entity) {
+  /**
+   * Creates a new EntityState.Builder for the given entity.
+   *
+   * <p>Subclasses can override this method to return a custom Builder subclass for additional
+   * fields.
+   *
+   * @param entity the entity to create a builder for
+   * @return a new EntityState.Builder instance
+   */
+  protected EntityState.Builder createBuilder(Entity entity) {
+    return EntityState.builder();
+  }
+
+  /**
+   * Populates the builder with data from the entity's components.
+   *
+   * <p>Subclasses can override this method to add custom component data. Make sure to call {@code
+   * super.populateBuilder(entity, builder)} to include the base component data.
+   *
+   * @param entity the entity to extract data from
+   * @param builder the builder to populate
+   */
+  protected void populateBuilder(Entity entity, EntityState.Builder builder) {
+    builder.entityId(entity.id());
+    builder.entityName(entity.name());
+
+    // Position
+    entity
+        .fetch(PositionComponent.class)
+        .ifPresent(
+            pc -> {
+              builder.position(pc.position());
+              builder.viewDirection(pc.viewDirection());
+              builder.rotation(pc.rotation());
+            });
+
+    // Health
+    entity
+        .fetch(HealthComponent.class)
+        .ifPresent(
+            hc -> {
+              builder.currentHealth(hc.currentHealthpoints());
+              builder.maxHealth(hc.maximalHealthpoints());
+            });
+
+    // Mana
+    entity
+        .fetch(ManaComponent.class)
+        .ifPresent(
+            mc -> {
+              builder.currentMana(mc.currentAmount());
+              builder.maxMana(mc.maxAmount());
+            });
+
+    // Stamina
+    entity
+        .fetch(StaminaComponent.class)
+        .ifPresent(
+            sc -> {
+              builder.currentStamina(sc.currentAmount());
+              builder.maxStamina(sc.maxAmount());
+            });
+
+    // Animation
+    entity
+        .fetch(DrawComponent.class)
+        .ifPresent(
+            dc -> {
+              builder.stateName(dc.stateMachine().getCurrentStateName());
+              builder.tintColor(dc.tintColor());
+            });
+
+    // Sounds
+    entity
+        .fetch(SoundComponent.class)
+        .ifPresent(
+            sc -> {
+              if (!sc.sounds().isEmpty()) {
+                builder.sounds(sc.sounds());
+              }
+            });
+
+    // Inventory; convert to ItemSnapshot for compact network transmission
+    entity
+        .fetch(InventoryComponent.class)
+        .ifPresent(
+            ic -> {
+              var items = ic.items();
+              var snapshots =
+                  Arrays.stream(items)
+                      .map(item -> item != null ? ItemSnapshot.from(item) : null)
+                      .toArray(ItemSnapshot[]::new);
+              builder.inventory(snapshots);
+            });
+
+    // Skills
+    entity.fetch(SkillComponent.class).ifPresent(sc -> builder.skillData(sc.toSyncData()));
+  }
+
+  /**
+   * Determines if an entity is relevant for client synchronization.
+   *
+   * @param entity the entity to check
+   * @return true if the entity should be included in snapshots
+   */
+  protected boolean isClientRelevant(Entity entity) {
     if (entity.isPresent(PositionComponent.class) && entity.isPresent(DrawComponent.class)) {
       // Normal Entity
       return true;
     }
+    // Sound Entity
+    if (entity.isPresent(SoundComponent.class)) {
+      return true;
+    }
+
     return false;
+  }
+
+  /**
+   * Helper record for capturing per-entity delta processing results during parallel stream
+   * processing.
+   *
+   * @param entityState the processed entity state
+   * @param entityId the entity ID
+   * @param isDeltaRelevant whether the entity is mobile (relevant for delta)
+   * @param currentPos the entity's current position, if present
+   */
+  private record DeltaEntityResult(
+      EntityState entityState, int entityId, boolean isDeltaRelevant, Optional<Point> currentPos) {}
+
+  // Server-side delta generation
+  @Override
+  public Optional<DeltaSnapshotMessage> translateToDelta(int serverTick, ClientState client) {
+    if (client == null) {
+      LOGGER.warn("Cannot generate delta snapshot: client is null");
+      return Optional.empty();
+    }
+
+    Map<Integer, EntityState> lastSentStates = client.lastSentEntityStates();
+    Set<Integer> lastVisibleIds = client.lastVisibleEntityIds();
+    Set<Integer> sentStaticIds = client.sentStaticEntityIds();
+    LevelState lastLevelState = client.lastSentLevelState();
+
+    // Get player position for proximity filtering
+    Optional<Point> playerPos =
+        client
+            .playerEntity()
+            .flatMap(e -> e.fetch(PositionComponent.class))
+            .map(PositionComponent::position);
+
+    // Parallel entity processing: collect results without side effects
+    var results =
+        Game.levelEntities()
+            .filter(this::isClientRelevant)
+            .parallel()
+            .map(
+                e -> {
+                  int entityId = e.id();
+                  boolean isDeltaRelevant = SnapshotTranslator.relevantForDelta(e);
+
+                  EntityState.Builder builder = createBuilder(e);
+                  populateBuilder(e, builder);
+                  EntityState currentState = builder.build();
+                  Optional<Point> currentPos = currentState.position();
+
+                  return new DeltaEntityResult(currentState, entityId, isDeltaRelevant, currentPos);
+                })
+            .toList();
+
+    List<EntityState> changedEntities = new ArrayList<>();
+    Set<Integer> currentMobileVisibleIds = new HashSet<>();
+
+    // Process results and apply side effects
+    for (DeltaEntityResult result : results) {
+      int entityId = result.entityId();
+      EntityState currentState = result.entityState();
+      boolean isDeltaRelevant = result.isDeltaRelevant();
+      Optional<Point> entityPos = result.currentPos();
+
+      // Static entities: skip if already sent, they never change
+      if (!isDeltaRelevant) {
+        if (sentStaticIds.contains(entityId)) {
+          continue; // Already sent in full snapshot, skip
+        }
+        // New static entity that appeared mid-level (rare case)
+        // Include it in delta and mark as sent
+        // Check proximity for new static entities too
+        if (playerPos.isPresent() && entityPos.isPresent()) {
+          double distance = playerPos.get().distance(entityPos.get());
+          if (distance > 20.0) {
+            continue; // Skip entities outside visibility range
+          }
+        }
+
+        changedEntities.add(currentState);
+        sentStaticIds.add(entityId);
+        lastSentStates.put(entityId, currentState);
+        continue;
+      }
+
+      // Mobile entities: full delta processing
+      // Check if entity is near player (proximity filter)
+      if (playerPos.isPresent() && entityPos.isPresent()) {
+        double distance = playerPos.get().distance(entityPos.get());
+        if (distance > 20.0) {
+          continue; // Skip entities outside visibility range
+        }
+      }
+
+      currentMobileVisibleIds.add(entityId);
+
+      // Check if entity state has changed
+      EntityState lastState = lastSentStates.get(entityId);
+      if (lastState == null || !lastState.equals(currentState)) {
+        changedEntities.add(currentState);
+        lastSentStates.put(entityId, currentState);
+      }
+    }
+
+    // Detect mobile entities that left visibility range (for ghost cleanup)
+    // Only mobile entities need removal - static entities persist
+    List<Integer> removedEntityIds = new ArrayList<>();
+    for (Integer id : lastVisibleIds) {
+      if (!currentMobileVisibleIds.contains(id)) {
+        removedEntityIds.add(id);
+        lastSentStates.remove(id);
+      }
+    }
+
+    // Update visible entity IDs cache (only mobile entities)
+    lastVisibleIds.clear();
+    lastVisibleIds.addAll(currentMobileVisibleIds);
+
+    // Generate delta level state
+    LevelState deltaLevelState = LevelState.createDelta(lastLevelState);
+    if (!deltaLevelState.isEmpty()) {
+      // Update cached level state with full state for next comparison
+      client.lastSentLevelState(LevelState.currentLevelStateFull());
+    }
+
+    // Create delta message
+    DeltaSnapshotMessage delta =
+        new DeltaSnapshotMessage(
+            client.lastFullSnapshotTick(),
+            serverTick,
+            changedEntities,
+            removedEntityIds,
+            deltaLevelState.isEmpty() ? null : deltaLevelState);
+
+    if (!delta.hasChanges()) {
+      return Optional.empty();
+    }
+
+    return Optional.of(delta);
   }
 
   // Client-side
@@ -165,128 +378,29 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
       return;
     }
     latestServerTick = snapshot.serverTick();
-    this.applyLevelState(snapshot.levelState());
 
     snapshot
         .entities()
         .forEach(
             snap -> {
               try {
-                final int entityId = snap.entityId();
-                Optional<Entity> targetEntity = Game.findEntityById(entityId);
+                // Apply entity state using shared logic
+                Optional<Entity> entityOpt = applyEntityStateToGame(snap);
 
-                if (targetEntity.isEmpty()) {
-                  LOGGER.info(
-                      "No entity found for snapshot with id: {}. Requesting spawn.", entityId);
-                  Game.network().send((short) 0, new RequestEntitySpawn(entityId), true);
-                  return;
-                }
+                // Full snapshot only: handle component removal when absent
+                entityOpt.ifPresent(
+                    entity -> {
+                      // Remove sounds if not present in full snapshot
+                      if (snap.sounds().isEmpty()) {
+                        Game.audio().stopAllOnEntity(entity);
+                      }
 
-                Entity entity = targetEntity.get();
-                snap.entityName().ifPresent(entity::name);
-
-                entity
-                    .fetch(PositionComponent.class)
-                    .ifPresent(
-                        pc -> {
-                          snap.position().ifPresent(pc::position);
-                          snap.viewDirection()
-                              .ifPresent(
-                                  viewDir -> {
-                                    try {
-                                      pc.viewDirection(Direction.valueOf(viewDir));
-                                    } catch (IllegalArgumentException e) {
-                                      LOGGER.warn(
-                                          "Invalid view direction '{}' for entity id: {}. Skipping view direction update.",
-                                          viewDir,
-                                          snap.entityId());
-                                    }
-                                  });
-                          snap.rotation().ifPresent(pc::rotation);
-                          snap.scale().ifPresent(pc::scale);
-                          PositionSync.syncPosition(entity);
-                        });
-
-                entity
-                    .fetch(DrawComponent.class)
-                    .ifPresent(
-                        dc -> {
-                          snap.stateName()
-                              .ifPresent(
-                                  stateName -> {
-                                    if (!dc.hasState(stateName)) {
-                                      LOGGER.debug(
-                                          "Ignoring unknown snapshot state '{}' for entity id {}.",
-                                          stateName,
-                                          entityId);
-                                      return;
-                                    }
-                                    Direction direction = Direction.DOWN;
-                                    try {
-                                      direction =
-                                          Direction.valueOf(snap.viewDirection().orElse("DOWN"));
-                                    } catch (IllegalArgumentException e) {
-                                      LOGGER.warn(
-                                          "Invalid state name '{}' for entity id: {}. Skipping state update.",
-                                          stateName,
-                                          snap.entityId());
-                                    }
-                                    dc.stateMachine().setState(stateName, direction);
-                                  });
-                          snap.tintColor().ifPresent(dc::tintColor);
-                        });
-
-                entity
-                    .fetch(HealthComponent.class)
-                    .ifPresentOrElse(
-                        hc -> snap.currentHealth().ifPresent(hc::currentHealthpoints),
-                        () ->
-                            snap.maxHealth()
-                                .ifPresent(
-                                    maxHealth -> {
-                                      HealthComponent hc = new HealthComponent(maxHealth);
-                                      entity.add(hc);
-                                      snap.currentHealth().ifPresent(hc::currentHealthpoints);
-                                    }));
-
-                entity
-                    .fetch(ManaComponent.class)
-                    .ifPresentOrElse(
-                        hc -> snap.currentMana().ifPresent(hc::currentAmount),
-                        () ->
-                            snap.maxMana()
-                                .ifPresent(
-                                    maxMana -> {
-                                      ManaComponent mc = new ManaComponent(maxMana, maxMana, 0);
-                                      entity.add(mc);
-                                      snap.currentMana().ifPresent(mc::currentAmount);
-                                    }));
-
-                // Inventory
-                snap.inventory()
-                    .ifPresentOrElse(
-                        items -> {
-                          InventoryComponent ic =
-                              entity
-                                  .fetch(InventoryComponent.class)
-                                  .orElseGet(
-                                      () -> {
-                                        InventoryComponent newIc =
-                                            new InventoryComponent(items.length);
-                                        entity.add(newIc);
-                                        return newIc;
-                                      });
-                          ic.clear();
-                          for (int i = 0; i < items.length; i++) {
-                            ic.set(i, items[i]);
-                          }
-                        },
-                        () -> {
-                          entity
-                              .fetch(InventoryComponent.class)
-                              .ifPresent(InventoryComponent::clear);
-                          entity.remove(InventoryComponent.class);
-                        });
+                      // Remove inventory if not present in full snapshot
+                      if (snap.inventory().isEmpty()) {
+                        entity.fetch(InventoryComponent.class).ifPresent(InventoryComponent::clear);
+                        entity.remove(InventoryComponent.class);
+                      }
+                    });
               } catch (Exception e) {
                 LOGGER.error(
                     "Error applying snapshot for entity id: {}: {}",
@@ -295,31 +409,271 @@ public final class DefaultSnapshotTranslator implements SnapshotTranslator {
                     e);
               }
             });
+
+    applyLevelState(snapshot.levelState());
   }
 
-  private void applyLevelState(LevelState levelState) {
+  /**
+   * Applies additional entity state from the snapshot to the entity.
+   *
+   * <p>Subclasses can override this method to apply custom component data from extended EntityState
+   * subclasses. The base implementation does nothing.
+   *
+   * @param entity the entity to apply state to
+   * @param state the entity state from the snapshot
+   */
+  protected void applyEntityState(Entity entity, EntityState state) {
+    // Base implementation does nothing; subclasses can override to apply custom state
+  }
+
+  // Client-side delta application
+  @Override
+  public void applyDelta(DeltaSnapshotMessage delta, MessageDispatcher dispatcher) {
+    if (!isServerTickValid(delta.serverTick())) {
+      LOGGER.debug(
+          "Not the latest server tick, skipping delta: {}, latest: {}",
+          delta.serverTick(),
+          latestServerTick);
+      return;
+    }
+    latestServerTick = delta.serverTick();
+
+    // Apply changed entities (reuse the same logic as full snapshot)
+    if (delta.changedEntities() != null) {
+      for (EntityState snap : delta.changedEntities()) {
+        try {
+          applyEntityStateToGame(snap);
+        } catch (Exception e) {
+          LOGGER.error(
+              "Error applying delta entity state for id: {}: {}",
+              snap.entityId(),
+              e.getMessage(),
+              e);
+        }
+      }
+    }
+
+    // Remove entities that left visibility range
+    if (delta.removedEntityIds() != null) {
+      for (Integer entityId : delta.removedEntityIds()) {
+        Game.findEntityById(entityId)
+            .ifPresent(
+                entity -> {
+                  LOGGER.debug("Removing entity {} (left visibility range)", entityId);
+                  Game.remove(entity);
+                });
+      }
+    }
+
+    // Apply level state delta
+    if (delta.deltaLevelState() != null) {
+      applyLevelState(delta.deltaLevelState());
+    }
+  }
+
+  /**
+   * Applies a single entity state to the game. This is the core logic shared between full snapshot
+   * and delta snapshot application.
+   *
+   * @param snap the entity state to apply
+   * @return Optional containing the entity if successfully applied, empty if entity not found
+   */
+  protected Optional<Entity> applyEntityStateToGame(EntityState snap) {
+    final int entityId = snap.entityId();
+    Optional<Entity> targetEntity = Game.findEntityById(entityId);
+
+    if (targetEntity.isEmpty()) {
+      long now = System.currentTimeMillis();
+      long lastSent = lastSpawnRequestTimes.getOrDefault(entityId, 0L);
+      if (now - lastSent >= SPAWN_REQUEST_COOLDOWN_MS) {
+        Game.network().send((short) 0, new RequestEntitySpawn(entityId), true);
+        lastSpawnRequestTimes.put(entityId, now);
+        LOGGER.trace("No entity found for snapshot with id: {}. Requesting spawn.", entityId);
+      } else {
+        LOGGER.debug("Skipping spawn request for entity {} (cooldown active).", entityId);
+      }
+      return Optional.empty();
+    }
+
+    Entity entity = targetEntity.get();
+    snap.entityName().ifPresent(entity::name);
+    lastSpawnRequestTimes.remove(entityId);
+
+    entity
+        .fetch(PositionComponent.class)
+        .ifPresent(
+            pc -> {
+              snap.position().ifPresent(pc::position);
+              snap.viewDirection()
+                  .ifPresent(
+                      viewDir -> {
+                        try {
+                          pc.viewDirection(Direction.valueOf(viewDir));
+                        } catch (IllegalArgumentException ignored) {
+                        }
+                      });
+              PositionSync.syncPosition(entity);
+            });
+
+    entity
+        .fetch(DrawComponent.class)
+        .ifPresent(
+            dc -> {
+              snap.stateName()
+                  .ifPresent(
+                      stateName ->
+                          dc.stateMachine()
+                              .setState(
+                                  stateName,
+                                  Direction.valueOf(snap.viewDirection().orElse("DOWN"))));
+              snap.tintColor().ifPresent(dc::tintColor);
+            });
+
+    entity
+        .fetch(HealthComponent.class)
+        .ifPresentOrElse(
+            hc -> snap.currentHealth().ifPresent(hc::currentHealthpoints),
+            () ->
+                snap.maxHealth()
+                    .ifPresent(
+                        maxHealth -> {
+                          HealthComponent hc = new HealthComponent(maxHealth);
+                          entity.add(hc);
+                          snap.currentHealth().ifPresent(hc::currentHealthpoints);
+                        }));
+
+    entity
+        .fetch(ManaComponent.class)
+        .ifPresentOrElse(
+            mc -> snap.currentMana().ifPresent(mc::currentAmount),
+            () ->
+                snap.maxMana()
+                    .ifPresent(
+                        maxMana -> {
+                          ManaComponent newMc = new ManaComponent(maxMana, maxMana, 0);
+                          entity.add(newMc);
+                          snap.currentMana().ifPresent(newMc::currentAmount);
+                        }));
+
+    entity
+        .fetch(StaminaComponent.class)
+        .ifPresentOrElse(
+            sc -> snap.currentStamina().ifPresent(sc::currentAmount),
+            () ->
+                snap.maxStamina()
+                    .ifPresent(
+                        maxStamina -> {
+                          StaminaComponent newSc = new StaminaComponent(maxStamina, maxStamina, 0);
+                          entity.add(newSc);
+                          snap.currentStamina().ifPresent(newSc::currentAmount);
+                        }));
+
+    // Sounds
+    snap.sounds()
+        .ifPresent(
+            soundSpecs -> {
+              SoundComponent sc =
+                  entity
+                      .fetch(SoundComponent.class)
+                      .orElseGet(
+                          () -> {
+                            SoundComponent newSc = new SoundComponent();
+                            entity.add(newSc);
+                            return newSc;
+                          });
+              var removedSounds = sc.replaceAll(soundSpecs);
+              removedSounds.forEach(spec -> Game.audio().stopInstance(spec.instanceId()));
+            });
+
+    // Skills
+    snap.skillData()
+        .ifPresent(
+            skillData -> {
+              SkillComponent sc =
+                  entity
+                      .fetch(SkillComponent.class)
+                      .orElseGet(
+                          () -> {
+                            SkillComponent newSc = new SkillComponent();
+                            entity.add(newSc);
+                            return newSc;
+                          });
+              sc.applySyncData(skillData);
+            });
+
+    // convert ItemSnapshot back to Item
+    snap.inventory()
+        .ifPresent(
+            snapshots -> {
+              InventoryComponent ic =
+                  entity
+                      .fetch(InventoryComponent.class)
+                      .orElseGet(
+                          () -> {
+                            InventoryComponent newIc = new InventoryComponent(snapshots.length);
+                            entity.add(newIc);
+                            return newIc;
+                          });
+              for (int i = 0; i < snapshots.length; i++) {
+                ItemSnapshot itemSnapshot = snapshots[i];
+                Item item = itemSnapshot != null ? itemSnapshot.toItem() : null;
+                if (!Objects.equals(item, ic.get(i).orElse(null))) {
+                  ic.set(i, item);
+                }
+              }
+            });
+
+    // Allow subclasses to apply additional entity state
+    applyEntityState(entity, snap);
+
+    return Optional.of(entity);
+  }
+
+  /**
+   * Applies the level state from the snapshot to the current level.
+   *
+   * @param levelState the level state to apply
+   */
+  protected void applyLevelState(LevelState levelState) {
+    // Doors
     levelState
         .doorStates()
         .forEach(
-            doorState ->
-                Game.tileAt(doorState.coordinate())
-                    .ifPresentOrElse(
-                        tile -> {
-                          if (tile instanceof DoorTile doorTile) {
-                            if (doorState.open()) {
-                              doorTile.open();
-                            } else {
-                              doorTile.close();
-                            }
-                            return;
-                          }
-                          LOGGER.debug(
-                              "Ignoring door state for non-door tile at coordinate: {}",
-                              doorState.coordinate());
-                        },
-                        () ->
-                            LOGGER.debug(
-                                "Ignoring door state for missing tile at coordinate: {}",
-                                doorState.coordinate())));
+            (coordinate, isOpen) -> {
+              var doorTileOpt =
+                  Game.currentLevel()
+                      .flatMap(level -> level.tileAt(coordinate))
+                      .filter(tile -> tile instanceof DoorTile)
+                      .map(tile -> (DoorTile) tile);
+              doorTileOpt.ifPresent(
+                  doorTile -> {
+                    if (isOpen) {
+                      doorTile.open();
+                    } else {
+                      doorTile.close();
+                    }
+                  });
+            });
+
+    // Design Labels
+    Map<Coordinate, Byte> designLabelBytes = levelState.designLabelBytes();
+    if (designLabelBytes == null) {
+      return;
+    }
+    AtomicBoolean updateNeeded = new AtomicBoolean(false);
+    for (Map.Entry<Coordinate, Byte> entry : designLabelBytes.entrySet()) {
+      Coordinate coord = entry.getKey();
+      Byte labelByte = entry.getValue();
+      var tileOpt = Game.currentLevel().flatMap(level -> level.tileAt(coord));
+      tileOpt.ifPresent(
+          tile -> {
+            DesignLabel label = DesignLabel.fromByte(labelByte);
+            if (tile.designLabel() != label) {
+              tile.designLabel(label);
+              updateNeeded.set(true);
+            }
+          });
+    }
+    if (updateNeeded.get()) Game.currentLevel().ifPresent(ILevel::refreshLevelTextures);
   }
 }

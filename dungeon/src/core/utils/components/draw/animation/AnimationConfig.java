@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -15,7 +17,8 @@ import java.util.Optional;
  * <p>Instances of this class are usually loaded from a JSON file alongside a spritesheet via {@link
  * #loadAnimationConfigMap(String)}.
  */
-public class AnimationConfig implements Cloneable {
+public class AnimationConfig implements Cloneable, Serializable {
+  @Serial private static final long serialVersionUID = 1L;
 
   /** Optional spritesheet configuration (width, height, offsets, etc.). */
   private SpritesheetConfig config;
@@ -40,6 +43,14 @@ public class AnimationConfig implements Cloneable {
 
   /** Whether the animation sprites should be drawn horizontally mirrored. Default: false. */
   private boolean mirrored = false;
+
+  // New: padding between frames (px)
+  private int paddingX = 0;
+  private int paddingY = 0;
+
+  // New: outer margin / offset from top-left before first frame (px)
+  private int marginX = 0;
+  private int marginY = 0;
 
   /**
    * Creates a new {@link AnimationConfig} with a specified {@link SpritesheetConfig}.
@@ -184,6 +195,78 @@ public class AnimationConfig implements Cloneable {
     return mirrored;
   }
 
+  /**
+   * Sets the horizontal padding between frames.
+   *
+   * @param paddingX padding in pixels
+   * @return this config for chaining
+   */
+  public AnimationConfig paddingX(int paddingX) {
+    this.paddingX = paddingX;
+    return this;
+  }
+
+  /**
+   * Sets the vertical padding between frames.
+   *
+   * @param paddingY padding in pixels
+   * @return this config for chaining
+   */
+  public AnimationConfig paddingY(int paddingY) {
+    this.paddingY = paddingY;
+    return this;
+  }
+
+  /**
+   * @return the horizontal padding between frames in pixels
+   */
+  public int paddingX() {
+    return paddingX;
+  }
+
+  /**
+   * @return the vertical padding between frames in pixels
+   */
+  public int paddingY() {
+    return paddingY;
+  }
+
+  /**
+   * Sets the horizontal margin (outer offset from top-left before first frame).
+   *
+   * @param marginX margin in pixels
+   * @return this config for chaining
+   */
+  public AnimationConfig marginX(int marginX) {
+    this.marginX = marginX;
+    return this;
+  }
+
+  /**
+   * Sets the vertical margin (outer offset from top-left before first frame).
+   *
+   * @param marginY margin in pixels
+   * @return this config for chaining
+   */
+  public AnimationConfig marginY(int marginY) {
+    this.marginY = marginY;
+    return this;
+  }
+
+  /**
+   * @return the horizontal margin (outer offset from top-left before first frame) in pixels
+   */
+  public int marginX() {
+    return marginX;
+  }
+
+  /**
+   * @return the vertical margin (outer offset from top-left before first frame) in pixels
+   */
+  public int marginY() {
+    return marginY;
+  }
+
   @Override
   public String toString() {
     return "AnimationConfig{"
@@ -199,6 +282,14 @@ public class AnimationConfig implements Cloneable {
         + centered
         + ", mirrored="
         + mirrored
+        + ", paddingX="
+        + paddingX
+        + ", paddingY="
+        + paddingY
+        + ", marginX="
+        + marginX
+        + ", marginY="
+        + marginY
         + ", config="
         + config
         + '}';
@@ -242,6 +333,12 @@ public class AnimationConfig implements Cloneable {
       animConfig.centered(entry.getBoolean("centered", false));
       animConfig.mirrored(entry.getBoolean("mirrored", false));
 
+      // parse optional padding/margin from the config JSON if present
+      animConfig.paddingX(configJson.getInt("paddingX", 0));
+      animConfig.paddingY(configJson.getInt("paddingY", 0));
+      animConfig.marginX(configJson.getInt("marginX", 0));
+      animConfig.marginY(configJson.getInt("marginY", 0));
+
       animationMap.put(animationName, animConfig);
     }
 
@@ -257,6 +354,7 @@ public class AnimationConfig implements Cloneable {
       cloned.config = this.config.clone();
     }
 
+    // primitive fields are copied by default; no extra work required for padding/margin
     return cloned;
   }
 }

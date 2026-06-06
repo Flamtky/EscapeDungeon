@@ -9,11 +9,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
-import contrib.components.AIComponent;
-import contrib.components.CollideComponent;
-import contrib.components.DecoComponent;
-import contrib.components.HealthComponent;
-import contrib.components.InventoryComponent;
+import contrib.components.*;
 import contrib.modules.interaction.InteractionComponent;
 import contrib.utils.EntityUtils;
 import core.Entity;
@@ -28,7 +24,7 @@ import core.game.WindowEventManager;
 import core.level.DungeonLevel;
 import core.level.elements.ILevel;
 import core.systems.CameraSystem;
-import core.systems.input.InputManager;
+import core.systems.InputManager;
 import core.utils.FontHelper;
 import core.utils.Point;
 import core.utils.Vector2;
@@ -36,12 +32,15 @@ import core.utils.components.MissingComponentException;
 import core.utils.components.draw.BlendUtils;
 import core.utils.components.draw.ColorUtils;
 import core.utils.components.draw.animation.Animation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * A debug system that visually overlays entity information on top of the game world.
@@ -78,10 +77,39 @@ public class DebugDrawSystem extends System {
 
   private static final int CIRCLE_SEGMENTS = 60; // resolution of circles (higher = smoother)
   private static final BitmapFont FONT = FontHelper.getDefaultFont();
+  private static final int VIEW_PADDING = 5; // extra padding when checking if in camera view
+  private static final int MAX_ENTITIES = 1000; // max entities to render debug info for
 
-  private static final Map<Entity, String> quickInfoCache = new HashMap<Entity, String>();
+  private static final Map<Entity, String> quickInfoCache = new HashMap<>();
+
+  private static final List<Consumer<ShapeRenderer>> externalRenderers = new ArrayList<>();
 
   private boolean render = false;
+
+  // FPS counter fields
+  private float fpsAccumulator = 0f;
+  private int frameCount = 0;
+  private int displayedFps = 0;
+
+  /**
+   * Registers an external renderer to be called during debug rendering.
+   *
+   * <p>This allows subprojects to add custom debug drawing without modifying the core system.
+   *
+   * @param renderer a consumer that receives the ShapeRenderer and draws custom debug graphics
+   */
+  public static void registerExternalRenderer(Consumer<ShapeRenderer> renderer) {
+    externalRenderers.add(renderer);
+  }
+
+  /**
+   * Unregisters a previously registered external renderer.
+   *
+   * @param renderer the renderer to remove
+   */
+  public static void unregisterExternalRenderer(Consumer<ShapeRenderer> renderer) {
+    externalRenderers.remove(renderer);
+  }
 
   /** Creates a new DebugDrawSystem. */
   public DebugDrawSystem() {
@@ -99,14 +127,53 @@ public class DebugDrawSystem extends System {
     if (!render) return;
 
     SHAPE_RENDERER.setProjectionMatrix(CameraSystem.camera().combined);
-    filteredEntityStream(PositionComponent.class).forEach(this::drawPosition);
+    filteredEntityStream(PositionComponent.class)
+        .filter(this::inCameraView)
+        .limit(MAX_ENTITIES)
+        .forEach(this::drawEntityDebugInfo);
 
     if (!LevelEditorSystem.active()) {
       drawNamedPoints();
     }
+
+    updateFpsCounter(delta);
+
+    // Call external renderers (e.g., guard detection debug rays)
+    for (Consumer<ShapeRenderer> renderer : externalRenderers) {
+      renderer.accept(SHAPE_RENDERER);
+    }
   }
 
-  private void drawPosition(Entity entity) {
+  private void updateFpsCounter(float delta) {
+    // Accumulate delta times and frame count
+    fpsAccumulator += delta;
+    frameCount++;
+
+    // When 1 second has elapsed, calculate average FPS
+    if (fpsAccumulator >= 1.0f) {
+      displayedFps = frameCount;
+      fpsAccumulator = 0f;
+      frameCount = 0;
+    }
+
+    String fpsText = String.format("FPS: %d", displayedFps);
+    drawText(fpsText, new Point(10, Game.windowHeight() - 10), Color.WHITE);
+  }
+
+  private boolean inCameraView(Entity entity) {
+    Point pos = EntityUtils.getPosition(entity);
+    Point[] corners =
+        new Point[] {
+          pos,
+          new Point(pos.x() + VIEW_PADDING, pos.y() + VIEW_PADDING),
+          new Point(pos.x() - VIEW_PADDING, pos.y() - VIEW_PADDING),
+          new Point(pos.x() + VIEW_PADDING, pos.y() - VIEW_PADDING)
+        };
+
+    return Arrays.stream(corners).anyMatch(CameraSystem::isPointInFrustum);
+  }
+
+  private void drawEntityDebugInfo(Entity entity) {
     PositionComponent pc =
         entity
             .fetch(PositionComponent.class)
@@ -152,10 +219,11 @@ public class DebugDrawSystem extends System {
     }
 
     if (entity.isPresent(DrawComponent.class)) drawTextureSize(entity, pc, alpha);
-    if (entity.isPresent(CollideComponent.class)) drawCollideHitbox(entity, alpha);
-    if (entity.isPresent(InteractionComponent.class))
+    if (CameraSystem.isEntityHovered(entity) && entity.isPresent(CollideComponent.class))
+      drawCollideHitbox(entity, alpha);
+    if (CameraSystem.isEntityHovered(entity) && entity.isPresent(InteractionComponent.class))
       drawInteractionRange(entity, EntityUtils.getPosition(entity), alpha);
-    if (CameraSystem.isEntityHovered(entity) && decoComponent.isEmpty()) drawEntityInfo(entity, pc);
+    if (CameraSystem.isEntityHovered(entity)) drawEntityInfo(entity, pc);
   }
 
   /** Draws named points from the current level. */
@@ -179,11 +247,21 @@ public class DebugDrawSystem extends System {
         .forEach(
             (name, point) -> {
               Color color = name.equals(highlightPoint) ? NAMED_POINT_HIGHLIGHT_COLOR : normalColor;
-              // Draw a small purple square at the point location
-              drawRectangleOutline(point.x(), point.y(), 1.0f, 1.0f, color);
-
-              // Draw the name of the point above it
-              drawTextInWorldCoordsCentered(FONT, name, point.translate(0.5f, 0.5f), color);
+              boolean onTile = isNearInteger(point.x()) && isNearInteger(point.y());
+              BlendUtils.setBlending();
+              SHAPE_RENDERER.setProjectionMatrix(CameraSystem.camera().combined);
+              if (onTile) {
+                // Point sits on an exact tile - draw as 1×1 rectangle with centered text
+                drawRectangleOutline(point.x(), point.y(), 1.0f, 1.0f, color);
+                drawTextInWorldCoordsCentered(FONT, name, point.translate(0.5f, 0.5f), color);
+              } else {
+                // Fractional position - draw a small filled dot with text above
+                SHAPE_RENDERER.begin(ShapeRenderer.ShapeType.Filled);
+                SHAPE_RENDERER.setColor(ColorUtils.pmaColor(color));
+                SHAPE_RENDERER.circle(point.x(), point.y(), 0.08f, CIRCLE_SEGMENTS);
+                SHAPE_RENDERER.end();
+                drawTextInWorldCoordsCentered(FONT, name, point.translate(0f, 0.3f), color);
+              }
             });
   }
 
@@ -326,7 +404,11 @@ public class DebugDrawSystem extends System {
             vc -> {
               String velStr =
                   String.format("(%.2f, %.2f)", vc.currentVelocity().x(), vc.currentVelocity().y());
-              info.append("Velocity: ").append(velStr).append("\n");
+              info.append("Velocity: ")
+                  .append(velStr)
+                  .append(" (totalModifier: ")
+                  .append(vc.totalModifiers())
+                  .append(")\n");
             });
 
     entity
@@ -367,11 +449,28 @@ public class DebugDrawSystem extends System {
 
     // We should try to render the path for the current ai; this probably needs a PathAI to check
     // the instance here
+    Function<AIComponent, Optional<String>> fightStatus =
+        (ai) ->
+            Game.player()
+                .flatMap(
+                    player ->
+                        ai.shouldFight().apply(entity, player)
+                            ? Optional.of("FIGHT")
+                            : Optional.of("IDLE"));
     entity
         .fetch(AIComponent.class)
         .ifPresent(
             ai ->
-                info.append("AI State: ").append(ai.active() ? "Active" : "Inactive").append("\n"));
+                info.append("AI State: ")
+                    .append("\n\t\t FightAI: ")
+                    .append(ai.fightBehavior().getClass().getSimpleName())
+                    .append("\n\t\t IdleAI: ")
+                    .append(ai.idleBehavior().getClass().getSimpleName())
+                    .append("\n\t\t Transition: ")
+                    .append(ai.shouldFight().getClass().getSimpleName())
+                    .append("\n\t\t Current State: ")
+                    .append(fightStatus.apply(ai).orElse("N/A"))
+                    .append("\n"));
 
     entity
         .fetch(PlayerComponent.class)
@@ -604,5 +703,11 @@ public class DebugDrawSystem extends System {
     float textX = screen.x - layout.width / 2f;
     float textY = screen.y + layout.height / 2f;
     drawText(font, text, new Point(textX, textY), color);
+  }
+
+  private static final float INTEGER_TOLERANCE = 0.01f;
+
+  private static boolean isNearInteger(float value) {
+    return Math.abs(value - Math.round(value)) < INTEGER_TOLERANCE;
   }
 }

@@ -31,7 +31,7 @@ import core.Entity;
 import core.Game;
 import core.components.PlayerComponent;
 import core.network.messages.c2s.InputMessage;
-import core.utils.Point;
+import core.utils.*;
 import core.utils.Vector2;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
@@ -240,12 +240,18 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Dis
         }
       }
 
-      batch.draw(
-          this.inventoryComponent.items()[i].inventoryAnimation().update(),
-          x,
-          y,
-          this.slotSize - (4 * BORDER_PADDING),
-          this.slotSize - (4 * BORDER_PADDING));
+      TextureRegion region = this.inventoryComponent.items()[i].inventoryAnimation().update();
+      float maxSize = this.slotSize - (4 * BORDER_PADDING);
+      float regionW = region.getRegionWidth();
+      float regionH = region.getRegionHeight();
+      float fitScale = (regionW <= 0 || regionH <= 0) ? 1f : maxSize / Math.max(regionW, regionH);
+      float drawW = regionW * fitScale;
+      float drawH = regionH * fitScale;
+      // center along the smaller dimension
+      float drawX = x + (maxSize - drawW) / 2f;
+      float drawY = y + (maxSize - drawH) / 2f;
+
+      batch.draw(region, drawX, drawY, drawW, drawH);
     }
   }
 
@@ -343,6 +349,19 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Dis
     return owner.isPresent() && owner.get().id() == player.id();
   }
 
+  public static boolean inPlayerInventory(Entity player) {
+    return player
+        .fetch(UIComponent.class)
+        .map(UIComponent::dialog)
+        .filter(GUICombination.class::isInstance)
+        .map(GUICombination.class::cast)
+        .stream()
+        .flatMap(combination -> combination.combinableGuis().stream())
+        .filter(InventoryGUI.class::isInstance)
+        .map(InventoryGUI.class::cast)
+        .anyMatch(gui -> isPlayersInventory(player, gui.inventoryComponent));
+  }
+
   @Override
   protected void initDragAndDrop(DragAndDrop dragAndDrop) {
     dragAndDrop.addSource(dropAndDropSource);
@@ -366,8 +385,17 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Dis
                 InventoryGUI.this.inventoryComponent, isHeroInv, draggedSlot, itemToTransfer));
 
         // TODO: Test if SpriteDrawable is equivalent to creating a texture on the fly
+        TextureRegion dragRegion = itemToTransfer.inventoryAnimation().update();
         Image image = new Image(new SpriteDrawable(itemToTransfer.inventoryAnimation().update()));
-        image.setSize(InventoryGUI.this.slotSize, InventoryGUI.this.slotSize);
+        float dragRegionW = dragRegion.getRegionWidth();
+        float dragRegionH = dragRegion.getRegionHeight();
+        float dragFitScale =
+            (dragRegionW <= 0 || dragRegionH <= 0)
+                ? 1f
+                : InventoryGUI.this.slotSize / Math.max(dragRegionW, dragRegionH);
+        float dragW = dragRegionW * dragFitScale;
+        float dragH = dragRegionH * dragFitScale;
+        image.setSize(dragW, dragH);
         payload.setDragActor(image);
         dragAndDrop().setDragActorPosition(image.getWidth() / 2, -image.getHeight() / 2);
 
@@ -391,7 +419,12 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Dis
                 itemDragPayload.inventoryComponent(),
                 itemDragPayload.slot());
           } else {
-            Game.network().send((short) 0, InputMessage.invDrop(itemDragPayload.slot()), true);
+            Game.network()
+                .send(
+                    (short) 0,
+                    new InputMessage(
+                        InputMessage.Action.INV_DROP, Vector2.of(itemDragPayload.slot(), 0)),
+                    true);
           }
         }
       }
@@ -425,7 +458,12 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Dis
           if (Game.network().isServer()) {
             HeroController.moveItem(Game.player().orElseThrow(), sourceSlot, targetSlot);
           } else {
-            Game.network().send((short) 0, InputMessage.invMove(sourceSlot, targetSlot), true);
+            Game.network()
+                .send(
+                    (short) 0,
+                    new InputMessage(
+                        InputMessage.Action.INV_MOVE, Vector2.of(sourceSlot, targetSlot)),
+                    true);
           }
         }
       }
@@ -448,7 +486,11 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Dis
                   return HeroController.useItem(player, getSlotByMousePosition());
                 } else {
                   Game.network()
-                      .send((short) 0, InputMessage.invUse(getSlotByMousePosition()), true);
+                      .send(
+                          (short) 0,
+                          new InputMessage(
+                              InputMessage.Action.INV_USE, Vector2.of(getSlotByMousePosition(), 0)),
+                          true);
                   return true;
                 }
               }
@@ -470,7 +512,11 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Dis
                   return HeroController.useItem(player, getSlotByMousePosition());
                 } else {
                   Game.network()
-                      .send((short) 0, InputMessage.invUse(getSlotByMousePosition()), true);
+                      .send(
+                          (short) 0,
+                          new InputMessage(
+                              InputMessage.Action.INV_USE, Vector2.of(getSlotByMousePosition(), 0)),
+                          true);
                   return true;
                 }
               }
@@ -506,7 +552,12 @@ public class InventoryGUI extends CombinableGUI implements IInventoryHolder, Dis
                       Game.player().orElseThrow(), sourceSlot, nextBestTargetSlot);
                 } else {
                   Game.network()
-                      .send((short) 0, InputMessage.invMove(sourceSlot, nextBestTargetSlot), true);
+                      .send(
+                          (short) 0,
+                          new InputMessage(
+                              InputMessage.Action.INV_MOVE,
+                              Vector2.of(sourceSlot, nextBestTargetSlot)),
+                          true);
                   return true;
                 }
               }

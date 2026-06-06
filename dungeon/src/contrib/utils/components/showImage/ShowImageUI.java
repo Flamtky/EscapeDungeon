@@ -1,6 +1,7 @@
 package contrib.utils.components.showImage;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Interpolation;
@@ -14,7 +15,6 @@ import contrib.components.ShowImageComponent;
 import contrib.hud.UIUtils;
 import contrib.hud.dialogs.DialogContext;
 import contrib.hud.dialogs.DialogContextKeys;
-import contrib.hud.dialogs.HeadlessDialogGroup;
 import core.Game;
 
 /** UI element that displays an image with optional text, used through the ShowImageSystem. */
@@ -71,16 +71,12 @@ public class ShowImageUI extends Group {
    */
   public static Group build(DialogContext ctx) {
     String img_path = ctx.require(DialogContextKeys.IMAGE, String.class);
+    ShowImageComponent component = new ShowImageComponent(img_path);
 
-    if (Game.isHeadless()) {
-      return new HeadlessDialogGroup();
-    }
-
-    ShowImageUI showImageUI = new ShowImageUI(new ShowImageComponent(img_path));
     ctx.find(DialogContextKeys.IMAGE_TRANSITION_SPEED, TransitionSpeed.class)
-        .ifPresent(showImageUI.component::transitionSpeed);
-
-    return showImageUI;
+        .ifPresent(component::transitionSpeed);
+    ctx.find(DialogContextKeys.IMAGE_MAX_SIZE, Float.class).ifPresent(component::maxSize);
+    return new ShowImageUI(component);
   }
 
   @Override
@@ -112,7 +108,15 @@ public class ShowImageUI extends Group {
       animation = Math.min(1, animation + (1f / component.transitionSpeed().framesToComplete));
     }
 
+    Color prev = batch.getColor();
+    float pr = prev.r;
+    float pg = prev.g;
+    float pb = prev.b;
+    float pa = prev.a;
+
     super.draw(batch, parentAlpha);
+
+    batch.setColor(pr, pg, pb, pa);
   }
 
   private float animationOffsetX() {

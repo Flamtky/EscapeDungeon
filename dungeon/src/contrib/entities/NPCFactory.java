@@ -4,7 +4,6 @@ import contrib.components.CollideComponent;
 import core.Entity;
 import core.components.DrawComponent;
 import core.components.PositionComponent;
-import core.components.VelocityComponent;
 import core.systems.VelocitySystem;
 import core.utils.Point;
 import core.utils.Vector2;
@@ -51,11 +50,10 @@ public class NPCFactory {
     dc.depth(DepthLayer.Player.depth());
     npc.add(dc);
 
-    CollideComponent cc = new CollideComponent(Vector2.of(0.5f, 0), Vector2.of(0.9f, 0.9f));
+    CollideComponent cc = new CollideComponent(Vector2.of(0.05f, 0), Vector2.of(0.9f, 0.9f));
     cc.isSolid(true);
     npc.add(cc);
 
-    npc.add(new VelocityComponent(0));
     return npc;
   }
 }

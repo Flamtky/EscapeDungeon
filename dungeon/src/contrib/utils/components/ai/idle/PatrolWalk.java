@@ -1,14 +1,15 @@
 package contrib.utils.components.ai.idle;
 
 import com.badlogic.gdx.ai.pfa.GraphPath;
+import contrib.utils.EntityUtils;
 import contrib.utils.components.ai.AIUtils;
 import core.Entity;
 import core.Game;
-import core.components.PositionComponent;
+import core.components.VelocityComponent;
 import core.level.Tile;
 import core.level.utils.LevelUtils;
+import core.utils.Direction;
 import core.utils.Point;
-import core.utils.components.MissingComponentException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -35,7 +36,7 @@ public final class PatrolWalk implements Consumer<Entity> {
   private int currentCheckpoint = 0;
 
   /**
-   * WTF? (erster Satz kurze Beschreibung) .
+   * Creates a new PatrolWalk AI.
    *
    * <p>Walks a random pattern in a radius around the entity. The checkpoints will be chosen
    * randomly at first idle. After being initialized, the checkpoints won't change anymore, only the
@@ -45,23 +46,37 @@ public final class PatrolWalk implements Consumer<Entity> {
    * @param numberCheckpoints Number of checkpoints to walk to.
    * @param pauseTime Max time in milliseconds to wait on a checkpoint. The actual time is a random
    *     number between 0 and this value.
-   * @param mode WTF? .
+   * @param mode The mode of walking the checkpoints.
    */
   public PatrolWalk(float radius, int numberCheckpoints, int pauseTime, final MODE mode) {
     this.radius = radius;
     this.numberCheckpoints = numberCheckpoints;
-    this.pauseFrames = pauseTime / (1000 / Game.frameRate());
+    this.pauseFrames = pauseTime / (1000 / Game.tickRate());
     this.mode = mode;
+  }
+
+  /**
+   * Creates a new PatrolWalk AI with a given list of checkpoints.
+   *
+   * @param checkpoints The list of checkpoints to walk to in order.
+   * @param pauseTime Max time in milliseconds to wait on a checkpoint. The actual time is a random
+   *     number between 0 and this value.
+   * @param mode The mode of walking the checkpoints.
+   */
+  public PatrolWalk(List<Tile> checkpoints, int pauseTime, final MODE mode) {
+    this.checkpoints.addAll(checkpoints);
+    this.radius = 0;
+    this.numberCheckpoints = checkpoints.size();
+    this.pauseFrames = pauseTime / (1000 / Game.tickRate());
+    this.mode = mode;
+    this.initialized = true;
   }
 
   private void init(final Entity entity) {
     initialized = true;
-    PositionComponent position =
-        entity
-            .fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(entity, PositionComponent.class));
-    Point center = position.position();
-    Tile tile = Game.tileAt(position.position()).orElse(null);
+
+    Point center = EntityUtils.getPosition(entity);
+    Tile tile = Game.tileAt(center).orElse(null);
 
     if (tile == null) {
       return;
@@ -92,16 +107,13 @@ public final class PatrolWalk implements Consumer<Entity> {
       initialized = false;
       return;
     }
-    PositionComponent position =
-        entity
-            .fetch(PositionComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(entity, PositionComponent.class));
+
+    Point position = EntityUtils.getPosition(entity);
 
     if (currentPath != null && !AIUtils.pathFinished(entity, currentPath)) {
       if (AIUtils.pathLeft(entity, currentPath)) {
         currentPath =
-            LevelUtils.calculatePath(
-                position.position(), this.checkpoints.get(currentCheckpoint).position());
+            LevelUtils.calculatePath(position, this.checkpoints.get(currentCheckpoint).position());
       }
       AIUtils.followPath(entity, currentPath);
       return;
@@ -110,6 +122,16 @@ public final class PatrolWalk implements Consumer<Entity> {
     if (currentPath != null && AIUtils.pathFinished(entity, currentPath)) {
       frameCounter = 0;
       currentPath = null;
+      // randomly change direction after reaching a checkpoint
+      if (RANDOM.nextBoolean()) {
+        entity
+            .fetch(VelocityComponent.class)
+            .ifPresent(
+                vc -> {
+                  vc.clearForces();
+                  vc.applyForce("changeDir", Direction.random().scale(250));
+                });
+      }
       return;
     }
 
@@ -125,14 +147,12 @@ public final class PatrolWalk implements Consumer<Entity> {
         Random rnd = new Random();
         currentCheckpoint = rnd.nextInt(checkpoints.size());
         currentPath =
-            LevelUtils.calculatePath(
-                position.position(), this.checkpoints.get(currentCheckpoint).position());
+            LevelUtils.calculatePath(position, this.checkpoints.get(currentCheckpoint).position());
       }
       case LOOP -> {
         currentCheckpoint = (currentCheckpoint + 1) % checkpoints.size();
         currentPath =
-            LevelUtils.calculatePath(
-                position.position(), this.checkpoints.get(currentCheckpoint).position());
+            LevelUtils.calculatePath(position, this.checkpoints.get(currentCheckpoint).position());
       }
       case BACK_AND_FORTH -> {
         if (forward) {
@@ -149,8 +169,7 @@ public final class PatrolWalk implements Consumer<Entity> {
           }
         }
         currentPath =
-            LevelUtils.calculatePath(
-                position.position(), this.checkpoints.get(currentCheckpoint).position());
+            LevelUtils.calculatePath(position, this.checkpoints.get(currentCheckpoint).position());
       }
       default -> {}
     }

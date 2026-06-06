@@ -24,5 +24,28 @@ public enum DesignLabel {
   DARK,
 
   /** A very colorful, whimsical theme featuring a rainbow palette. */
-  RAINBOW;
+  RAINBOW,
+
+  /** A new theme with 2-Tile-high beige walls. */
+  BEIGECASTLE,
+
+  /** A new theme with 2-Tile-high grey walls. */
+  GREYCASTLE,
+
+  /** A watery theme with blue tones and aquatic elements. */
+  WATER;
+
+  /** Converts the DesignLabel enum constant to its corresponding byte value. */
+  public byte toByte() {
+    if (values().length > Byte.MAX_VALUE + 1) {
+      throw new IllegalStateException(
+          "Too many DesignLabel enum entries for byte encoding: " + values().length);
+    }
+    return (byte) this.ordinal();
+  }
+
+  /** Converts a byte value to its corresponding DesignLabel enum constant. */
+  public static DesignLabel fromByte(byte b) {
+    return DesignLabel.values()[b];
+  }
 }

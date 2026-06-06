@@ -32,7 +32,7 @@ public class DoubleFireballSkill extends FireballSkill {
   }
 
   @Override
-  protected void executeSkill(Entity caster) {
+  protected boolean executeSkill(Entity caster) {
     Point targetPosition = endPoint();
     shootProjectile(caster, start(caster), endPoint());
     EventScheduler.scheduleAction(
@@ -45,5 +45,6 @@ public class DoubleFireballSkill extends FireballSkill {
           shootProjectile(caster, start(caster), predictedTargetPosition);
         },
         DELAY_BETWEEN_FIREBALLS);
+    return true;
   }
 }

@@ -14,7 +14,6 @@ import core.components.VelocityComponent;
 import core.level.Tile;
 import core.level.elements.tile.PitTile;
 import core.utils.Point;
-import core.utils.components.MissingComponentException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class PitSystem extends System {
    * and VelocityComponent.
    */
   public PitSystem() {
-    super(PositionComponent.class, VelocityComponent.class, CollideComponent.class);
+    super(PositionComponent.class, VelocityComponent.class);
   }
 
   @Override
@@ -90,11 +89,11 @@ public class PitSystem extends System {
   }
 
   private Tile tileAtCenter(Entity entity) {
-    CollideComponent cc =
+    Point center =
         entity
             .fetch(CollideComponent.class)
-            .orElseThrow(() -> MissingComponentException.build(entity, CollideComponent.class));
-    Point center = cc.collider().absoluteCenter();
+            .map(cc -> cc.collider().absoluteCenter())
+            .orElse(PositionComponent.ILLEGAL_POSITION);
     return Game.tileAt(center).orElse(null);
   }
 }

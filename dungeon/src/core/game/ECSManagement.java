@@ -1,9 +1,10 @@
 package core.game;
 
-import com.badlogic.gdx.Gdx;
+import contrib.components.CollideComponent;
 import contrib.systems.EventScheduler;
 import contrib.systems.HudSystem;
 import contrib.systems.LevelTickSystem;
+import contrib.systems.PositionSync;
 import core.Component;
 import core.Entity;
 import core.Game;
@@ -11,7 +12,9 @@ import core.System;
 import core.components.DrawComponent;
 import core.components.PlayerComponent;
 import core.components.PositionComponent;
+import core.components.VelocityComponent;
 import core.level.elements.ILevel;
+import core.level.utils.Coordinate;
 import core.network.messages.s2c.EntityDespawnEvent;
 import core.network.messages.s2c.EntitySpawnEvent;
 import core.systems.DrawSystem;
@@ -19,7 +22,9 @@ import core.systems.LevelSystem;
 import core.systems.SoundSystem;
 import core.utils.EntityIdProvider;
 import core.utils.EntitySystemMapper;
+import core.utils.Point;
 import core.utils.logging.DungeonLogger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -27,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -50,6 +57,24 @@ public final class ECSManagement {
   private static final Map<Class<? extends System>, System> SYSTEMS = new LinkedHashMap<>();
   private static final Map<ILevel, Set<EntitySystemMapper>> LEVEL_STORAGE_MAP = new HashMap<>();
   private static Set<EntitySystemMapper> activeEntityStorage = new HashSet<>();
+
+  /** Cache for entity lookups by ID. */
+  private static final Map<Integer, Entity> ENTITY_ID_CACHE = new HashMap<>();
+
+  /** Spatial cache: maps tile coordinates to entities at that tile. */
+  private static final Map<Coordinate, Set<Entity>> TILE_ENTITY_CACHE = new HashMap<>();
+
+  /** Reverse cache: maps entities to their cached tile coordinate. */
+  private static final Map<Entity, Coordinate> ENTITY_TILE_CACHE = new HashMap<>();
+
+  /** Lock for thread-safe access to the spatial cache. */
+  private static final ReentrantReadWriteLock tileCacheLock = new ReentrantReadWriteLock();
+
+  private static final Lock tileCacheReadLock = tileCacheLock.readLock();
+  private static final Lock tileCacheWriteLock = tileCacheLock.writeLock();
+
+  /** Cached reference to the primary entity mapper (empty filter rules). */
+  private static EntitySystemMapper primaryEntityMapper;
 
   private static int currentTick = 0;
 
@@ -75,7 +100,8 @@ public final class ECSManagement {
 
   static {
     LEVEL_STORAGE_MAP.put(null, activeEntityStorage);
-    activeEntityStorage.add(new EntitySystemMapper());
+    primaryEntityMapper = new EntitySystemMapper();
+    activeEntityStorage.add(primaryEntityMapper);
     for (System system : ESSENTIAL_SYSTEMS) {
       ECSManagement.add(system);
     }
@@ -90,8 +116,23 @@ public final class ECSManagement {
    * @param entity the entity that has changes in its Component Collection.
    */
   public static void informAboutChanges(Entity entity) {
-    if (levelEntities().anyMatch(entity1 -> entity1.equals(entity))) {
-      activeEntityStorage.forEach(f -> f.update(entity));
+    if (primaryEntityMapper == null) {
+      // During initialization, fall back to checking all mappers
+      boolean exists =
+          activeEntityStorage.stream()
+              .filter(f -> f.equals(Set.of()))
+              .findFirst()
+              .map(m -> m.anyMatch(e -> e.equals(entity)))
+              .orElse(false);
+      if (exists) {
+        new ArrayList<>(activeEntityStorage).forEach(f -> f.update(entity));
+        LOGGER.info(entity + " informed the Game about component changes.");
+      }
+      return;
+    }
+    if (primaryEntityMapper.anyMatch(e -> e.equals(entity))) {
+      // Create a copy to avoid ConcurrentModificationException when update triggers add/remove
+      new ArrayList<>(activeEntityStorage).forEach(f -> f.update(entity));
       LOGGER.info(entity + " informed the Game about component changes.");
     }
   }
@@ -112,19 +153,27 @@ public final class ECSManagement {
    */
   public static Entity add(Entity entity) {
     // Prevent duplicate IDs for different entity instances
-    boolean duplicateIdExists = allEntities().anyMatch(e -> e != entity && e.id() == entity.id());
-    if (duplicateIdExists)
+    Entity cachedEntity = ENTITY_ID_CACHE.get(entity.id());
+    if (cachedEntity != null && cachedEntity != entity) {
       throw new IllegalArgumentException(
           "An Entity with id " + entity.id() + " already exists in the game.");
+    }
 
     // Ensure the provider knows about this id (idempotent).
     EntityIdProvider.ensureRegistered(entity.id());
 
-    activeEntityStorage.forEach(f -> f.add(entity));
+    // Update cache
+    ENTITY_ID_CACHE.put(entity.id(), entity);
+
+    // Update spatial cache for tile-based lookups
+    addToTileCache(entity);
+
+    // Create a copy to avoid ConcurrentModificationException when triggerOnAdd adds more entities
+    new ArrayList<>(activeEntityStorage).forEach(f -> f.add(entity));
     LOGGER.info(entity + " will be added to the Game.");
 
     try {
-      if (Game.network().isServer()) {
+      if (PreRunConfiguration.multiplayerEnabled() && PreRunConfiguration.isNetworkServer()) {
         if (entity.isPresent(PositionComponent.class) && entity.isPresent(DrawComponent.class)) {
           Game.network().broadcast(new EntitySpawnEvent(entity), true);
         }
@@ -146,12 +195,18 @@ public final class ECSManagement {
    * @return removed entity for chaining
    */
   public static Entity remove(Entity entity) {
-    activeEntityStorage.forEach(f -> f.remove(entity));
+    // Create a copy to avoid ConcurrentModificationException when triggerOnRemove modifies entities
+    new ArrayList<>(activeEntityStorage).forEach(f -> f.remove(entity));
     EntityIdProvider.unregister(entity.id());
+    ENTITY_ID_CACHE.remove(entity.id());
+
+    // Remove from spatial cache
+    removeFromTileCache(entity);
+
     LOGGER.info(entity + " will be removed from the Game.");
 
     try {
-      if (Game.network().isServer()) {
+      if (PreRunConfiguration.multiplayerEnabled() && PreRunConfiguration.isNetworkServer()) {
         Game.network()
             .broadcast(new EntityDespawnEvent(entity.id(), "Entity removed from game"), true);
       }
@@ -230,6 +285,241 @@ public final class ECSManagement {
    */
   public static void activeEntityStorage(final Set<EntitySystemMapper> entityStorage) {
     activeEntityStorage = entityStorage;
+    // Update the primary entity mapper reference (mapper with empty filter rules)
+    primaryEntityMapper =
+        entityStorage.stream().filter(f -> f.equals(Set.of())).findFirst().orElse(null);
+    // Rebuild entity ID cache for the new storage
+    rebuildEntityIdCache();
+    // Rebuild spatial tile cache for the new storage
+    rebuildTileCache();
+  }
+
+  /** Rebuilds the entity ID cache from the current active entity storage. */
+  private static void rebuildEntityIdCache() {
+    ENTITY_ID_CACHE.clear();
+    if (primaryEntityMapper != null) {
+      primaryEntityMapper.forEach(e -> ENTITY_ID_CACHE.put(e.id(), e));
+    }
+  }
+
+  /** Rebuilds the spatial tile cache from the current active entity storage. */
+  private static void rebuildTileCache() {
+    tileCacheWriteLock.lock();
+    try {
+      TILE_ENTITY_CACHE.clear();
+      ENTITY_TILE_CACHE.clear();
+      if (primaryEntityMapper != null) {
+        primaryEntityMapper.forEach(ECSManagement::addToTileCacheInternal);
+      }
+    } finally {
+      tileCacheWriteLock.unlock();
+    }
+  }
+
+  /**
+   * Adds an entity to the spatial tile cache.
+   *
+   * @param entity the entity to add
+   */
+  private static void addToTileCache(Entity entity) {
+    tileCacheWriteLock.lock();
+    try {
+      addToTileCacheInternal(entity);
+    } finally {
+      tileCacheWriteLock.unlock();
+    }
+  }
+
+  /**
+   * Internal method to add an entity to the tile cache. Must be called with write lock held.
+   *
+   * @param entity the entity to add
+   */
+  private static void addToTileCacheInternal(Entity entity) {
+    // Sync collider position before calculating tile coordinate
+    PositionSync.syncPosition(entity);
+    Coordinate coord = getEntityTileCoordinate(entity);
+    if (coord == null) {
+      return;
+    }
+    ENTITY_TILE_CACHE.put(entity, coord);
+    TILE_ENTITY_CACHE.computeIfAbsent(coord, k -> new HashSet<>()).add(entity);
+  }
+
+  /**
+   * Removes an entity from the spatial tile cache.
+   *
+   * @param entity the entity to remove
+   */
+  private static void removeFromTileCache(Entity entity) {
+    tileCacheWriteLock.lock();
+    try {
+      Coordinate cachedCoord = ENTITY_TILE_CACHE.remove(entity);
+      if (cachedCoord != null) {
+        Set<Entity> entities = TILE_ENTITY_CACHE.get(cachedCoord);
+        if (entities != null) {
+          entities.remove(entity);
+          if (entities.isEmpty()) {
+            TILE_ENTITY_CACHE.remove(cachedCoord);
+          }
+        }
+      }
+    } finally {
+      tileCacheWriteLock.unlock();
+    }
+  }
+
+  /**
+   * Gets the tile coordinate for an entity using center position calculation. Uses CollideComponent
+   * center if available, otherwise DrawComponent center, otherwise raw position.
+   *
+   * @param entity the entity
+   * @return the tile coordinate, or null if entity has no PositionComponent
+   */
+  private static Coordinate getEntityTileCoordinate(Entity entity) {
+    Optional<PositionComponent> pcOpt = entity.fetch(PositionComponent.class);
+    if (pcOpt.isEmpty()) {
+      return null;
+    }
+    PositionComponent pc = pcOpt.get();
+    Optional<CollideComponent> ccOpt = entity.fetch(CollideComponent.class);
+    Optional<DrawComponent> dcOpt = entity.fetch(DrawComponent.class);
+
+    Point position;
+    if (ccOpt.isPresent()) {
+      position = ccOpt.get().collider().absoluteCenter();
+    } else if (dcOpt.isPresent()) {
+      DrawComponent dc = dcOpt.get();
+      position = pc.position().translate(dc.getWidth() / 2, dc.getHeight() / 2);
+    } else {
+      position = pc.position();
+    }
+    return position.toCoordinate();
+  }
+
+  /**
+   * Gets all entities at the specified tile coordinate with lazy validation for moving entities.
+   *
+   * <p>Entities without {@link VelocityComponent} are trusted from cache. Entities with {@link
+   * VelocityComponent} are validated on-demand and the cache is updated if their tile has changed.
+   * This lazy validation approach avoids per-frame cache updates for moving entities.
+   *
+   * <p><b>Note:</b> For entities without {@link VelocityComponent} that are teleported or have
+   * their position changed programmatically, call {@link #refreshEntityTileCache(Entity)} after the
+   * position change to update the cache.
+   *
+   * @param coordinate the tile coordinate to query
+   * @return stream of entities at the given tile
+   */
+  public static Stream<Entity> getEntitiesAtTile(Coordinate coordinate) {
+    List<Entity> result = new ArrayList<>();
+    List<Entity> toRevalidate = new ArrayList<>();
+
+    // First pass: collect entities and identify those needing revalidation
+    tileCacheReadLock.lock();
+    try {
+      Set<Entity> cachedEntities = TILE_ENTITY_CACHE.get(coordinate);
+      if (cachedEntities == null || cachedEntities.isEmpty()) {
+        return Stream.empty();
+      }
+      for (Entity entity : cachedEntities) {
+        if (entity.isPresent(VelocityComponent.class)) {
+          toRevalidate.add(entity);
+        } else {
+          result.add(entity);
+        }
+      }
+    } finally {
+      tileCacheReadLock.unlock();
+    }
+
+    // Second pass: revalidate moving entities (requires write lock if cache update needed)
+    if (!toRevalidate.isEmpty()) {
+      for (Entity entity : toRevalidate) {
+        Coordinate currentCoord = getEntityTileCoordinate(entity);
+        if (currentCoord != null && currentCoord.equals(coordinate)) {
+          result.add(entity);
+        } else {
+          // Entity has moved, update cache
+          updateEntityTileCache(entity, coordinate, currentCoord);
+        }
+      }
+    }
+
+    return result.stream();
+  }
+
+  /**
+   * Updates the tile cache for an entity that has moved.
+   *
+   * @param entity the entity that moved
+   * @param oldCoord the old tile coordinate
+   * @param newCoord the new tile coordinate (can be null if entity no longer has position)
+   */
+  private static void updateEntityTileCache(
+      Entity entity, Coordinate oldCoord, Coordinate newCoord) {
+    tileCacheWriteLock.lock();
+    try {
+      // Remove from old tile
+      Set<Entity> oldEntities = TILE_ENTITY_CACHE.get(oldCoord);
+      if (oldEntities != null) {
+        oldEntities.remove(entity);
+        if (oldEntities.isEmpty()) {
+          TILE_ENTITY_CACHE.remove(oldCoord);
+        }
+      }
+
+      // Add to new tile
+      if (newCoord != null) {
+        ENTITY_TILE_CACHE.put(entity, newCoord);
+        TILE_ENTITY_CACHE.computeIfAbsent(newCoord, k -> new HashSet<>()).add(entity);
+      } else {
+        ENTITY_TILE_CACHE.remove(entity);
+      }
+    } finally {
+      tileCacheWriteLock.unlock();
+    }
+  }
+
+  /**
+   * Refreshes the tile cache for an entity after its position has changed.
+   *
+   * <p>This method compares the cached tile coordinate with the current tile coordinate and updates
+   * the cache if they differ.
+   *
+   * <p><b>Note:</b> This method is automatically called by {@link
+   * contrib.systems.PositionSync#syncPosition} for entities without a {@link VelocityComponent}.
+   * Entities with {@link VelocityComponent} are lazily revalidated when {@link
+   * #getEntitiesAtTile(Coordinate)} is called. You typically don't need to call this method
+   * directly unless you're updating position without going through {@code PositionSync}.
+   *
+   * @param entity the entity whose tile cache should be refreshed
+   */
+  public static void refreshEntityTileCache(Entity entity) {
+    tileCacheReadLock.lock();
+    Coordinate oldCoord;
+    try {
+      oldCoord = ENTITY_TILE_CACHE.get(entity);
+    } finally {
+      tileCacheReadLock.unlock();
+    }
+
+    Coordinate newCoord = getEntityTileCoordinate(entity);
+
+    // Only update if coordinates changed
+    if (oldCoord == null && newCoord != null) {
+      // Entity wasn't in cache, add it
+      tileCacheWriteLock.lock();
+      try {
+        ENTITY_TILE_CACHE.put(entity, newCoord);
+        TILE_ENTITY_CACHE.computeIfAbsent(newCoord, k -> new HashSet<>()).add(entity);
+      } finally {
+        tileCacheWriteLock.unlock();
+      }
+    } else if (oldCoord != null && !oldCoord.equals(newCoord)) {
+      // Entity moved to different tile
+      updateEntityTileCache(entity, oldCoord, newCoord);
+    }
   }
 
   /**
@@ -268,7 +558,7 @@ public final class ECSManagement {
    * @return a stream of all entities currently in the level
    */
   public static Stream<Entity> levelEntities() {
-    return levelEntities(new HashSet<>());
+    return levelEntities(Set.of());
   }
 
   /**
@@ -291,15 +581,20 @@ public final class ECSManagement {
    * @return a stream of all entities currently in the level, that contains the given components.
    */
   public static Stream<Entity> levelEntities(Set<Class<? extends Component>> filter) {
-    Stream<Entity> returnStream;
+    // Fast path: use cached primary mapper for empty filter
+    if (filter.isEmpty() && primaryEntityMapper != null) {
+      return primaryEntityMapper.stream();
+    }
+
     Optional<EntitySystemMapper> rf =
         activeEntityStorage.stream().filter(f -> f.equals(filter)).findFirst();
 
     if (rf.isEmpty()) {
       EntitySystemMapper newMapper = createNewEntitySystemMapper(filter);
-      returnStream = newMapper.stream();
-    } else returnStream = rf.get().stream();
-    return returnStream;
+      return newMapper.stream();
+    } else {
+      return rf.get().stream();
+    }
   }
 
   /**
@@ -313,6 +608,11 @@ public final class ECSManagement {
    * @see #allPlayers()
    */
   public static Optional<Entity> player() {
+    if (allPlayers().count() > 1
+        && PreRunConfiguration.multiplayerEnabled()
+        && PreRunConfiguration.isNetworkServer()) {
+      LOGGER.warn("Multiple player entities detected in level; returning the first one found.");
+    }
     return allPlayers()
         .filter(e -> e.fetch(PlayerComponent.class).map(PlayerComponent::isLocal).orElse(false))
         .findFirst();
@@ -329,7 +629,7 @@ public final class ECSManagement {
    * @see PlayerComponent
    */
   public static Stream<Entity> allPlayers() {
-    return levelEntities().filter(e -> e.isPresent(PlayerComponent.class));
+    return levelEntities(Set.of(PlayerComponent.class));
   }
 
   /**
@@ -370,7 +670,7 @@ public final class ECSManagement {
         .forEach(
             entitySystemMappers ->
                 entitySystemMappers.forEach(
-                    entitySystemMapper -> entitySystemMapper.stream().forEach(allEntities::add)));
+                    entitySystemMapper -> entitySystemMapper.forEach(allEntities::add)));
 
     return allEntities.stream();
   }
@@ -414,7 +714,8 @@ public final class ECSManagement {
    * @return {@code true} if the entity is found, {@code false} otherwise
    */
   public static boolean existInAll(Entity entity) {
-    return allEntities().anyMatch(entity1 -> entity1.equals(entity));
+    return ENTITY_ID_CACHE.containsKey(entity.id())
+        && ENTITY_ID_CACHE.get(entity.id()).equals(entity);
   }
 
   /**
@@ -426,7 +727,10 @@ public final class ECSManagement {
    * @return {@code true} if the entity is found, {@code false} otherwise
    */
   public static boolean existInLevel(Entity entity) {
-    return levelEntities().anyMatch(entity1 -> entity1.equals(entity));
+    if (primaryEntityMapper == null) {
+      return levelEntities().anyMatch(e -> e.equals(entity));
+    }
+    return primaryEntityMapper.anyMatch(e -> e.equals(entity));
   }
 
   private static boolean isAuthoritative(System.AuthoritativeSide side, System system) {
@@ -447,14 +751,11 @@ public final class ECSManagement {
   }
 
   /**
-   * Execute one tick of the ECS.
+   * Execute one game tick of the ECS.
    *
    * <p>This will call the {@link System#execute()} method of each registered {@link System} in the
-   * game, if the system is running and the required number of frames has passed since its last
+   * game, if the system is running and the required number of ticks has passed since its last
    * execution.
-   *
-   * <p>After executing all systems, if an OpenGL context is available, it will call the {@link
-   * System#render(float)} method of each registered {@link System}.
    *
    * <p>If a new level was loaded during this tick, the execution will be interrupted to prevent
    * inconsistencies.
@@ -463,16 +764,17 @@ public final class ECSManagement {
    *     System.AuthoritativeSide#BOTH for all systems})
    */
   public static void executeOneTick(System.AuthoritativeSide side) {
-    List<System> authoritativeSystems =
-        ECSManagement.systems().values().stream()
-            .filter(sys -> isAuthoritative(side, sys))
-            .toList();
+    List<System> systemsSnapshot = new ArrayList<>(SYSTEMS.values());
 
     // Execute logic for each system.
-    for (System system : authoritativeSystems) {
+    for (System system : systemsSnapshot) {
       if (newLevelLoadedThisTick) {
         currentTick++;
         return; // Early exit if a new level was loaded this tick.
+      }
+
+      if (!isAuthoritative(side, system)) {
+        continue;
       }
 
       system.lastExecuteInFrames(system.lastExecuteInFrames() + 1);
@@ -483,14 +785,27 @@ public final class ECSManagement {
       }
     }
 
-    if (!Game.isHeadless() && Game.windowHeight() > 0 && Game.windowWidth() > 0) {
-      // Render logic: Call the render method for each system if OpenGL context is available.
-      float delta = Gdx.graphics.getDeltaTime();
-      systems().values().forEach(system -> system.render(delta));
-    }
-
     currentTick++;
     newLevelLoadedThisTick = false;
+  }
+
+  /**
+   * Renders all registered systems once if an OpenGL context is available.
+   *
+   * <p>This is intentionally independent from {@link #executeOneTick(System.AuthoritativeSide)} so
+   * rendering can run at the display loop speed while game logic stays on the configured tick rate.
+   *
+   * @param delta the time since the last rendered frame
+   */
+  public static void renderSystems(float delta) {
+    if (Game.isHeadless() || Game.windowHeight() <= 0 || Game.windowWidth() <= 0) {
+      return;
+    }
+
+    List<System> systemsSnapshot = new ArrayList<>(SYSTEMS.values());
+    for (System system : systemsSnapshot) {
+      system.render(delta);
+    }
   }
 
   /**
@@ -501,6 +816,6 @@ public final class ECSManagement {
    *     entity with the given ID exists.
    */
   public static Optional<Entity> findEntityById(int entityId) {
-    return ECSManagement.allEntities().filter(e -> e.id() == entityId).findFirst();
+    return Optional.ofNullable(ENTITY_ID_CACHE.get(entityId));
   }
 }

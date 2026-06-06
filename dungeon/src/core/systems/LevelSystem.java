@@ -136,9 +136,9 @@ public final class LevelSystem extends System {
   /**
    * Execute the system logic.
    *
-   * <p>If no level exists yet, the system will do nothing. If all players are on the end tile, the
-   * onEndTile callback will be executed. If all players are on the same open door, the level behind
-   * that door will be loaded. Otherwise, the system will check if any pits should be opened.
+   * <p>Will load a new level if no level exists or one of the managed entities are on the end tile.
+   *
+   * <p>Will draw the level.
    */
   @Override
   public void execute() {

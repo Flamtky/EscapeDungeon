@@ -1,6 +1,8 @@
 package core.utils;
 
 import core.level.utils.Coordinate;
+import java.io.Serial;
+import java.io.Serializable;
 
 /**
  * A record representing a 2D point with x and y Float coordinates.
@@ -13,7 +15,8 @@ import core.level.utils.Coordinate;
  * @see Vector2
  * @see Coordinate
  */
-public record Point(float x, float y) {
+public record Point(float x, float y) implements Serializable {
+  @Serial private static final long serialVersionUID = 1L;
 
   /**
    * Create a new point from another point.
@@ -25,7 +28,26 @@ public record Point(float x, float y) {
   }
 
   /**
+   * Calculates the squared distance between two points.
+   *
+   * <p>This is more efficient than {@link #calculateDistance(Point, Point)} for range comparisons
+   * since it avoids the expensive sqrt calculation. Use this method when you only need to compare
+   * distances.
+   *
+   * @param p1 Point A
+   * @param p2 Point B
+   * @return the squared distance between the two points
+   */
+  public static float distanceSquared(final Point p1, final Point p2) {
+    float xDiff = p1.x() - p2.x();
+    float yDiff = p1.y() - p2.y();
+    return xDiff * xDiff + yDiff * yDiff;
+  }
+
+  /**
    * Check if two points are positioned in a specified range from each other.
+   *
+   * <p>This method uses squared distance comparison to avoid expensive sqrt calculations.
    *
    * @param p1 The first point which is considered.
    * @param p2 The second point which is considered.
@@ -33,7 +55,7 @@ public record Point(float x, float y) {
    * @return True if the distance between the two points is within the radius, else false.
    */
   public static boolean inRange(final Point p1, final Point p2, final float range) {
-    return calculateDistance(p1, p2) <= range;
+    return distanceSquared(p1, p2) <= range * range;
   }
 
   /**
@@ -100,14 +122,18 @@ public record Point(float x, float y) {
   }
 
   /**
-   * Calculates the squared distance between this point and the given point. More efficient when
-   * only comparing distances is necessary.
+   * Calculates the squared Euclidean distance between this point and the given point.
+   *
+   * <p>This is more efficient than {@link #distance(Point)} for range comparisons since it avoids
+   * the expensive sqrt calculation.
    *
    * @param otherPos The point to which the squared distance is calculated.
-   * @return The squared distance between this point and the given point.
+   * @return The squared Euclidean distance between this point and the given point.
    */
   public double distanceSquared(Point otherPos) {
-    return Math.pow(otherPos.x() - x(), 2) + Math.pow(otherPos.y() - y(), 2);
+    double xDiff = otherPos.x() - x();
+    double yDiff = otherPos.y() - y();
+    return xDiff * xDiff + yDiff * yDiff;
   }
 
   /**

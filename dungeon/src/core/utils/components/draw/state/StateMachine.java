@@ -5,11 +5,9 @@ import core.utils.components.draw.animation.Animation;
 import core.utils.components.draw.animation.AnimationConfig;
 import core.utils.components.draw.animation.SpritesheetConfig;
 import core.utils.components.path.IPath;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -19,7 +17,8 @@ import java.util.function.Supplier;
  * <p>Supports named states, regular transitions triggered by signals, and epsilon transitions that
  * are evaluated each update cycle.
  */
-public class StateMachine {
+public class StateMachine implements Serializable {
+  @Serial private static final long serialVersionUID = 1L;
 
   /**
    * Defines globally whether the frame counter should be reset when the animation state changes.
@@ -176,15 +175,6 @@ public class StateMachine {
    */
   public String getCurrentStateName() {
     return currentState.name;
-  }
-
-  /**
-   * Returns all registered states in insertion order.
-   *
-   * @return an unmodifiable view of this state machine's states
-   */
-  public List<State> states() {
-    return Collections.unmodifiableList(states);
   }
 
   /**
@@ -391,14 +381,17 @@ public class StateMachine {
   /** Updates the current state and evaluates epsilon transitions. */
   public void update() {
     currentState.update();
-    List<EpsilonTransition> epsilonTransitions = getEpsilonTransitionList(currentState);
+
+    // TODO: Will maybe removed later on...
+    // TODO: This only breaks chest animations
+    /*List<EpsilonTransition> epsilonTransitions = getEpsilonTransitionList(currentState);
     for (int i = 0; i < epsilonTransitions.size(); i++) {
       EpsilonTransition transition = epsilonTransitions.get(i);
       if (transition.function().apply(currentState)) {
         Object data = transition.data() != null ? transition.data().get() : null;
         changeState(transition.targetState(), data);
       }
-    }
+    }*/
   }
 
   /** Resets the state machine to the default state (first state in the list). */

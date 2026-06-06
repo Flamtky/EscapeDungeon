@@ -6,7 +6,7 @@ import core.configuration.values.ConfigIntValue;
 /** Keyboardconfiguration for the core-package. */
 @ConfigMap(path = {"keyboard"})
 public class KeyboardConfig {
-  /** WTF? . */
+  /** Key used to toggle borderless windowed fullscreen mode. */
   public static final ConfigKey<Integer> TOGGLE_FULLSCREEN =
       new ConfigKey<>(new String[] {"graphics", "fullscreen"}, new ConfigIntValue(Input.Keys.F11));
 

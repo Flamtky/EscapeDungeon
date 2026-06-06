@@ -2,13 +2,13 @@ package contrib.utils.components.ai.transition;
 
 import core.Entity;
 import core.level.utils.LevelUtils;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * Implementation of a transition between idle and fight mode. Activates fight mode when the player
  * is within a specified range of the entity.
  */
-public final class RangeTransition implements Function<Entity, Boolean> {
+public final class RangeTransition implements BiFunction<Entity, Entity, Boolean> {
 
   private final float range;
   private final boolean stayInFightMode;
@@ -37,11 +37,17 @@ public final class RangeTransition implements Function<Entity, Boolean> {
   }
 
   @Override
-  public Boolean apply(final Entity entity) {
-    if (LevelUtils.playerInRange(entity, range)) {
-      hasBeenInFightMode = true;
+  public Boolean apply(final Entity entity, final Entity player) {
+    // Early exit: if staying in fight mode and already been in fight mode, no need to check
+    // range
+    if (stayInFightMode && hasBeenInFightMode) {
       return true;
     }
-    return stayInFightMode && hasBeenInFightMode; // Stay in fight mode if player has been in range
+
+    boolean inRange = LevelUtils.entityInRange(entity, player, range);
+    if (inRange) {
+      hasBeenInFightMode = true;
+    }
+    return inRange;
   }
 }

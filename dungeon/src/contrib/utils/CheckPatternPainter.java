@@ -24,7 +24,7 @@ public class CheckPatternPainter {
 
   /** The level elements that will be painted with the checker pattern. */
   private static final LevelElement[] LEVEL_ELEMENTS_TO_PAINT = {
-    LevelElement.FLOOR,
+    LevelElement.FLOOR, LevelElement.GITTER,
   };
 
   /**

@@ -5,18 +5,7 @@ import contrib.crafting.CraftingIngredient;
 import contrib.crafting.CraftingResult;
 import contrib.crafting.CraftingType;
 import contrib.entities.WorldItemBuilder;
-import contrib.item.concreteItem.ItemBigKey;
-import contrib.item.concreteItem.ItemFairy;
-import contrib.item.concreteItem.ItemHammer;
-import contrib.item.concreteItem.ItemHeart;
-import contrib.item.concreteItem.ItemKey;
-import contrib.item.concreteItem.ItemPotionHealth;
-import contrib.item.concreteItem.ItemPotionWater;
-import contrib.item.concreteItem.ItemResourceBerry;
-import contrib.item.concreteItem.ItemResourceEgg;
-import contrib.item.concreteItem.ItemResourceMushroomRed;
-import contrib.item.concreteItem.ItemWoodenArrow;
-import contrib.item.concreteItem.ItemWoodenBow;
+import contrib.item.concreteItem.*;
 import core.Entity;
 import core.Game;
 import core.level.Tile;
@@ -24,11 +13,9 @@ import core.level.elements.tile.FloorTile;
 import core.utils.Point;
 import core.utils.components.draw.animation.Animation;
 import core.utils.logging.DungeonLogger;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.Random;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Abstract class that represents every item in the game.
@@ -45,7 +32,9 @@ import java.util.Random;
  * max stack size is 1 and the default stack size is 1. The values can be changed via the {@link
  * #stackSize()} and {@link #maxStackSize()} methods.
  */
-public class Item implements CraftingIngredient, CraftingResult {
+public class Item implements CraftingIngredient, CraftingResult, Serializable {
+  @Serial private static final long serialVersionUID = 1L;
+
   private static final DungeonLogger LOGGER = DungeonLogger.getLogger(Item.class);
 
   /**
@@ -75,6 +64,7 @@ public class Item implements CraftingIngredient, CraftingResult {
     ItemRegistry.register(ItemHammer.class);
     ItemRegistry.register(ItemHeart.class, Item::createHeartFromData);
     ItemRegistry.register(ItemKey.class);
+    ItemRegistry.register(HintItem.class);
   }
 
   private String displayName;
@@ -499,5 +489,14 @@ public class Item implements CraftingIngredient, CraftingResult {
         && description.equals(other.description)
         && stackSize == other.stackSize
         && maxStackSize == other.maxStackSize;
+  }
+
+  /**
+   * Gets called when the item is added to an entity's inventory.
+   *
+   * @param owner The entity to which the item should be added.
+   */
+  public void added(Entity owner) {
+    // noop
   }
 }

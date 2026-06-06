@@ -1,11 +1,6 @@
 package contrib.entities;
 
-import contrib.components.CatapultableComponent;
-import contrib.components.CollideComponent;
-import contrib.components.FlyComponent;
-import contrib.components.InventoryComponent;
-import contrib.components.ProjectileComponent;
-import contrib.components.UIComponent;
+import contrib.components.*;
 import contrib.hud.DialogUtils;
 import contrib.hud.UIUtils;
 import contrib.hud.dialogs.DialogContext;
@@ -13,12 +8,9 @@ import contrib.hud.dialogs.DialogContextKeys;
 import contrib.hud.dialogs.DialogFactory;
 import contrib.hud.dialogs.DialogType;
 import contrib.item.Item;
+import contrib.item.concreteItem.*;
 import contrib.item.concreteItem.ItemBigKey;
-import contrib.item.concreteItem.ItemFairy;
-import contrib.item.concreteItem.ItemHammer;
-import contrib.item.concreteItem.ItemHeart;
 import contrib.item.concreteItem.ItemKey;
-import contrib.item.concreteItem.ItemWoodenArrow;
 import contrib.modules.interaction.DropItemsInteraction;
 import contrib.modules.interaction.Interaction;
 import contrib.modules.interaction.InteractionComponent;
@@ -31,10 +23,10 @@ import core.components.PositionComponent;
 import core.components.VelocityComponent;
 import core.level.elements.tile.DoorTile;
 import core.systems.DrawSystem;
+import core.utils.*;
 import core.utils.Direction;
 import core.utils.IVoidFunction;
 import core.utils.Point;
-import core.utils.TriConsumer;
 import core.utils.Vector2;
 import core.utils.components.draw.DepthLayer;
 import core.utils.components.draw.animation.Animation;
@@ -43,10 +35,9 @@ import core.utils.components.draw.state.State;
 import core.utils.components.draw.state.StateMachine;
 import core.utils.components.path.IPath;
 import core.utils.components.path.SimpleIPath;
+import java.util.*;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -196,6 +187,7 @@ public final class MiscFactory {
     // sm.addEpsilonTransition(stOpening, State::isAnimationFinished, stOpen, () -> ic.count() ==
     // 0);
     DrawComponent dc = new DrawComponent(sm);
+    dc.depth(DepthLayer.Player.depth());
     chest.add(dc);
 
     chest.add(
@@ -400,7 +392,7 @@ public final class MiscFactory {
   public static Entity crate(Point position, float mass, SimpleIPath texture) {
     Entity crate = new Entity("crate");
     crate.add(new PositionComponent(position));
-    crate.add(new VelocityComponent(10, mass, entity -> {}, false));
+    crate.add(VelocityComponent.builder().mass(mass).baseSpeed(10).build());
     crate.add(new DrawComponent(new Animation(texture)));
     crate.add(new CollideComponent(Vector2.ZERO, Vector2.ONE));
     return crate;
@@ -554,7 +546,11 @@ public final class MiscFactory {
     VelocityComponent entityVc = other.fetch(VelocityComponent.class).orElse(null);
     other.remove(VelocityComponent.class);
     VelocityComponent vc =
-        new VelocityComponent(speed, entity -> resetCatapultedEntity(entity, entityVc), true);
+        VelocityComponent.builder()
+            .baseSpeed(speed)
+            .onWallHit(entity -> resetCatapultedEntity(entity, entityVc))
+            .canEnterOpenPits(true)
+            .build();
     other.add(vc);
 
     other.add(
@@ -681,7 +677,10 @@ public final class MiscFactory {
                             UIUtils.closeDialog(doorUI);
                           });
                       doorUI.registerCallback(
-                          DialogContextKeys.ON_NO, data -> UIUtils.closeDialog(doorUI));
+                          DialogContextKeys.ON_NO,
+                          data -> {
+                            UIUtils.closeDialog(doorUI);
+                          });
                     },
                     2f)));
     door.close();

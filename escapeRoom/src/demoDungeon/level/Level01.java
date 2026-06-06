@@ -1,10 +1,7 @@
 package demoDungeon.level;
 
-import contrib.components.AIComponent;
-import contrib.components.CollideComponent;
-import contrib.components.HealthComponent;
-import contrib.components.InventoryComponent;
-import contrib.components.LeverComponent;
+import com.badlogic.gdx.Input;
+import contrib.components.*;
 import contrib.entities.DungeonMonster;
 import contrib.entities.LeverFactory;
 import contrib.entities.MiscFactory;
@@ -19,6 +16,7 @@ import contrib.utils.components.ai.AIUtils;
 import core.Entity;
 import core.Game;
 import core.components.DrawComponent;
+import core.components.InputComponent;
 import core.components.PositionComponent;
 import core.components.VelocityComponent;
 import core.level.DungeonLevel;
@@ -29,16 +27,8 @@ import core.level.utils.LevelElement;
 import core.level.utils.LevelUtils;
 import core.utils.Point;
 import core.utils.components.path.SimpleIPath;
-import hint.Hint;
-import hint.HintComponent;
-import hint.HintGiverFactory;
-import hint.HintLogComponent;
-import hint.HintSystem;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import hint.*;
+import java.util.*;
 import petriNet.PetriNetSystem;
 import petriNet.PlaceComponent;
 import petriNet.TransitionComponent;
@@ -111,6 +101,22 @@ public class Level01 extends DungeonLevel {
     Game.add(HintGiverFactory.mailbox(new Point(1, 5)));
     PetriNetSystem petriNetSystem = new PetriNetSystem();
     Game.add(petriNetSystem);
+    // register hint log
+    Game.player()
+        .ifPresent(
+            player ->
+                player
+                    .fetch(InputComponent.class)
+                    .ifPresent(
+                        inputComponent ->
+                            inputComponent.registerCallback(
+                                Input.Keys.T,
+                                entity ->
+                                    player
+                                        .fetch(HintLogComponent.class)
+                                        .ifPresent(HintLogDialog::showHintLog),
+                                false,
+                                true)));
 
     // Talk to NPC riddle
     riddle1 = new Entity("Talk to monster riddle");
@@ -148,7 +154,7 @@ public class Level01 extends DungeonLevel {
     preasurePlate = plate.fetch(LeverComponent.class).get();
     Game.add(plate);
     Entity npc = new Entity();
-    npc.add(new VelocityComponent(5));
+    npc.add(VelocityComponent.defaultMoving(5));
     npc.add(new CollideComponent());
     npc.add(new PositionComponent(getPoint(0)));
     npc.add(new DrawComponent(new SimpleIPath("character/monster/chort")));
@@ -226,7 +232,7 @@ public class Level01 extends DungeonLevel {
     Point goal = getPoint(6);
     npc.add(
         new AIComponent(
-            entity -> {},
+            (entity, player) -> {},
             entity -> {
               Optional<Tile> entityTile = Game.tileAtEntity(entity);
               Optional<Tile> goalTile = Game.tileAt(goal);
@@ -240,7 +246,7 @@ public class Level01 extends DungeonLevel {
                         entity.fetch(PositionComponent.class).get().position(), goal));
               }
             },
-            entity -> false));
+            (entity, player) -> false));
   }
 
   private void crafting() {

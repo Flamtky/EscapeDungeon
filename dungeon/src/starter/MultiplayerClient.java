@@ -27,7 +27,7 @@ public final class MultiplayerClient {
     // Game Settings
     Game.loadConfig(new SimpleIPath("dungeon_config.json"), KeyboardConfig.class);
     Game.disableAudio(false);
-    Game.frameRate(60);
+    Game.tickRate(30);
     Game.windowTitle("Dev Client - " + PreRunConfiguration.username());
     Game.userOnSetup(
         () -> {
